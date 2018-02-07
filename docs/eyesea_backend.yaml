@@ -180,7 +180,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/analysis-methods'
+                $ref: '#/components/schemas/analysis_method'
         default:
           description: unexpected error
           content:
@@ -195,7 +195,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/analysis-method'
+                $ref: '#/components/schemas/analysis_method'
         default:
           description: unexpected error
           content:
@@ -218,7 +218,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/analysis-methods'
+                $ref: '#/components/schemas/analysis_method'
         default:
           description: unexpected error
           content:
@@ -240,7 +240,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/analysis-method'
+                $ref: '#/components/schemas/analysis_method'
         default:
           description: unexpected error
           content:
@@ -261,19 +261,19 @@ components:
     
     statistics:
       properties:
-        total-videos:
+        total_videos:
           type: integer
           description: the number of videos stored
-        total-analyses:
+        total_analyses:
           type: integer
           description: the number of analyses in database
-        total-analyses-completed:
+        total_analyses-completed:
           type: integer
           description: the number of completed analyses
-        total-analyses-failed:
+        total_analyses-failed:
           type: integer
           description: the number of failed analyses
-        total-analyses-queued:
+        total_analyses-queued:
           type: integer
           description: the number of analysis queued for processing
 
@@ -316,7 +316,7 @@ components:
           type: array
           description: the results of the analysis
 
-    analysis-method:
+    analysis_method:
       properties:
         mid:
           type: integer
@@ -341,7 +341,7 @@ components:
       items:
         $ref: '#/components/schemas/analysis'
 
-    analysis-methods:
+    analysis_method:
       type: array
       items:
-        $ref: '#/components/schemas/analysis-method'
+        $ref: '#/components/schemas/analysis_method'
