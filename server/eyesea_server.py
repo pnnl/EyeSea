@@ -39,7 +39,7 @@ def get_statistics():
 @get('/video')
 def get_video():
     data = video.select().dicts().get()
-    print data
+    print(data)
     return fr()(data)
 
 @post('/video')
