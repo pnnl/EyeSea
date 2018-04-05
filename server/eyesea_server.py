@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import json
 import bottle
-from bottle import request, response, post, get, put, delete, hook
+from bottle import request, response, post, get, put, delete, hook, route, static_file
 from eyesea_db import *
 
 def fr():
@@ -22,6 +22,9 @@ def br():
 @hook('after_request')
 def ar():
     db.close()
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
     
 @get('/statistics')
 def get_statistics():
@@ -35,7 +38,8 @@ def get_statistics():
 
 @get('/video')
 def get_video():
-    data = list(video.select().dicts())
+    data = video.select().dicts().get()
+    print data
     return fr()(data)
 
 @post('/video')
@@ -56,7 +60,7 @@ def put_video_vid(vid):
 
 @get('/analysis')
 def get_analysis():
-    data = list(analysis.select().dicts())
+    data = analysis.select().dicts().get()
     return fr()(data)
 
 @post('/analysis')
@@ -77,7 +81,7 @@ def put_analysis_aid(aid):
 
 @get('/analysis/method')
 def get_analysis_method():
-    data = list(analysis_method.select().dicts())
+    data = analysis_method.select().dicts().get()
     return fr()(data)
 
 @post('/analysis/method')
@@ -95,6 +99,10 @@ def put_analysis_method_mid(mid):
     updata = analysis_method.update(request.json).where(analysis_method.mid == mid).execute()
     data = analysis_method.select().where(analysis_method.mid == mid).dicts().get()
     return fr()(data)
+
+@route('/file/<filepath:path>')
+def server_static(filepath):
+    return static_file(filepath, root='/home/avil982/Videos/Sample/')
 
 app = application = bottle.default_app()
 
