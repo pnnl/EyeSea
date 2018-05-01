@@ -102,7 +102,7 @@ def put_analysis_method_mid(mid):
 
 @route('/file/<filepath:path>')
 def server_static(filepath):
-    return static_file(filepath, root='/home/avil982/Videos/Sample/')
+    return static_file(filepath, root='/')
 
 app = application = bottle.default_app()
 

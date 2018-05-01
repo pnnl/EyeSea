@@ -5,6 +5,7 @@ import './App.css';
 import Menu from './components/menu';
 import Statistics from './components/statistics';
 import Review from './components/review';
+import Analysis from './components/analysis';
 
 class App extends Component {
     constructor(props) {
@@ -20,7 +21,7 @@ class App extends Component {
     render() {
 	const mode = this.state.mode;
 	const activity = mode === "statistics" ? <Statistics /> :
-	      (mode === "analysis" ? "analyses" :
+	      (mode === "analysis" ? <Analysis /> :
 	       (mode === "review" ? <Review /> : ''));
 
 	return (

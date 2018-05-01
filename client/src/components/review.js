@@ -11,7 +11,7 @@ class Review extends Component {
 
     rewrite(data) {
 	if (data.uri.includes("file://")){
-	    data.uri = "/file/" + data.uri.replace("file://", "");
+	    data.uri = data.uri.replace("file://", "");
 	}
 	return data;
     }
@@ -39,7 +39,7 @@ class Review extends Component {
 	    <div className="Review">
 	      <ul>
 		{listItems}
-		<video src="http://127.0.0.1:8080/file/orpc_adults_then_smolt.mp4" ></video>
+		<video src="http://127.0.0.1:8080/file//home/avil982/Videos/1_East_fish_20170627_130000/WellsDam_1_East_20170627_13_1050-1080.mp4" ></video>
 	      </ul>
 	    </div>
 	);

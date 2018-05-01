@@ -17,7 +17,7 @@ class video(eyesea_model):
 
 class analysis(eyesea_model):
     aid = IntegerField(primary_key=True)
-    mid = IntegerField()
+    vid = IntegerField()
     status = CharField()
     parameters = TextField()
     results = TextField()
