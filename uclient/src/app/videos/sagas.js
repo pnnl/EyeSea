@@ -16,32 +16,32 @@ export function* requestVideos(action) {
 				duration: 7237,
 			},
 			{
-				name: 'orpc_adults_then_smolt',
+				name: 'orpc_adults_then_smolt1',
 				preview: 'https://placekitten.com/280/161',
 				duration: 37,
 			},
 			{
-				name: 'north_richland_columbia_river',
+				name: 'north_richland_columbia_river2',
 				preview: 'https://placekitten.com/g/280/162',
 				duration: 7237,
 			},
 			{
-				name: 'orpc_adults_then_smolt',
+				name: 'orpc_adults_then_smolt3',
 				preview: 'https://placekitten.com/280/163',
 				duration: 37,
 			},
 			{
-				name: 'north_richland_columbia_river',
+				name: 'north_richland_columbia_river4',
 				preview: 'https://placekitten.com/g/280/164',
 				duration: 7237,
 			},
 			{
-				name: 'orpc_adults_then_smolt',
+				name: 'orpc_adults_then_smolt5',
 				preview: 'https://placekitten.com/280/165',
 				duration: 37,
 			},
 			{
-				name: 'north_richland_columbia_river',
+				name: 'north_richland_columbia_river6',
 				preview: 'https://placekitten.com/g/280/166',
 				duration: 7237,
 			},
