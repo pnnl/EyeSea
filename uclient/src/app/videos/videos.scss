@@ -3,6 +3,8 @@
 .videos {
   display: flex;
   flex-wrap: wrap;
+  box-sizing: border-box;
+  width: 100%;
 
   header {
     display: flex;

@@ -1,9 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import _ from 'lodash';
 import { request, getVideos } from './module';
 import './videos.scss';
 
 export class Videos extends React.Component {
+	constructor() {
+		super();
+		this.state = {
+			padding: 0,
+		};
+		this.checkLayout = _.debounce(this.checkLayout.bind(this), 125);
+	}
 	formatDuration(value) {
 		var hours = Math.floor(value / 3600);
 		var minutes = Math.floor((value - hours * 3600) / 60);
@@ -21,22 +29,36 @@ export class Videos extends React.Component {
 
 		return hours + ':' + minutes + ':' + seconds;
 	}
+	checkLayout() {
+		var offsetWidth = this.container.offsetWidth;
+		var padding =
+			(offsetWidth - Math.floor((offsetWidth - 175) / 320) * 320 + 25) / 2;
+
+		if (padding !== this.state.padding) {
+			this.setState({
+				padding,
+			});
+		}
+	}
 	componentDidMount() {
 		this.props.requestVideos();
+		window.addEventListener('resize', this.checkLayout);
+	}
+	componentDidUpdate() {
+		this.checkLayout();
+	}
+	componentWillUnmount() {
+		window.removeEventListener('resize', this.checkLayout);
 	}
 	render() {
 		var count = (this.props.videos && this.props.videos.length) || 0;
-		var padding =
-			(window.innerWidth -
-				Math.floor((window.innerWidth - 175) / 320) * 320 -
-				25) /
-			2;
 		return (
 			<section
+				ref={ref => (this.container = ref)}
 				className="videos"
 				style={{
-					paddingLeft: padding + 'px',
-					paddingRight: padding - 25 + 'px',
+					paddingLeft: this.state.padding + 'px',
+					paddingRight: this.state.padding - 25 + 'px',
 				}}
 			>
 				<header>
