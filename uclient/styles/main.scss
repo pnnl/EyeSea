@@ -1,0 +1,67 @@
+@import 'variables';
+@import '~font-awesome/scss/font-awesome';
+
+/* So many bleeping wrapper tags. */
+html,
+body,
+#app,
+#app > div,
+main {
+  height: 100%;
+  margin: 0;
+  font-family: 'Open Sans', sans-serif;
+  background: $site-bg;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+
+  & > header {
+    display: flex;
+    align-items: center;
+    padding: 0 4.375em;
+    background: $header-bg;
+
+    &:after {
+      content: '';
+      flex-grow: 1;
+      order: 1;
+    }
+
+    > div {
+      order: 2;
+    }
+
+    button:first-of-type {
+        margin-right: 4.375em;
+    }
+  }
+
+  & > section {
+    padding-bottom: 25px;
+  }
+}
+
+h1 {
+  margin: .6875em 0 .78125em;
+  font-variant: small-caps;
+  line-height: 1em;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  .fa {
+    display: block;
+    font-size: 2em;
+  }
+}
+
+.icon-label {
+	position: absolute;
+	top: -1000px;
+	left: -1000px;
+}

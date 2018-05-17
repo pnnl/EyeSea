@@ -1,0 +1,19 @@
+@import '../../../styles/variables';
+
+.introduction {
+  align-self: center;
+  width: 100%;
+  max-width: 900px;
+  padding-top: 2em;
+
+  button {
+    padding: 5.875em 6.13em;
+    background: $button-bg;
+    border: 1px solid $button-border;
+
+    .fa {
+      font-size: 10.625em;
+      color: #4a4a4a;
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+	"name": "pnnl-react-boilerplate",
+	"version": "0.0.1",
+	"description": "Boilerplate for React Projects at PNNL",
+	"main": "''",
+	"scripts": {
+		"build":
+			"webpack --config webpack.production.config.js --progress --profile --colors",
+		"start": "webpack-dev-server --https --progress --profile --colors --no-inline",
+		"watch":
+			"webpack-dev-server --watch --progress --colors --inline --hot --devtool inline-source-map",
+		"lint": "eslint --ext js --ext jsx src || exit 0",
+		"dev": " webpack-dashboard -- webpack-dev-server",
+		"test": "jest",
+		"test:watch": "jest --watch",
+		"test:coverage": "jest --coverage",
+		"precommit": "npm run lint:staged",
+		"lint:staged": "lint-staged",
+		"partial-lint-prettier":
+			"node partial-lint.js prettier --single-quote --trailing-comma es5 --write"
+	},
+	"dependencies": {
+		"d3": "^4.13.0",
+		"immutable": "^3.8.1",
+		"lodash": "4.10.0",
+		"memoize": "^0.1.1",
+		"moment": "^2.22.1",
+		"node-sass": "^4.3.0",
+		"react": "^16.0.0",
+		"react-dom": "^16.0.0",
+		"react-faux-dom": "^4.1.0",
+		"react-redux": "^5.0.6",
+		"react-router-dom": "^4.2.2",
+		"react-virtualized": "^9.18.5",
+		"redux": "^3.7.2",
+		"redux-immutable": "^4.0.0",
+		"redux-saga": "^0.15.6",
+		"redux-thunk": "^2.2.0",
+		"reselect": "^3.0.1",
+		"sass-loader": "^6.0.2"
+	},
+	"devDependencies": {
+		"async-exit-hook": "^2.0.1",
+		"babel-core": "^6.23.1",
+		"babel-eslint": "^8.0.0",
+		"babel-jest": "^21.2.0",
+		"babel-loader": "^7.1",
+		"babel-plugin-add-module-exports": "^0.2.1",
+		"babel-plugin-transform-async-generator-functions": "^6.24.1",
+		"babel-plugin-transform-class-properties": "^6.24.1",
+		"babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+		"babel-plugin-transform-export-extensions": "^6.22.0",
+		"babel-plugin-transform-object-rest-spread": "^6.26.0",
+		"babel-plugin-transform-runtime": "^6.23.0",
+		"babel-polyfill": "^6.26.0",
+		"babel-preset-env": "^1.6.0",
+		"babel-preset-es2015": "^6.24.1",
+		"babel-preset-react": "^6.24.1",
+		"babel-preset-stage-0": "^6.24.1",
+		"babel-runtime": "^6.22.0",
+		"css-loader": "^0.28.7",
+		"enzyme": "3.1.0",
+		"enzyme-adapter-react-16": "1.0.1",
+		"eslint": "^4.19.1",
+		"eslint-plugin-jest": "^21.2.0",
+		"eslint-plugin-react": "^7.1.0",
+		"extract-text-webpack-plugin": "^3.0.0",
+		"file-loader": "^1.1.5",
+		"font-awesome": "^4.7.0",
+		"html-webpack-plugin": "^2.26.0",
+		"husky": "^0.14.3",
+		"jest": "^21.2.1",
+		"jest-enzyme": "^4.0.1",
+		"lint-staged": "^4.1.3",
+		"loglevel": "^1.4.1",
+		"postcss-loader": "^2.0.6",
+		"prettier": "^1.12.0",
+		"react-test-renderer": "16",
+		"redux-devtools-extension": "^2.13.2",
+		"style-loader": "^0.19.0",
+		"url-loader": "^0.6.2",
+		"webpack": "^3.3.0",
+		"webpack-cleanup-plugin": "^0.5.1",
+		"webpack-dashboard": "^1.0.0-5",
+		"webpack-dev-server": "^2.4.1"
+	},
+	"jest": {
+		"unmockedModulePathPatterns": ["react", "enzyme", "jest-enzyme"],
+		"moduleNameMapper": {
+			"\\.(jpe?g|png|gif|eot|otf|webp|svg|ttf|woff2?|mp[34]|webm|wav|m4a|aac|oga)$":
+				"<rootDir>/__mocks__/fileMock.js",
+			"\\.(css|less|s[ac]ss|styl)$": "<rootDir>/__mocks__/styleMock.js"
+		},
+		"moduleFileExtensions": ["js", "jsx"],
+		"moduleDirectories": ["src", "src/js", "node_modules"],
+		"setupFiles": ["<rootDir>/src/shim.js", "<rootDir>/src/setupTests.js"]
+	},
+	"lint-staged": {
+		"gitDir": "../../",
+		"linters": {
+			"*.{js,jsx}": ["partial-lint-prettier"]
+		}
+	}
+}
