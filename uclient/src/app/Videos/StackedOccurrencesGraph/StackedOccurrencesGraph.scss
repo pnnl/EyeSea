@@ -1,4 +1,4 @@
-@import '../../../styles/variables';
+@import '../../../../styles/variables';
 
 .videos {
   display: flex;
@@ -51,6 +51,7 @@
       font-size: 1em;
       font-weight: normal;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     h3,

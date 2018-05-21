@@ -1,10 +1,15 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Route } from 'react-router-dom';
-import Introduction from './app/introduction';
-import Videos from './app/videos';
+import { setServicePath } from './app/module';
+import Introduction from './app/Introduction';
+import Videos from './app/Videos';
 import '../styles/index.scss';
 
 export class App extends React.Component {
+	componentWillMount() {
+		this.props.setServicePath(this.props.servicePath);
+	}
 	componentDidMount() {
 		document.getElementById('app').classList.remove('loading');
 	}
@@ -24,11 +29,13 @@ export class App extends React.Component {
 						</button>
 					</div>
 				</header>
-				<Route exact path="/" component={Introduction} />
-				<Route exact path="/videos" component={Videos} />
+				<Route exact path="/" component={Videos} />
+				<Route exact path="/new" component={Introduction} />
 			</main>
 		);
 	}
 }
 
-export default App;
+export default connect(null, {
+	setServicePath,
+})(App);

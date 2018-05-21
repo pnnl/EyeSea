@@ -11,7 +11,7 @@ import store from './reduxProvider';
 ReactDOM.render(
 	<Provider store={store}>
 		<HashRouter>
-			<App />
+			<App servicePath="http://localhost:8080/" />
 		</HashRouter>
 	</Provider>,
 	document.getElementById('app')

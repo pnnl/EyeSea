@@ -12,7 +12,6 @@ if (!window.fetch) {
  **/
 const baseOptions = {
 	method: 'GET',
-	credentials: 'include',
 	headers: {
 		'Content-Type': 'application/json',
 	},

@@ -6,7 +6,7 @@
 	"scripts": {
 		"build":
 			"webpack --config webpack.production.config.js --progress --profile --colors",
-		"start": "webpack-dev-server --https --progress --profile --colors --no-inline",
+		"start": "webpack-dev-server --progress --profile --colors --no-inline",
 		"watch":
 			"webpack-dev-server --watch --progress --colors --inline --hot --devtool inline-source-map",
 		"lint": "eslint --ext js --ext jsx src || exit 0",

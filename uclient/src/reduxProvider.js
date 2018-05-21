@@ -6,10 +6,11 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 
 import sagas from './sagas/sagas';
 import app from './app/module';
+import services from './app/middleware';
 
 const sagaMiddleware = createSagaMiddleware();
 
-let middleware = [thunk, sagaMiddleware];
+let middleware = [thunk, sagaMiddleware, services];
 if (process.env.NODE_ENV !== 'production') {
 	const composeEnhancers = composeWithDevTools({
 		/*Options*/
