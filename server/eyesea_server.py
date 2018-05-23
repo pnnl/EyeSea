@@ -51,7 +51,32 @@ def get_video():
         'description': video['description'],
         'fps': video['fps'],
         'length': results[-1]['frameindex'] / video['fps'],
-        'variable_framerate': video['variable_framerate'],
+        'variableFramerate': video['variable_framerate'],
+        'uri': video['uri'],
+        'analysis': {
+            'id': video['aid'],
+            'status': video['status'],
+            'results': [
+                {
+                    'detections': frame['detections'],
+                    'frameIndex': frame['frameindex']
+                } for frame in results
+            ]
+        }
+    })(video, json.loads(video['results'])) for video in data]
+    return fr()(data)
+
+@get('/videos')
+def get_videos():
+    data = (video.select(video, analysis.aid, analysis.status, analysis.results)
+        .join(analysis, on=(video.vid == analysis.vid))
+        .dicts())
+    data = [(lambda video, results: {
+        'id': video['vid'],
+        'description': video['description'],
+        'fps': video['fps'],
+        'length': results[-1]['frameindex'] / video['fps'],
+        'variableFramerate': video['variable_framerate'],
         'uri': video['uri'],
         'analysis': {
             'id': video['aid'],
@@ -59,7 +84,7 @@ def get_video():
             'results': [
                 {
                     'detections': len(frame['detections']),
-                    'frameindex': frame['frameindex']
+                    'frameIndex': frame['frameindex']
                 } for frame in results if len(frame['detections']) > 0
             ]
         }
