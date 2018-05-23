@@ -1,0 +1,14 @@
+@import '../../../../styles/variables';
+
+.stacked-occurrences-graph {
+  line {
+    stroke: $graph-lines;
+    stroke-dasharray: 3 2;
+  }
+
+  text {
+    transform: translate(.25em,.35em);
+    font-size: .5em;
+    fill: $graph-labels;
+  }
+}

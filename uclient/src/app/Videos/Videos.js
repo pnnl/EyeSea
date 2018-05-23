@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom';
 import _ from 'lodash';
 import { request, getVideos, getSort, setSort } from './module';
 import StackedOccurrencesGraph from './StackedOccurrencesGraph';
+import BarGraph from './BarGraph';
 import './Videos.scss';
 
 export class Videos extends React.Component {
@@ -118,7 +119,7 @@ export class Videos extends React.Component {
 									src={video.preview}
 									alt={'Preview of ' + video.description}
 								/>
-								<StackedOccurrencesGraph values={video.analysis.results} />
+								<BarGraph values={video.analysis.results} />
 							</div>
 						))}
 				</section>
