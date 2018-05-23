@@ -15,13 +15,13 @@ export function* requestVideos(action) {
 		payload.forEach((video, index) => {
 			if (index % 2) {
 				video.preview =
-					'https://placekitten.com/g/' +
+					'https://placebear.com/g/' +
 					count +
 					'/' +
 					Math.floor(count * 0.57142857142857142857142857142857);
 			} else {
 				video.preview =
-					'https://placekitten.com/' +
+					'https://placebear.com/' +
 					count +
 					'/' +
 					Math.floor(count * 0.57142857142857142857142857142857);
