@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 import json
 import bottle
+import os
+from subprocess import check_output, Popen, PIPE
 from bottle import request, response, post, get, put, delete, hook, route, static_file
 from eyesea_db import *
+
+eye_env = os.environ
+eye_env["PATH"] = '/home/avil982/Code/videofish_dev/evaluation/:' + eye_env["PATH"]
+tasklist = {}
 
 @route('/', method = 'OPTIONS')
 @route('/<path:path>', method = 'OPTIONS')
@@ -46,16 +52,16 @@ def get_video():
     data = (video.select(video, analysis.aid, analysis.status, analysis.results)
         .join(analysis, on=(video.vid == analysis.vid))
         .dicts())
-    data = [(lambda video, results: {
-        'id': video['vid'],
-        'description': video['description'],
-        'fps': video['fps'],
-        'length': results[-1]['frameindex'] / video['fps'],
-        'variableFramerate': video['variable_framerate'],
-        'uri': video['uri'],
+    data = [(lambda vid, results: {
+        'id': vid['vid'],
+        'description': vid['description'],
+        'fps': vid['fps'],
+        'length': results[-1]['frameindex'] / vid['fps'],
+        'variableFramerate': vid['variable_framerate'],
+        'uri': vid['uri'],
         'analysis': {
-            'id': video['aid'],
-            'status': video['status'],
+            'id': vid['aid'],
+            'status': vid['status'],
             'results': [
                 {
                     'detections': frame['detections'],
@@ -63,7 +69,7 @@ def get_video():
                 } for frame in results
             ]
         }
-    })(video, json.loads(video['results'])) for video in data]
+    })(i, json.loads(i['results'])) for i in data]
     return fr()(data)
 
 @get('/videos')
@@ -71,16 +77,16 @@ def get_videos():
     data = (video.select(video, analysis.aid, analysis.status, analysis.results)
         .join(analysis, on=(video.vid == analysis.vid))
         .dicts())
-    data = [(lambda video, results: {
-        'id': video['vid'],
-        'description': video['description'],
-        'fps': video['fps'],
-        'length': results[-1]['frameindex'] / video['fps'],
-        'variableFramerate': video['variable_framerate'],
-        'uri': video['uri'],
+    data = [(lambda vid, results: {
+        'id': vid['vid'],
+        'description': vid['description'],
+        'fps': vid['fps'],
+        'length': results[-1]['frameindex'] / vid['fps'],
+        'variableFramerate': vid['variable_framerate'],
+        'uri': vid['uri'],
         'analysis': {
-            'id': video['aid'],
-            'status': video['status'],
+            'id': vid['aid'],
+            'status': vid['status'],
             'results': [
                 {
                     'detections': len(frame['detections']),
@@ -88,7 +94,7 @@ def get_videos():
                 } for frame in results if len(frame['detections']) > 0
             ]
         }
-    })(video, json.loads(video['results'])) for video in data]
+    })(i, json.loads(i['results'])) for i in data]
     return fr()(data)
 
 @get('/videos')
@@ -96,7 +102,7 @@ def get_videos():
     data = (video.select(video, analysis.aid, analysis.status, analysis.results)
         .join(analysis, on=(video.vid == analysis.vid))
         .dicts())
-    return fr()({'data': [video for video in data]})
+    return fr()({'data': [i for i in data]})
 
 @post('/video')
 def post_video():
@@ -126,7 +132,17 @@ def post_analysis():
 
 @get('/analysis/<aid>')
 def get_analysis_aid(aid):
-    data = analysis.select().where(analysis.aid == aid).dicts().get()
+    if aid.isdigit() and int(aid) in tasklist:
+        p = tasklist[int(aid)]['p'].poll()
+        data = analysis.select().where(analysis.aid == aid).dicts().get()
+        param = json.loads(data['parameters'])
+        if p is not None:
+            if tasklist[int(aid)]['output'] != 'STDOUT':
+                analysis.update({'status' : 'FINISHED', 'results' : json.dumps(open(tasklist[int(aid)]['output']).read())}).where(analysis.aid == aid).execute()
+            data = analysis.select().where(analysis.aid == aid).dicts().get()
+            del tasklist[int(aid)]
+    else:
+        data = "Not a valid analysis ID"
     return fr()(data)
 
 @put('/analysis/<aid>')
@@ -159,6 +175,27 @@ def put_analysis_method_mid(mid):
 @route('/file/<filepath:path>')
 def server_static(filepath):
     return static_file(filepath, root='/')
+
+@post('/process')
+def process_video():
+    param = request.json
+    if ("vid" in param and "mid" in param):
+        method = analysis_method.select().where(analysis_method.mid == param["mid"]).dicts().get()
+        procargs = json.loads(method['parameters'])
+        vid = video.select().where(video.vid == param["vid"]).dicts().get()
+        if 'file://' in vid['uri']:
+            output = vid['uri'].replace('file://', '').split('.')[0] + '.json'
+            args = [procargs['command'], procargs['videoarg'], vid['uri'].replace('file://', ''), procargs['outputarg'], output]
+            aid = analysis.select().where(analysis.aid==analysis.insert({'mid': param['mid'], 'vid': param['vid'], 'status': 'QUEUED', 'parameters': json.dumps(args), 'results' : ''}).execute()).dicts().get()
+            print args
+            tasklist[aid['aid']] = {'p': Popen(args, env=eye_env), 'output' : output}
+        else:
+            return fr()('Unknown video file handler')
+        analysis.update({'status' : 'PROCESSING'}).where(analysis.aid == aid['aid']).execute()
+        data = analysis.select().where(analysis.aid == aid['aid']).dicts().get()
+        return fr()(data)
+    else:
+        return fr()("No video or analysis method specified")
 
 app = application = bottle.default_app()
 
