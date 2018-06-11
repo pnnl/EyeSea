@@ -138,7 +138,7 @@ def get_analysis_aid(aid):
         param = json.loads(data['parameters'])
         if p is not None:
             if tasklist[int(aid)]['output'] != 'STDOUT':
-                analysis.update({'status' : 'FINISHED', 'results' : json.dumps(open(tasklist[int(aid)]['output']).read())}).where(analysis.aid == aid).execute()
+                analysis.update({'status' : 'FINISHED', 'results' : open(tasklist[int(aid)]['output']).read()}).where(analysis.aid == aid).execute()
             data = analysis.select().where(analysis.aid == aid).dicts().get()
             del tasklist[int(aid)]
     else:
