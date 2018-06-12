@@ -7,7 +7,7 @@ from bottle import request, response, post, get, put, delete, hook, route, stati
 from eyesea_db import *
 
 eye_env = os.environ
-eye_env["PATH"] = '/home/avil982/Code/videofish_dev/evaluation/:' + eye_env["PATH"]
+eye_env["PATH"] = os.path.join( os.path.dirname( __file__ ), '../../evaluation' ) + ':' + eye_env["PATH"]
 tasklist = {}
 
 @route('/', method = 'OPTIONS')
