@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import _ from 'lodash';
 import { request, getVideos, getSort, setSort } from './module';
 import StackedOccurrencesGraph from './StackedOccurrencesGraph';
@@ -113,13 +113,17 @@ export class Videos extends React.Component {
 					{this.props.videos &&
 						this.props.videos.map(video => (
 							<div key={video.id} className="video">
-								<h3 title={video.description}>{video.description}</h3>
+								<h3 title={video.description}>
+									{/*<Link to={'/video/' + video.id}>*/}
+										{video.description}
+									{/*</Link>*/}
+								</h3>
 								<span>{this.formatDuration(video.length)}</span>
 								<img
 									src={video.preview}
 									alt={'Preview of ' + video.description}
 								/>
-								<BarGraph values={video.analysis.results} />
+								<StackedOccurrencesGraph values={video.analysis.results} />
 							</div>
 						))}
 				</section>
