@@ -3,6 +3,17 @@ import * as d3 from 'd3';
 import './StackedOccurrencesGraph.scss';
 
 export class StackedOccurrencesGraph extends React.PureComponent {
+    constructor() {
+        super();
+        this.colors = [
+            '#32e0fb',
+            '#de2cf7',
+            '#2fff97',
+            '#606efd',
+            '#fe4040',
+            '#bbfd23',
+        ];
+    }
 	ticks(max) {
 		if (max <= 2) {
 			return d3.ticks(0, max, 3);
@@ -78,16 +89,6 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 				<line key={y(tick)} x1="0" y1={y(tick)} x2={maxX} y2={y(tick)} />
 			));
 
-			let colors = [
-				'#4a90e2',
-				'#9013fe',
-				'#11b579',
-				'#005a84',
-				'#92a526',
-				'#e3c51f',
-				'#e42b31',
-			];
-
 			let frames = {},
 				slot,
 				colored = {},
@@ -133,7 +134,7 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 
 			frames = Object.keys(frames)
 				.reverse()
-				.map(id => <path key={id} d={frames[id]} fill={colors[color++]} />);
+				.map(id => <path key={id} d={frames[id]} fill={this.colors[color++]} />);
 
 			return (
 				<svg

@@ -1,21 +1,27 @@
 $fa-font-path: '~font-awesome/fonts';
 
-$site-bg: white;
+$site-fg: #d1d1d1;
+$site-bg: #0a1726;
 
-$headings-fg: black;
+$headings-fg: #2fff97;
 $header-line-height: 2.286em;
 $header-padding: 1.142857em;
 
-$header-bg: #d8d8d8;
+$header-fg: white;
+$header-bg: $site-bg;
+$header-border: #979797;
 
-$graph-labels: #525252;
-$graph-lines: #d8d8d8;
+$graph-labels: white;
+$graph-lines: #4b545f;
 
-$info-fg: #4a90e2;
+$standout-fg: white;
 
-$inactive-fg: #d1d1d1;
-$selection-fg: #f5a623;
+$inactive-fg: #9b9b9b;
+$selection-fg: $headings-fg;
+
+$videos-video-fg: white;
+$videos-video-bg: #162231;
 
 $button-icon-fg: #4a4a4a;
-$button-bg: #d8d8d8;
-$button-border: #979797;
+$button-big-bg: $videos-video-bg;
+$button-big-border: $site-fg;

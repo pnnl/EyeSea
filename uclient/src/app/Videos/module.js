@@ -9,11 +9,10 @@ export const ERROR = 'app/videos/error';
 export const SORT = 'app/videos/sort';
 
 ///-- ACTIONS --///
-export function request(payload) {
+export function request() {
 	return {
 		type: REQUEST,
 		servicePath: true,
-		payload,
 	};
 }
 

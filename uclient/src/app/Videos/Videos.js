@@ -40,7 +40,7 @@ export class Videos extends React.Component {
 	};
 	onSortDirectionChange = event => {
 		this.props.setSort(event);
-	};
+	}
 	checkLayout = () => {
 		if (this.container) {
 			var offsetWidth = this.container.offsetWidth;
@@ -53,7 +53,7 @@ export class Videos extends React.Component {
 				});
 			}
 		}
-	};
+	}
 	componentDidMount() {
 		this.props.requestVideos();
 		window.addEventListener('resize', this.checkLayout);
@@ -112,11 +112,9 @@ export class Videos extends React.Component {
 					</header>
 					{this.props.videos &&
 						this.props.videos.map(video => (
-							<div key={video.id} className="video">
+							<Link key={video.id} className="video" to={'/video/' + video.id}>
 								<h3 title={video.description}>
-									{/*<Link to={'/video/' + video.id}>*/}
-										{video.description}
-									{/*</Link>*/}
+									{video.description}
 								</h3>
 								<span>{this.formatDuration(video.length || 0)}</span>
 								<img
@@ -124,7 +122,7 @@ export class Videos extends React.Component {
 									alt={'Preview of ' + video.description}
 								/>
 								<StackedOccurrencesGraph values={video.analyses} />
-							</div>
+							</Link>
 						))}
 				</section>
 			);
