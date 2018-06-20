@@ -7,7 +7,7 @@ from bottle import request, response, post, get, put, delete, hook, route, stati
 from eyesea_db import *
 
 eye_env = os.environ
-eye_env["PATH"] = '/home/avil982/Code/videofish_dev/evaluation/:' + eye_env["PATH"]
+eye_env["PATH"] = os.path.join( os.path.dirname( __file__ ), '../../evaluation' ) + ':' + eye_env["PATH"]
 tasklist = {}
 
 @route('/', method = 'OPTIONS')
@@ -132,15 +132,16 @@ def post_analysis():
 
 @get('/analysis/<aid>')
 def get_analysis_aid(aid):
-    if aid.isdigit() and int(aid) in tasklist:
-        p = tasklist[int(aid)]['p'].poll()
+    if aid.isdigit():
         data = analysis.select().where(analysis.aid == aid).dicts().get()
-        param = json.loads(data['parameters'])
-        if p is not None:
-            if tasklist[int(aid)]['output'] != 'STDOUT':
-                analysis.update({'status' : 'FINISHED', 'results' : open(tasklist[int(aid)]['output']).read()}).where(analysis.aid == aid).execute()
-            data = analysis.select().where(analysis.aid == aid).dicts().get()
-            del tasklist[int(aid)]
+        if int(aid) in tasklist:
+            p = tasklist[int(aid)]['p'].poll()
+            param = json.loads(data['parameters'])
+            if p is not None:
+                if tasklist[int(aid)]['output'] != 'STDOUT':
+                    analysis.update({'status' : 'FINISHED', 'results' : open(tasklist[int(aid)]['output']).read()}).where(analysis.aid == aid).execute()
+                data = analysis.select().where(analysis.aid == aid).dicts().get()
+                del tasklist[int(aid)]
     else:
         data = "Not a valid analysis ID"
     return fr()(data)
@@ -200,4 +201,4 @@ def process_video():
 app = application = bottle.default_app()
 
 if __name__ == '__main__':
-    bottle.run(host = '127.0.0.1', port = 8080, debug = True)
+    bottle.run(host = '0.0.0.0', port = 8080, debug = True)
