@@ -118,12 +118,12 @@ export class Videos extends React.Component {
 										{video.description}
 									{/*</Link>*/}
 								</h3>
-								<span>{this.formatDuration(video.length)}</span>
+								<span>{this.formatDuration(video.length || 0)}</span>
 								<img
 									src={video.preview}
 									alt={'Preview of ' + video.description}
 								/>
-								<StackedOccurrencesGraph values={video.analysis.results} />
+								<StackedOccurrencesGraph values={video.analyses} />
 							</div>
 						))}
 				</section>

@@ -47,29 +47,29 @@ def get_statistics():
             }
     return fr()(data)
 
+# doesn't properly handle multiple video anlyses!
 @get('/video')
 def get_video():
-    data = (video.select(video, analysis.aid, analysis.status, analysis.results)
-        .join(analysis, on=(video.vid == analysis.vid))
-        .dicts())
-    data = [(lambda vid, results: {
+    data = video.select(video).dicts()
+
+    data = [(lambda vid: {
         'id': vid['vid'],
         'description': vid['description'],
         'fps': vid['fps'],
-        'length': results[-1]['frameindex'] / vid['fps'],
+#        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
         'variableFramerate': vid['variable_framerate'],
         'uri': vid['uri'],
-        'analysis': {
-            'id': vid['aid'],
-            'status': vid['status'],
+        'analyses': [(lambda analysis, results: {
+            'id': analysis['aid'],
+            'status': analysis['status'],
             'results': [
                 {
                     'detections': frame['detections'],
                     'frameIndex': frame['frameindex']
                 } for frame in results
             ]
-        }
-    })(i, json.loads(i['results'])) for i in data]
+        })(i, json.loads(i['results'] if i['results'] else '{}')) for i in analysis.select(analysis).where(analysis.vid == vid['vid']).dicts()]
+    })(i) for i in data]
     return fr()(data)
 
 @get('/videos')
@@ -81,7 +81,7 @@ def get_videos():
         'id': vid['vid'],
         'description': vid['description'],
         'fps': vid['fps'],
-        'length': results[-1]['frameindex'] / vid['fps'],
+        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
         'variableFramerate': vid['variable_framerate'],
         'uri': vid['uri'],
         'analysis': {
@@ -94,7 +94,7 @@ def get_videos():
                 } for frame in results if len(frame['detections']) > 0
             ]
         }
-    })(i, json.loads(i['results'])) for i in data]
+    })(i, json.loads(i['results'] if i['results'] else '{}')) for i in data]
     return fr()(data)
 
 @get('/videos')
@@ -187,7 +187,7 @@ def process_video():
             output = vid['uri'].replace('file://', '').split('.')[0] + '.json'
             args = [procargs['command'], procargs['videoarg'], vid['uri'].replace('file://', ''), procargs['outputarg'], output]
             aid = analysis.select().where(analysis.aid==analysis.insert({'mid': param['mid'], 'vid': param['vid'], 'status': 'QUEUED', 'parameters': json.dumps(args), 'results' : ''}).execute()).dicts().get()
-            print args
+            print(args)
             tasklist[aid['aid']] = {'p': Popen(args, env=eye_env), 'output' : output}
         else:
             return fr()('Unknown video file handler')
