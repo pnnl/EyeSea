@@ -2,17 +2,21 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import _ from 'lodash';
-import { request, getVideos, getSort, setSort } from './module';
+import {
+	request,
+	setPadding,
+	getPadding,
+	getVideos,
+	getSort,
+	setSort,
+} from './module';
 import StackedOccurrencesGraph from './StackedOccurrencesGraph';
 import BarGraph from './BarGraph';
 import './Videos.scss';
 
-export class Videos extends React.Component {
+export class Videos extends React.PureComponent {
 	constructor() {
 		super();
-		this.state = {
-			padding: 0,
-		};
 		this.checkLayout = _.debounce(this.checkLayout, 125);
 	}
 	formatDuration(value) {
@@ -40,20 +44,18 @@ export class Videos extends React.Component {
 	};
 	onSortDirectionChange = event => {
 		this.props.setSort(event);
-	}
+	};
 	checkLayout = () => {
 		if (this.container) {
 			var offsetWidth = this.container.offsetWidth;
 			var padding =
 				(offsetWidth - Math.floor((offsetWidth - 175) / 320) * 320 + 25) / 2;
 
-			if (padding !== this.state.padding) {
-				this.setState({
-					padding,
-				});
+			if (padding !== this.props.padding) {
+				this.props.setPadding(padding);
 			}
 		}
-	}
+	};
 	componentDidMount() {
 		this.props.requestVideos();
 		window.addEventListener('resize', this.checkLayout);
@@ -75,8 +77,8 @@ export class Videos extends React.Component {
 					ref={ref => (this.container = ref)}
 					className="videos"
 					style={{
-						paddingLeft: this.state.padding + 'px',
-						paddingRight: this.state.padding - 25 + 'px',
+						paddingLeft: this.props.padding + 'px',
+						paddingRight: this.props.padding - 25 + 'px',
 					}}
 				>
 					<header>
@@ -110,12 +112,10 @@ export class Videos extends React.Component {
 							/>
 						</div>
 					</header>
-					{this.props.videos &&
+					{(this.props.videos &&
 						this.props.videos.map(video => (
 							<Link key={video.id} className="video" to={'/video/' + video.id}>
-								<h3 title={video.description}>
-									{video.description}
-								</h3>
+								<h3 title={video.description}>{video.description}</h3>
 								<span>{this.formatDuration(video.length || 0)}</span>
 								<img
 									src={video.preview}
@@ -123,21 +123,30 @@ export class Videos extends React.Component {
 								/>
 								<StackedOccurrencesGraph values={video.analyses} />
 							</Link>
-						))}
+						))) || (
+						<div className="fish-loader">
+							<span>&gt;&lt;))°&gt;</span>
+						</div>
+					)}
 				</section>
 			);
 		}
 	}
 }
 const mapStateToProps = state => ({
+	padding: getPadding(state),
 	videos: getVideos(state),
 	sortBy: getSort(state),
 });
 
-export default connect(mapStateToProps, {
-	requestVideos: request,
-	setSort,
-})(Videos);
+export default connect(
+	mapStateToProps,
+	{
+		requestVideos: request,
+		setPadding,
+		setSort,
+	}
+)(Videos);
 
 export class SortIndicator extends React.PureComponent {
 	render() {

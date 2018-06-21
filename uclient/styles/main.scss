@@ -73,7 +73,40 @@ button {
 }
 
 .icon-label {
-	position: absolute;
-	top: -1000px;
-	left: -1000px;
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+}
+
+.fish-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  font-size: 2em;
+  font-weight: bold;
+  color: white;
+  background: $site-bg;
+
+  span {
+    transform: rotate(5deg) translateY(-6px);
+    animation: swim 7s infinite ease-in-out;
+  }
+}
+
+@keyframes swim {
+  0% {
+    transform: rotate(2deg) translateY(-6px);
+  }
+  50% {
+    transform: rotate(-2deg) translateY(6px);
+  }
+  100% {
+    transform: rotate(2deg) translateY(-6px);
+  }
 }

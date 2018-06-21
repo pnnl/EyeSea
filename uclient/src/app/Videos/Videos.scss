@@ -3,6 +3,8 @@
 .videos {
   display: flex;
   flex-wrap: wrap;
+  flex-grow: 1;
+  position: relative;
   box-sizing: border-box;
   width: 100%;
 
@@ -13,7 +15,7 @@
     margin-top: 0.888em;
     font-size: 0.9em;
     line-height: 1.5em;
-  color: $standout-fg;
+    color: $standout-fg;
 
     .sortBy {
       color: $inactive-fg;
