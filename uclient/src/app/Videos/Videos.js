@@ -7,9 +7,11 @@ import {
 	setPadding,
 	getPadding,
 	getVideos,
+	getVideosError,
 	getSort,
 	setSort,
 } from './module';
+import Busy from '../Busy';
 import StackedOccurrencesGraph from './StackedOccurrencesGraph';
 import BarGraph from './BarGraph';
 import './Videos.scss';
@@ -117,17 +119,10 @@ export class Videos extends React.PureComponent {
 							<Link key={video.id} className="video" to={'/video/' + video.id}>
 								<h3 title={video.filename}>{video.filename}</h3>
 								<span>{this.formatDuration(video.length || 0)}</span>
-								<img
-									src={video.preview}
-									alt={'Preview of ' + video.filename}
-								/>
+								<img src={video.preview} alt={'Preview of ' + video.filename} />
 								<StackedOccurrencesGraph values={video.analyses} />
 							</Link>
-						))) || (
-						<div className="fish-loader">
-							<span>&gt;&lt;))°&gt;</span>
-						</div>
-					)}
+						))) || <Busy error={this.props.error} />}
 				</section>
 			);
 		}
@@ -136,6 +131,7 @@ export class Videos extends React.PureComponent {
 const mapStateToProps = state => ({
 	padding: getPadding(state),
 	videos: getVideos(state),
+	error: getVideosError(state),
 	sortBy: getSort(state),
 });
 
