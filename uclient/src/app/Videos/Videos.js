@@ -115,11 +115,11 @@ export class Videos extends React.PureComponent {
 					{(this.props.videos &&
 						this.props.videos.map(video => (
 							<Link key={video.id} className="video" to={'/video/' + video.id}>
-								<h3 title={video.description}>{video.description}</h3>
+								<h3 title={video.filename}>{video.filename}</h3>
 								<span>{this.formatDuration(video.length || 0)}</span>
 								<img
 									src={video.preview}
-									alt={'Preview of ' + video.description}
+									alt={'Preview of ' + video.filename}
 								/>
 								<StackedOccurrencesGraph values={video.analyses} />
 							</Link>

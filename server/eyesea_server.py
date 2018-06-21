@@ -47,13 +47,13 @@ def get_statistics():
             }
     return fr()(data)
 
-# doesn't properly handle multiple video anlyses!
 @get('/video')
 def get_video():
     data = video.select(video).dicts()
 
     data = [(lambda vid: {
         'id': vid['vid'],
+        'filename': vid['filename'],
         'description': vid['description'],
         'fps': vid['fps'],
 #        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
@@ -72,38 +72,6 @@ def get_video():
     })(i) for i in data]
     return fr()(data)
 
-@get('/videos')
-def get_videos():
-    data = (video.select(video, analysis.aid, analysis.status, analysis.results)
-        .join(analysis, on=(video.vid == analysis.vid))
-        .dicts())
-    data = [(lambda vid, results: {
-        'id': vid['vid'],
-        'description': vid['description'],
-        'fps': vid['fps'],
-        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
-        'variableFramerate': vid['variable_framerate'],
-        'uri': vid['uri'],
-        'analysis': {
-            'id': vid['aid'],
-            'status': vid['status'],
-            'results': [
-                {
-                    'detections': len(frame['detections']),
-                    'frameIndex': frame['frameindex']
-                } for frame in results if len(frame['detections']) > 0
-            ]
-        }
-    })(i, json.loads(i['results'] if i['results'] else '{}')) for i in data]
-    return fr()(data)
-
-@get('/videos')
-def get_videos():
-    data = (video.select(video, analysis.aid, analysis.status, analysis.results)
-        .join(analysis, on=(video.vid == analysis.vid))
-        .dicts())
-    return fr()({'data': [i for i in data]})
-
 @post('/video')
 def post_video():
     data = video.select().where(video.vid==video.insert(request.json).execute()).dicts().get()
@@ -111,7 +79,27 @@ def post_video():
 
 @get('/video/<vid>')
 def get_video_vid(vid):
-    data = video.select().where(video.vid == vid).dicts().get()
+    data = video.select().where(video.vid == vid).dicts().get();
+
+    data = {
+        'id': data['vid'],
+        'filename': data['filename'],
+        'description': data['description'],
+        'fps': data['fps'],
+#        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
+        'variableFramerate': data['variable_framerate'],
+        'uri': data['uri'],
+        'analyses': [(lambda analysis, results: {
+            'id': analysis['aid'],
+            'status': analysis['status'],
+            'results': [
+                {
+                    'detections': frame['detections'],
+                    'frameIndex': frame['frameindex']
+                } for frame in results
+            ]
+        })(i, json.loads(i['results'] if i['results'] else '{}')) for i in analysis.select(analysis).where(analysis.vid == vid).dicts()]
+    }
     return fr()(data)
 
 @put('/video/<vid>')
