@@ -1,0 +1,78 @@
+@import '../../../styles/variables';
+
+.video-detail {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  width: calc(100% - #{$header-padding * 2});
+  margin: 0 auto;
+  padding-top: 1.25em;
+
+  > a {
+    font-size: 1.125em;
+    font-weight: bold;
+    text-decoration: none;
+    color: $back-fg;
+
+    .icon {
+      margin-right: .25em;
+    }
+  }
+
+  section {
+    margin-top: 1.8125em;
+    box-shadow: 0 0 5px white;
+
+    h2 {
+      margin-top: .3em;
+      padding: 0 1.25em;
+      font-size: 1.1em;
+    }
+
+    header {
+        display: flex;
+    }
+
+    h3 {
+      font-size: 1em;
+      color: $standout-fg;
+    }
+
+    .info {
+      position: relative;
+      cursor: help;
+
+      .icon {
+        width: 1em;
+        height: 1em;
+        vertical-align: -.45em;
+        line-height: 1.1em;
+        text-align: center;
+        color: $headings-fg;
+        border: 2px solid #{$headings-fg};
+        border-radius: 50%;
+      }
+
+      &:hover {
+        .icon {
+          color: $headings-reverse-fg;
+          background: $headings-fg;
+        }
+
+        .popup {
+          display: block;
+        }
+      }
+
+      .popup {
+        display: none;
+        position: absolute;
+        padding: 1em;
+        color: $help-fg;
+        background: $help-bg;
+      }
+    }
+  }
+}

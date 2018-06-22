@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import _ from 'lodash';
+import { formatDuration } from '../util/videos';
 import {
 	request,
 	setPadding,
@@ -20,23 +21,6 @@ export class Videos extends React.PureComponent {
 	constructor() {
 		super();
 		this.checkLayout = _.debounce(this.checkLayout, 125);
-	}
-	formatDuration(value) {
-		var hours = Math.floor(value / 3600);
-		var minutes = Math.floor((value - hours * 3600) / 60);
-		var seconds = Math.round(value - hours * 3600 - minutes * 60);
-
-		if (hours < 10) {
-			hours = '0' + hours;
-		}
-		if (minutes < 10) {
-			minutes = '0' + minutes;
-		}
-		if (seconds < 10) {
-			seconds = '0' + seconds;
-		}
-
-		return hours + ':' + minutes + ':' + seconds;
 	}
 	onSortPropertyChange = event => {
 		this.props.setSort({
@@ -118,7 +102,7 @@ export class Videos extends React.PureComponent {
 						this.props.videos.map(video => (
 							<Link key={video.id} className="video" to={'/video/' + video.id}>
 								<h3 title={video.filename}>{video.filename}</h3>
-								<span>{this.formatDuration(video.length || 0)}</span>
+								<span>{formatDuration(video)}</span>
 								<img src={video.preview} alt={'Preview of ' + video.filename} />
 								<StackedOccurrencesGraph values={video.analyses} />
 							</Link>
