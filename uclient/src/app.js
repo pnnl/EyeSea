@@ -1,9 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route } from 'react-router-dom';
+import { Route, withRouter } from 'react-router-dom';
 import { setServicePath } from './app/module';
 import Introduction from './app/Introduction';
 import Videos from './app/Videos';
+import Video from './app/Video';
 import '../styles/index.scss';
 
 export class App extends React.Component {
@@ -31,11 +32,17 @@ export class App extends React.Component {
 				</header>
 				<Route exact path="/" component={Videos} />
 				<Route exact path="/new" component={Introduction} />
+				<Route path="/video/:id" component={Video} />
 			</main>
 		);
 	}
 }
 
-export default connect(null, {
-	setServicePath,
-})(App);
+export default withRouter(
+	connect(
+		null,
+		{
+			setServicePath,
+		}
+	)(App)
+);
