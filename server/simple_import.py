@@ -12,4 +12,4 @@ def importnxcode(dirr, outext = 'mp4', vcodec = 'libx264', vext = ['avi', 'mp4']
             for j in os.listdir(dirr):
                 if j.split('.')[-1] == 'json' and f.split('.')[0] in j.split('.')[0]:
                     annot = json.loads(open(dirr+j).read())
-                    analysis.select().where(analysis.aid==analysis.insert(vid = data['vid'], status = 'complete', parameters = json.dumps(annot.copy().pop('frames', None)), results = json.dumps(annot['frames'])).execute()).dicts().get()
+                    analysis.select().where(analysis.aid==analysis.insert(vid = data['vid'], status = 'FINISHED', parameters = json.dumps(annot.copy().pop('frames', None)), results = json.dumps(annot['frames'])).execute()).dicts().get()

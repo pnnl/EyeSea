@@ -5,6 +5,7 @@ import os
 from subprocess import check_output, Popen, PIPE
 from bottle import request, response, post, get, put, delete, hook, route, static_file
 from eyesea_db import *
+from peewee import fn
 
 eye_env = os.environ
 eye_env["PATH"] = os.path.join( os.path.dirname( __file__ ), '../../evaluation' ) + ':' + eye_env["PATH"]
@@ -39,11 +40,16 @@ def ar():
 
 @get('/statistics')
 def get_statistics():
+    data = analysis.select(analysis.status, fn.COUNT(analysis.status).alias('count')).group_by(analysis.status).dicts()
+    counts = dict()
+    for i in data:
+        counts[i['status']] = i['count']
     data = {'total_videos' : len(video.select()),
             'total_analyses' : len(analysis.select()),
-            'total_analyses_completed' : len(analysis.select().where(analysis.status == 'done')),
-            'total_analyses_failed' : len(analysis.select().where(analysis.status == 'failed')),
-            'total_analyses_queued' : len(analysis.select().where(analysis.status == 'queued'))
+            'total_analyses_completed' : counts['FINISHED'] if 'FINISHED' in counts else 0,
+            'total_analyses_failed' : counts['FAILED'] if 'FAILED' in counts else 0,
+            'total_analyses_processing' : counts['PROCESSING'] if 'PROCESSING' in counts else 0,
+            'total_analyses_queued' : counts['QUEUED'] if 'QUEUED' in counts else 0
             }
     return fr()(data)
 
