@@ -26,6 +26,15 @@ export function requestAnalysisMethods() {
 	};
 }
 
+const colors = [
+	'#32e0fb',
+	'#de2cf7',
+	'#2fff97',
+	'#606efd',
+	'#fe4040',
+	'#bbfd23',
+];
+
 const reducer = (state = fromJS({}), action) => {
 	const { type, payload } = action;
 	switch (type) {
@@ -36,7 +45,9 @@ const reducer = (state = fromJS({}), action) => {
 			);
 		case METHODS_SUCCESS:
 			let methods = {};
+			let color = 0;
 			payload.forEach(method => {
+				method.color = colors[color++];
 				methods[method.mid] = method;
 			});
 			return state
