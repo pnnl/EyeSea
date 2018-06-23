@@ -2,6 +2,7 @@
 import json
 import bottle
 import os
+import re
 from subprocess import check_output, Popen, PIPE
 from bottle import request, response, post, get, put, delete, hook, route, static_file
 from eyesea_db import *
@@ -31,12 +32,15 @@ def fr():
 def br():
     db.connect(reuse_if_open=True)
 
+def allow_cross_origin(resp):
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
+    resp.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
 @hook('after_request')
 def ar():
     db.close()
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+    allow_cross_origin(response)
 
 @get('/statistics')
 def get_statistics():
@@ -108,6 +112,23 @@ def get_video_vid(vid):
     }
     return fr()(data)
 
+drive_letter = re.compile('/[a-zA-Z]:')
+
+@route('/video/<vid>/file')
+def server_static(vid):
+    uri = video.select().where(video.vid == vid).dicts().get()['uri'];
+    if 'file://' in uri:
+        uri = uri.replace('file://', '')
+    if drive_letter.match(uri):
+        uri = uri[3:]
+    slash = uri.rfind('/')
+    # This assumes we trust what's in the database
+    root = uri[:slash]
+    filepath = uri[slash + 1:]
+    resp = static_file(filepath, root=root)
+    allow_cross_origin(resp)
+    return resp
+
 @put('/video/<vid>')
 def put_video_vid(vid):
     updata = video.update(request.json).where(video.vid == vid).execute()
@@ -167,6 +188,8 @@ def put_analysis_method_mid(mid):
     data = analysis_method.select().where(analysis_method.mid == mid).dicts().get()
     return fr()(data)
 
+# This doesn't seem very secure... and it doesn't seem to work on Windows (generates a 403 seemingly no matter what is passed)
+# See up above for the route '/video/<vid>/file'
 @route('/file/<filepath:path>')
 def server_static(filepath):
     return static_file(filepath, root='/')

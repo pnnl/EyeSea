@@ -13,6 +13,7 @@
   > a {
     font-size: 1.125em;
     font-weight: bold;
+    line-height: 1.45em;
     text-decoration: none;
     color: $back-fg;
 
@@ -22,20 +23,27 @@
   }
 
   section {
+    display: flex;
+    flex-wrap: wrap;
     margin-top: 1.8125em;
+    background: $video-callout-bg;
     box-shadow: 0 0 5px white;
 
     h2 {
       margin-top: .3em;
+      margin-bottom: .55em;
       padding: 0 1.25em;
       font-size: 1.1em;
+      line-height: 1.42em;
     }
 
     header {
         display: flex;
+        width: 100%;
     }
 
     h3 {
+      margin-top: .65em;
       font-size: 1em;
       color: $standout-fg;
     }
@@ -72,6 +80,125 @@
         padding: 1em;
         color: $help-fg;
         background: $help-bg;
+      }
+    }
+
+    .viewer, .annotations, .controls, .options {
+      background: $video-callout-panel-bg;
+    }
+
+    // Original value, maxes out at bottom of the viewport: calc(100vh - 16.87825em - 6px)
+    // The one below gives a bit of margin at the bottom of the viewport. These values are
+    // calculated from all of the elements heights and any appropriate paddings or margins
+    // excepting this element.
+    .viewer {
+      max-height: calc(100vh - 18.31575em - 8px);
+
+      video {
+        display: block;
+        width: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .annotations {
+      padding: 0 1.625em;
+    }
+
+    .controls {
+      padding: 7px 0;
+
+      .button {
+        display: inline-block;
+        position: relative;
+        width: 1.375em;
+        height: 1.375em;
+        margin-right: .681em;
+        font-size: 2.57em;
+        line-height: 1.28em;
+        text-align: center;
+        color: $standout-fg;
+        cursor: pointer;
+      }
+
+      .previous-frame, .next-frame {
+        .fa + .fa {
+          position: absolute;
+          top: .85em;
+          left: -.1em;
+          font-size: .45em;
+        }
+      }
+
+      .next-frame .fa + .fa {
+        left: auto;
+        right: -.1em;
+      }
+
+      .play, .pause {
+        border: 3px solid $standout-fg;
+        border-radius: 50%;
+      }
+
+      // Play arrows look odd when perfectly mathematically centered
+      .play {
+        text-align: left;
+
+        .fa {
+           margin-left: 50%;
+           transform: translateX(-38%);
+        }
+      }
+    }
+
+    .viewer, .controls {
+      width: calc(73% - 9px);
+      margin-left: 2px;
+    }
+
+    .annotations, .options {
+      box-sizing: border-box;
+      width: 27%;
+      margin-right: 2px;
+      margin-left: 5px;
+    }
+
+    .controls, .options {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5px;
+      margin-bottom: 2px;
+
+      > span {
+        margin-right: 1.75em;
+        cursor: pointer;
+
+        &:last-child {
+          margin-right: 0;
+        }
+
+        &.disabled {
+          opacity: .5;
+        }
+      }
+    }
+
+    .options {
+      color: $standout-fg;
+
+      .fa {
+        display: block;
+        font-size: 2.5em;
+      }
+
+      .label {
+        display: block;
+        font-size: .5em;
+      }
+
+      .annotate .label {
+        transform: translateX(-.5em);
       }
     }
   }

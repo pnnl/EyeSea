@@ -4,14 +4,78 @@ import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import { formatDuration } from '../util/videos';
 import Busy from '../Busy';
-import { getAnalysisMethods, getAnalysisMethodsError } from '../module';
+import {
+	getServicePath,
+	getAnalysisMethods,
+	getAnalysisMethodsError,
+} from '../module';
 import { request, getVideo, getVideoError } from './module';
 import './Video.scss';
 
-export class Video extends React.PureComponent {
+export class Video extends React.Component {
 	constructor() {
 		super();
+		this.state = {
+			paused: true,
+		};
 	}
+	// If we don't capature the mouse, then if the take the mouse out of the
+	// element and release it, we won't get notified and they'll be stuck
+	captureMouse(event) {
+		// IE10; Do we care?
+		if (event.target.msSetPointerCapture) {
+			event.target.msSetPointerCapture(event.pointerId);
+		} else if (event.target.setPointerCapture) {
+			event.target.setPointerCapture(event.pointerId);
+		}
+	}
+	releaseMouse(event) {
+		if (event.target.msReleasePointerCapture) {
+			event.target.msReleasePointerCapture(event.pointerId);
+		} else if (event.target.releasePointerCapture) {
+			event.target.releasePointerCapture(event.pointerId);
+		}
+	}
+	rewindFrame = timestamp => {
+		let progress = timestamp - this.timestamp;
+		// Unfortunately Firefox shows a loading overlay if we do this too many
+		// times in a row and it doesn't go away until we stop.
+		this.player.currentTime -=
+			((this.player.defaultPlaybackRate * 4) / 1000) * progress;
+		this.timestamp = timestamp;
+		if (!this.stopRewinding) {
+			requestAnimationFrame(this.rewindFrame);
+		}
+	};
+	rewind(event, start) {
+		if (start) {
+			this.captureMouse(event);
+			// Firefox throws an error when we do this, so we can't do the same
+			// simple thing we do with fast forward. Bummer. :(
+			//this.player.playbackRate = -4;
+			this.player.pause();
+			this.timestamp = performance.now();
+			delete this.stopRewinding;
+			this.rewindFrame(this.timestamp);
+		} else {
+			this.stopRewinding = true;
+			this.releaseMouse(event);
+			this.player.playbackRate = this.player.defaultPlaybackRate;
+		}
+	}
+	fastForward(event, start) {
+		if (start) {
+			this.captureMouse(event);
+			this.player.playbackRate = this.player.defaultPlaybackRate * 4;
+			this.player.play();
+		} else {
+			this.releaseMouse(event);
+			this.player.playbackRate = this.player.defaultPlaybackRate;
+		}
+	}
+	timeUpdate = () => {
+		var frame = Math.floor(this.player.currentTime / this.video.fps);
+	};
 	componentDidMount() {
 		this.props.requestVideo(this.props.match.params.id);
 	}
@@ -45,12 +109,78 @@ export class Video extends React.PureComponent {
 						</div>
 					</header>
 					<div className="viewer">
-						<video src={this.props.video.uri} />
+						<video
+							ref={player => (this.player = player)}
+							src={
+								this.props.servicePath +
+								'video/' +
+								this.props.video.id +
+								'/file?1'
+							}
+							onPlay={() => this.setState({ paused: false })}
+							onPause={() => this.setState({ paused: true })}
+							onTimeUpdate={this.timeUpdate}
+							crossOrigin="anonymous"
+							playsInline
+						>
+							Sorry, this browser does not support video playback.
+						</video>
 					</div>
 					<div className="annotations">
 						<h3>Detections and Annotations</h3>
 					</div>
-					<div className="controls" />
+					<div className="controls">
+						<span
+							className="rewind button"
+							onMouseDown={event => this.rewind(event, true)}
+							onMouseUp={event => this.rewind(event, false)}
+						>
+							<span className="icon-label">Rewind</span>
+							<i className="fa fa-backward" />
+						</span>
+						<span className="previous-frame button">
+							<span className="icon-label">Next Frame</span>
+							<i className="fa fa-square-o" />
+							<i className="fa fa-arrow-left" />
+						</span>
+						{this.state.paused ? (
+							<span className="play button" onClick={() => this.player.play()}>
+								<span className="icon-label">Play</span>
+								<i className="fa fa-play" />
+							</span>
+						) : (
+							<span
+								className="pause button"
+								onClick={() => this.player.pause()}
+							>
+								<span className="icon-label">Pause</span>
+								<i className="fa fa-pause" />
+							</span>
+						)}
+						<span className="next-frame button">
+							<span className="icon-label">Next Frame</span>
+							<i className="fa fa-square-o" />
+							<i className="fa fa-arrow-right" />
+						</span>
+						<span
+							className="fast-forward button"
+							onMouseDown={event => this.fastForward(event, true)}
+							onMouseUp={event => this.fastForward(event, false)}
+						>
+							<span className="icon-label">Fast forward</span>
+							<i className="fa fa-forward" />
+						</span>
+					</div>
+					<div className="options">
+						<span className="annotate">
+							<i className="fa fa-pencil-square-o" />
+							<span className="label">Annotation</span>
+						</span>
+						<span className="download disabled">
+							<i className="fa fa-download" />
+							<span className="label">Download</span>
+						</span>
+					</div>
 				</section>
 			);
 		}
@@ -66,6 +196,7 @@ export class Video extends React.PureComponent {
 	}
 }
 const mapStateToProps = state => ({
+	servicePath: getServicePath(state),
 	video: getVideo(state),
 	methods: getAnalysisMethods(state),
 	error: getVideoError(state) || getAnalysisMethodsError(state),
