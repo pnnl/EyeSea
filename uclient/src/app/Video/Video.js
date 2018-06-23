@@ -7,6 +7,7 @@ import Busy from '../Busy';
 import {
 	getServicePath,
 	getAnalysisMethods,
+	getAnalysisMethodsById,
 	getAnalysisMethodsError,
 } from '../module';
 import { request, getVideo, getVideoError } from './module';
@@ -17,6 +18,7 @@ export class Video extends React.Component {
 		super();
 		this.state = {
 			paused: true,
+			detections: [],
 		};
 	}
 	// If we don't capature the mouse, then if the take the mouse out of the
@@ -74,7 +76,26 @@ export class Video extends React.Component {
 		}
 	}
 	timeUpdate = () => {
-		var frame = Math.floor(this.player.currentTime / this.video.fps);
+		var detections = [],
+			frame = Math.floor(this.player.currentTime * this.props.video.fps);
+
+		if (this.props.video.analyses) {
+			this.props.video.analyses.forEach(analysis => {
+				if (analysis.status === 'FINISHED') {
+					detections.push({
+						name: this.props.methods.ids[analysis.method].description,
+						color: this.props.methods.ids[analysis.method].color,
+						results: analysis.results[frame] || {
+							detections: [],
+						},
+					});
+				}
+			});
+
+			this.setState({
+				detections,
+			});
+		}
 	};
 	componentDidMount() {
 		this.props.requestVideo(this.props.match.params.id);
@@ -83,7 +104,6 @@ export class Video extends React.Component {
 		var video = <Busy error={this.props.error} />;
 
 		if (this.props.video && !this.props.error) {
-			console.log(this.props.video);
 			video = (
 				<section>
 					<header>
@@ -115,7 +135,7 @@ export class Video extends React.Component {
 								this.props.servicePath +
 								'video/' +
 								this.props.video.id +
-								'/file?1'
+								'/file'
 							}
 							onPlay={() => this.setState({ paused: false })}
 							onPause={() => this.setState({ paused: true })}
@@ -128,6 +148,19 @@ export class Video extends React.Component {
 					</div>
 					<div className="annotations">
 						<h3>Detections and Annotations</h3>
+						<ul>
+							{this.state.detections.map(method => (
+								<li key={method.name} className="method">
+									<span className="box" style={{ background: method.color }} />
+									<h4>{method.name}</h4>
+									<ul>
+										{method.results.detections.map((detection, index) => (
+											<li key={method.name + '-' + index}>Fish {index + 1}</li>
+										))}
+									</ul>
+								</li>
+							))}
+						</ul>
 					</div>
 					<div className="controls">
 						<span
@@ -198,7 +231,10 @@ export class Video extends React.Component {
 const mapStateToProps = state => ({
 	servicePath: getServicePath(state),
 	video: getVideo(state),
-	methods: getAnalysisMethods(state),
+	methods: {
+		list: getAnalysisMethods(state),
+		ids: getAnalysisMethodsById(state),
+	},
 	error: getVideoError(state) || getAnalysisMethodsError(state),
 });
 
