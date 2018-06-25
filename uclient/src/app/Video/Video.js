@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import { formatDuration } from '../util/videos';
 import Busy from '../Busy';
+import OccurrencesBar from './OccurrencesBar';
 import {
 	getServicePath,
 	getAnalysisMethods,
@@ -145,6 +146,15 @@ export class Video extends React.Component {
 						>
 							Sorry, this browser does not support video playback.
 						</video>
+						<div className="analyses">
+							{this.props.video.analyses.map(analysis => (
+								<OccurrencesBar
+									key={analysis.id}
+									analysis={analysis}
+									color={this.props.methods.ids[analysis.method].color}
+								/>
+							))}
+						</div>
 					</div>
 					<div className="annotations">
 						<h3>Detections and Annotations</h3>

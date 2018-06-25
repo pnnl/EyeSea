@@ -30,11 +30,14 @@
     box-shadow: 0 0 5px white;
 
     h2 {
+      overflow: hidden;
       margin-top: .3em;
       margin-bottom: .55em;
       padding: 0 1.25em;
       font-size: 1.1em;
       line-height: 1.42em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     header {
@@ -93,13 +96,14 @@
     // Original value, maxes out at bottom of the viewport: calc(100vh - 16.87825em - 6px)
     // The one below gives a bit of margin at the bottom of the viewport. These values are
     // calculated from all of the elements heights and any appropriate paddings or margins
-    // excepting this element.
+    // excepting this element. This currently doesn't account for the analysis bars.
     .viewer {
       max-height: calc(100vh - 18.31575em - 8px);
 
       video {
         display: block;
         width: 100%;
+        max-height: 100%;
         object-fit: contain;
       }
     }
@@ -234,5 +238,19 @@
       margin: .125em 0;
       list-style-type: none;
     }
+  }
+
+  .analyses {
+    border-top: 5px solid $video-callout-bg;
+  }
+}
+
+
+@keyframes stripes {
+  from {
+    background-position: -34px 0;
+  }
+  to {
+    background-position: 0 0;
   }
 }

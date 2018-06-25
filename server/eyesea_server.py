@@ -72,6 +72,7 @@ def get_video():
         'analyses': [(lambda analysis, results: {
             'id': analysis['aid'],
             'status': analysis['status'],
+            'method': analysis['mid'],
             'results': [
                 {
                     'detections': frame['detections'],
@@ -102,6 +103,7 @@ def get_video_vid(vid):
         'analyses': [(lambda analysis, results: {
             'id': analysis['aid'],
             'status': analysis['status'],
+            'method': analysis['mid'],
             'results': [
                 {
                     'detections': frame['detections'],
