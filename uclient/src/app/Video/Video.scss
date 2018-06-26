@@ -27,7 +27,7 @@
     flex-wrap: wrap;
     margin-top: 1.8125em;
     background: $video-callout-bg;
-    box-shadow: 0 0 5px white;
+    box-shadow: $video-callout-shadow;
 
     h2 {
       overflow: hidden;
