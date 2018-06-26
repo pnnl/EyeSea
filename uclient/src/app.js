@@ -21,14 +21,8 @@ export class App extends React.Component {
 				<header>
 					<h1>EyeSea</h1>
 					<div>
-						<button>
-							<i className="fa fa-plus" />
-							Add Video(s)
-						</button>
-						<button>
-							<i className="fa fa-sliders" />
-							Settings
-						</button>
+						<span className="btn add">Add Video(s)</span>
+						<span className="btn settings">Settings</span>
 					</div>
 				</header>
 				<Switch>

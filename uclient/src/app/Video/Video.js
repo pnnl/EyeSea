@@ -145,7 +145,6 @@ export class Video extends React.Component {
 						<div className="info">
 							<span className="icon-label">Info</span>
 							<i className="icon fa fa-info" />
-
 							<div className="popup">
 								<div>
 									<strong>Name:</strong> {this.props.video.filename}

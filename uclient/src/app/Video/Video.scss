@@ -98,7 +98,7 @@
     // calculated from all of the elements heights and any appropriate paddings or margins
     // excepting this element. This currently doesn't account for the analysis bars.
     .viewer {
-      max-height: calc(100vh - 18.31575em - 8px);
+      //max-height: calc(100vh - 18.31575em - 8px);
 
       video {
         display: none;

@@ -1,7 +1,9 @@
 $fa-font-path: '~font-awesome/fonts';
 
+$site-bg-raw: 10, 23, 38; // 0a1726
+
 $site-fg: #d1d1d1;
-$site-bg: #0a1726;
+$site-bg: RGB(#{$site-bg-raw}); // Workaround; SASS wants to call its own function here
 
 $headings-fg: #2fff97;
 $headings-reverse-fg: black;
@@ -13,25 +15,28 @@ $header-bg: $site-bg;
 $header-border: #979797;
 
 $graph-labels: white;
-$graph-lines: #4b545f;
+$graph-lines: white;
 
 $standout-fg: white;
 
 $inactive-fg: #9b9b9b;
 $selection-fg: $headings-fg;
 
-$videos-video-fg: white;
-$videos-video-bg: #162231;
+$background-inverse: RGBA(#{$site-bg-raw}, .5);
 
-$video-callout-bg: #222426;
-$video-callout-panel-bg: #2d2f31;
+$videos-video-fg: white;
+$videos-video-bg: RGBA(255, 255, 255, .05);
+$videos-video-shadow: 0 0 4px 0 RGBA(203, 201, 201, .5);
+
+$video-callout-bg: $videos-video-bg;
+$video-callout-panel-bg: $videos-video-bg;
 
 $help-fg: #4a4a4a;
 $help-bg: white;
 
 $back-fg: #00cfef;
 
-$analysis-track-bg: #444646;
+$analysis-track-bg: RGBA(255, 255, 255, .1);
 
 $button-icon-fg: #4a4a4a;
 $button-big-bg: $videos-video-bg;

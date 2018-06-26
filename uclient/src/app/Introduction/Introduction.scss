@@ -6,13 +6,16 @@
   max-width: 900px;
   padding-top: 2em;
 
-  button {
-    padding: 5.875em 6.13em;
+  .btn {
+    flex-direction: column;
+    padding: 4.332em;
+    font-size: 1.5em;
     background: $button-big-bg;
     border: 5px dashed $button-big-border;
 
-    .fa {
-      font-size: 10.625em;
+    &:before {
+      content: url('../../../images/monitor.png');
+      margin-right: 0;
     }
   }
 }

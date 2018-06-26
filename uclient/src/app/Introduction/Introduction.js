@@ -24,14 +24,14 @@ export class Introduction extends React.Component {
 					cheese and wine.
 				</p>
 				<h2>Actions</h2>
-				<button
+				<span
+					className="btn"
 					onClick={() => {
 						this.props.history.push('/videos');
 					}}
 				>
-					<i className="fa fa-desktop" />
 					Upload a Video
-				</button>
+				</span>
 			</section>
 		);
 	}

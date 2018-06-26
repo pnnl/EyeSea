@@ -9,7 +9,7 @@ body,
 main {
   height: 100%;
   margin: 0;
-  font-family: 'Open Sans', sans-serif;
+  font-family: Amiko, sans-serif;
   color: $site-fg;
   background: $site-bg;
 }
@@ -36,12 +36,12 @@ main {
       order: 2;
     }
 
-    button {
+    .btn {
         color: $site-fg;
     }
 
-    button:first-of-type {
-        margin-right: 4.375em;
+    .btn:first-child {
+        margin-right: 4.787em;
     }
   }
 
@@ -61,16 +61,23 @@ h2, h3 {
   color: $headings-fg;
 }
 
-button {
-  background: none;
-  color: inherit;
-  border: none;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  font-size: .875em;
   cursor: pointer;
 
-  .fa {
-    display: block;
-    font-size: 2em;
+  &:before {
+    margin-right: .25em;
   }
+}
+
+.btn.add:before {
+  content: url('../images/add.png');
+}
+
+.btn.settings:before {
+  content: url('../images/settings.png');
 }
 
 .icon-label {
