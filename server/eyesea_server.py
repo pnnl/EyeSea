@@ -193,8 +193,18 @@ def video_heatmap(vid):
         for i in a:
             for j in json.loads(a['results']):
                 for k in j['detections']:
-                    for l in range(k['y1'], k['y2'], 1):
-                        d[l][k['x1']:k['x2']] += 1
+                    if k['y1'] <= k['y2']:
+                        for l in range(k['y1'], k['y2'], 1):
+                            if k['x1'] <= k['x2']:
+                                d[l][k['x1']:k['x2']] += 1
+                            else:
+                                d[l][k['x2']:k['x1']] += 1
+                    else:
+                        for l in range(k['y2'], k['y1'], 1):
+                            if k['x1'] <= k['x2']:
+                                d[l][k['x1']:k['x2']] += 1
+                            else:
+                                d[l][k['x2']:k['x1']] += 1
 
         plt.style.use('dark_background')
         fig = plt.figure()
