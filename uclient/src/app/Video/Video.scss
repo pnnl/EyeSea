@@ -101,6 +101,13 @@
       max-height: calc(100vh - 18.31575em - 8px);
 
       video {
+        display: none;
+        width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+	
+      }
+      canvas {
         display: block;
         width: 100%;
         max-height: 100%;
