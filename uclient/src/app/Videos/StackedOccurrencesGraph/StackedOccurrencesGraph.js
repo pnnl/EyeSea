@@ -4,25 +4,14 @@ import './StackedOccurrencesGraph.scss';
 
 export class StackedOccurrencesGraph extends React.PureComponent {
 	ticks(max) {
-		var wanted = max > 2 ? max : 3;
-		var ticks = d3.ticks(0, max, wanted);
-
-		// d3 treats the tick count as a guideline, and frequently the last tick
-		// is lower than the max necessitating another tick. This causes it to
-		// recompute them so the last tick will always be encompassing of the
-		// max value, even if we have to add another tick to get the total
-		// number of ticks we asked for.
-		// if (ticks[ticks.length - 1] < max + 1) {
-		// ticks = d3.ticks(0, max + 1, wanted);
-		// }
-
-		// The above can cause it to generate one less tick than we want. This
-		// just handles all cases if for some reason we get back way less than
-		// we asked for.
-		// while (ticks.length < wanted) {
-		// ticks.push(ticks[ticks.length - 1] + ticks[1] - ticks[0]);
-		// }
-		return ticks;
+		if (max <= 2) {
+			return d3.ticks(0, max, 3);
+		} else if (max % 3 === 0) {
+			return d3.ticks(0, max, 3);
+		} else if (max % 5 === 0) {
+			return d3.ticks(0, max, 5);
+		}
+		return d3.ticks(0, max, 7);
 	}
 	componentDidMount() {
 		this.forceUpdate(); // first time update after refs
@@ -33,24 +22,48 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 			let maxX = ((box && box.width) || 100) - 16;
 			let maxY = (box && box.height) || 100;
 
-			let max = this.props.values.reduce(
-				(max, frame) => Math.max(max, frame.detections.length),
+			let length = this.props.values.reduce(
+				(max, set) => Math.max(max, set.results.length),
 				0
 			);
 
-			let ticks = this.ticks(max);
+			let frame,
+				maxDetections = 0;
+
+			for (frame = 0; frame < length; frame++) {
+				maxDetections = Math.max(
+					this.props.values.reduce(
+						(max, set) =>
+							max +
+							((set.results[frame] && set.results[frame].detections.length) ||
+								0),
+						0
+					),
+					maxDetections
+				);
+			}
+
+			let maxFrames = this.props.values.reduce(
+				(max, set) =>
+					Math.max(
+						max,
+						(set.results &&
+							set.results.length &&
+							set.results[set.results.length - 1].frameIndex + 1) ||
+							0
+					),
+				0
+			);
+
+			let ticks = this.ticks(maxDetections);
 			let y = d3
 				.scaleLinear()
-				.domain([0, max + 1])
+				.domain([0, maxDetections + 1])
 				.range([maxY - 4, 4]);
-			max = ticks[ticks.length - 1];
 
 			let x = d3
 				.scaleLinear()
-				.domain([
-					0,
-					this.props.values[this.props.values.length - 1].frameIndex + 1,
-				])
+				.domain([0, maxFrames])
 				.range([0, maxX]);
 
 			let labels = ticks
@@ -65,152 +78,56 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 				<line key={y(tick)} x1="0" y1={y(tick)} x2={maxX} y2={y(tick)} />
 			));
 
-			let slots = [
-				'#4a90e2',
-				'#9013fe',
-				'#11b579',
-				'#005a84',
-				'#92a526',
-				'#e3c51f',
-				'#e42b31',
-			];
+			let frames = {},
+				colors = {},
+				slot,
+				colored = {},
+				color = 0;
 
-			let frames = [],
-				detections;
-
-			this.props.values.forEach((frame, index) => {
-				if (!index) {
-					if (detections) {
-						frames.push.apply(
-							frames,
-							detections.map(detection => (
-								<rect
-									key={
-										detection.x1 +
-										',' +
-										detection.y1 +
-										',' +
-										detection.x2 +
-										',' +
-										detection.y2
-									}
-									x={x(detection.frameIndex)}
-									y={y(detection.slot + 1)}
-									width={x(frame.frameIndex) - x(detection.frameIndex)}
-									height={y(detection.slot) - y(detection.slot + 1)}
-									fill={detection.color}
-								/>
-							))
-						);
-					}
-					detections = frame.detections.map((detection, index) => {
-						var color = slots.shift();
-						slots.push(color);
-						return Object.assign(
-							{
-								frameIndex: frame.frameIndex,
-								slot: index,
-								color,
-							},
-							detection
-						);
-					});
-				} else {
-					let found = {},
-						newDetections = [];
-
-					frame.detections.forEach((detection, index) => {
-						var index = detections.findIndex(
-							existing =>
-								existing &&
-								(Math.abs(existing.x1 - detection.x1) < 11) +
-									(Math.abs(existing.x2 - detection.x2) < 11) +
-									(Math.abs(existing.y1 - detection.y1) < 11) +
-									(Math.abs(existing.y2 - detection.y2) < 11) >
-									2
-						);
-
-						// New fish?
-						if (index === -1 || found[index]) {
-							let color = slots.shift();
-							slots.push(color);
-							newDetections.push(
-								Object.assign(
-									{
-										frameIndex: frame.frameIndex,
-										color,
-									},
-									detection
-								)
-							);
-						} else {
-							found[index] = true;
-						}
-					});
-
-					detections.forEach((detection, index) => {
-						if (!found[index]) {
-							frames.push(
-								<rect
-									key={
-										detection.x1 +
-										',' +
-										detection.y1 +
-										',' +
-										detection.x2 +
-										',' +
-										detection.y2
-									}
-									x={x(detection.frameIndex)}
-									y={y(detection.slot + 1)}
-									width={x(frame.frameIndex) - x(detection.frameIndex)}
-									height={y(detection.slot) - y(detection.slot + 1)}
-									fill={detection.color}
-								/>
-							);
-							delete detections[index];
-						}
-					});
-
-					newDetections.forEach(detection => {
-						let slot = 0;
-						for (slot = 0; slot < detections.length + 1; slot++) {
-							if (!detections[slot]) {
-								detection.slot = slot;
-								detections[slot] = detection;
-								break;
-							}
-						}
-					});
+			this.props.values.forEach(set => {
+				if (set.results.length) {
+					colors[set.id] = this.props.colors[set.method].color;
+					frames[set.id] = 'M' + x(0) + ',' + y(0);
 				}
 			});
-			frames.push.apply(
-				frames,
-				detections.map(detection => (
-					<rect
-						key={
-							detection.slot +
-							'|' +
-							detection.x1 +
+
+			for (frame = 0; frame < length; frame++) {
+				slot = 0;
+				this.props.values.forEach(set => {
+					if (set.results[frame]) {
+						let index = set.results[frame].frameIndex;
+						let count = set.results[frame].detections.length;
+						slot += count;
+
+						frames[set.id] +=
+							' L' +
+							x(index) +
 							',' +
-							detection.y1 +
+							y(slot) +
+							' L' +
+							x(index + 1) +
 							',' +
-							detection.x2 +
-							',' +
-							detection.y2
+							y(slot);
+
+						if (frame === length - 1) {
+							frames[set.id] += ' L' + x(index + 1) + ',' + y(0) + ' Z';
 						}
-						x={x(detection.frameIndex)}
-						y={y(detection.slot + 1)}
-						width={
-							x(
-								this.props.values[this.props.values.length - 1].frameIndex + 1
-							) - x(detection.frameIndex)
-						}
-						height={y(detection.slot)}
-						fill={detection.color}
-					/>
-				))
-			);
+					}
+				});
+
+				this.props.values.forEach(set => {
+					if (frame < length - 1 && !slot && set.results[frame]) {
+						frames[set.id] +=
+							' L' + x(set.results[frame].frameIndex + 1) + ',' + y(0);
+					}
+				});
+			}
+
+			frames = Object.keys(frames)
+				.reverse()
+				.map(id => (
+					<path key={id} d={frames[id]} fill={colors[id]} />
+				));
 
 			return (
 				<svg

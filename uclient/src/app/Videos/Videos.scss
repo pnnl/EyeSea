@@ -3,6 +3,8 @@
 .videos {
   display: flex;
   flex-wrap: wrap;
+  flex-grow: 1;
+  position: relative;
   box-sizing: border-box;
   width: 100%;
 
@@ -13,8 +15,10 @@
     margin-top: 0.888em;
     font-size: 0.9em;
     line-height: 1.5em;
+    color: $standout-fg;
 
     .sortBy {
+      color: $inactive-fg;
       margin-left: 0.5em;
 
       span {
@@ -22,7 +26,7 @@
       }
 
       &.selected {
-        color: $info-fg;
+        color: $selection-fg;
       }
 
       &:not(.selected) .btn.selected {
@@ -41,7 +45,11 @@
     padding: 7.5px;
     margin-top: 25px;
     margin-right: 25px;
-    box-shadow: 0 0 4px #888;
+    color: $videos-video-fg;
+    text-decoration: none;
+    background: $videos-video-bg;
+    border-radius: 3px;
+    box-shadow: 0 0 4px #808080;
 
     h3 {
       width: calc(100% - 5em);
@@ -52,6 +60,7 @@
       font-weight: normal;
       text-overflow: ellipsis;
       white-space: nowrap;
+      color: inherit;
     }
 
     h3,
@@ -94,7 +103,7 @@
 
     &.selected {
       z-index: 0;
-      color: $info-fg;
+      color: $selection-fg;
     }
   }
 }

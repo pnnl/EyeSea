@@ -29,8 +29,8 @@ export class Introduction extends React.Component {
 						this.props.history.push('/videos');
 					}}
 				>
-					<i className="fa fa-cloud" />
-					Select a Video
+					<i className="fa fa-desktop" />
+					Upload a Video
 				</button>
 			</section>
 		);

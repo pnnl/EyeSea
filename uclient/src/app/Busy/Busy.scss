@@ -1,0 +1,61 @@
+@import '../../../styles/variables';
+
+.fish-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  font-size: 2em;
+  font-weight: bold;
+  color: $standout-fg;
+  background: $site-bg;
+
+  &.dead {
+    color: #fe4040;
+
+    sup {
+      display: inline-block;
+      width: .9385em;
+      font-size: .4em;
+      vertical-align: 1.1em;
+    }
+
+    span {
+      animation: float 7s infinite ease-in-out;
+    }
+  }
+
+  span {
+    transform: rotate(5deg) translateY(-6px);
+    animation: swim 7s infinite ease-in-out;
+  }
+}
+
+@keyframes swim {
+  0% {
+    transform: rotate(2deg) translateY(-6px);
+  }
+  50% {
+    transform: rotate(-2deg) translateY(6px);
+  }
+  100% {
+    transform: rotate(2deg) translateY(-6px);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: rotate(2deg) translateY(-6px) scale(1,-1);
+  }
+  50% {
+    transform: rotate(-2deg) translateY(6px) scale(1,-1);
+  }
+  100% {
+    transform: rotate(2deg) translateY(-6px) scale(1,-1);
+  }
+}

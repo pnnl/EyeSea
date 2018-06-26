@@ -8,12 +8,11 @@
 
   button {
     padding: 5.875em 6.13em;
-    background: $button-bg;
-    border: 1px solid $button-border;
+    background: $button-big-bg;
+    border: 5px dashed $button-big-border;
 
     .fa {
       font-size: 10.625em;
-      color: #4a4a4a;
     }
   }
 }

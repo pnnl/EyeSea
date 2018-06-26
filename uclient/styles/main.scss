@@ -10,6 +10,7 @@ main {
   height: 100%;
   margin: 0;
   font-family: 'Open Sans', sans-serif;
+  color: $site-fg;
   background: $site-bg;
 }
 
@@ -20,8 +21,10 @@ main {
   & > header {
     display: flex;
     align-items: center;
-    padding: 0 4.375em;
+    padding: 0 $header-padding;
+    color: $header-fg;
     background: $header-bg;
+    border-bottom: 1px solid $header-border;
 
     &:after {
       content: '';
@@ -31,6 +34,10 @@ main {
 
     > div {
       order: 2;
+    }
+
+    button {
+        color: $site-fg;
     }
 
     button:first-of-type {
@@ -45,12 +52,18 @@ main {
 
 h1 {
   margin: .6875em 0 .78125em;
+  font-size: 2em;
   font-variant: small-caps;
   line-height: 1em;
 }
 
+h2, h3 {
+  color: $headings-fg;
+}
+
 button {
   background: none;
+  color: inherit;
   border: none;
   cursor: pointer;
 
@@ -61,7 +74,7 @@ button {
 }
 
 .icon-label {
-	position: absolute;
-	top: -1000px;
-	left: -1000px;
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
 }

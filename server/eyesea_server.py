@@ -2,9 +2,11 @@
 import json
 import bottle
 import os
+import re
 from subprocess import check_output, Popen, PIPE
 from bottle import request, response, post, get, put, delete, hook, route, static_file
 from eyesea_db import *
+from peewee import fn
 
 eye_env = os.environ
 eye_env["PATH"] = os.path.join( os.path.dirname( __file__ ), '../../evaluation' ) + ':' + eye_env["PATH"]
@@ -30,79 +32,56 @@ def fr():
 def br():
     db.connect(reuse_if_open=True)
 
+def allow_cross_origin(resp):
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
+    resp.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
 @hook('after_request')
 def ar():
     db.close()
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'PUT, GET, POST, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+    allow_cross_origin(response)
 
 @get('/statistics')
 def get_statistics():
+    data = analysis.select(analysis.status, fn.COUNT(analysis.status).alias('count')).group_by(analysis.status).dicts()
+    counts = dict()
+    for i in data:
+        counts[i['status']] = i['count']
     data = {'total_videos' : len(video.select()),
             'total_analyses' : len(analysis.select()),
-            'total_analyses_completed' : len(analysis.select().where(analysis.status == 'done')),
-            'total_analyses_failed' : len(analysis.select().where(analysis.status == 'failed')),
-            'total_analyses_queued' : len(analysis.select().where(analysis.status == 'queued'))
+            'total_analyses_completed' : counts['FINISHED'] if 'FINISHED' in counts else 0,
+            'total_analyses_failed' : counts['FAILED'] if 'FAILED' in counts else 0,
+            'total_analyses_processing' : counts['PROCESSING'] if 'PROCESSING' in counts else 0,
+            'total_analyses_queued' : counts['QUEUED'] if 'QUEUED' in counts else 0
             }
     return fr()(data)
 
 @get('/video')
 def get_video():
-    data = (video.select(video, analysis.aid, analysis.status, analysis.results)
-        .join(analysis, on=(video.vid == analysis.vid))
-        .dicts())
-    data = [(lambda vid, results: {
+    data = video.select(video).dicts()
+
+    data = [(lambda vid: {
         'id': vid['vid'],
+        'filename': vid['filename'],
         'description': vid['description'],
         'fps': vid['fps'],
-        'length': results[-1]['frameindex'] / vid['fps'],
+#        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
         'variableFramerate': vid['variable_framerate'],
         'uri': vid['uri'],
-        'analysis': {
-            'id': vid['aid'],
-            'status': vid['status'],
+        'analyses': [(lambda analysis, results: {
+            'id': analysis['aid'],
+            'status': analysis['status'],
+            'method': analysis['mid'],
             'results': [
                 {
                     'detections': frame['detections'],
                     'frameIndex': frame['frameindex']
                 } for frame in results
             ]
-        }
-    })(i, json.loads(i['results'])) for i in data]
+        })(i, json.loads(i['results'] if i['results'] else '{}')) for i in analysis.select(analysis).where(analysis.vid == vid['vid']).dicts()]
+    })(i) for i in data]
     return fr()(data)
-
-@get('/videos')
-def get_videos():
-    data = (video.select(video, analysis.aid, analysis.status, analysis.results)
-        .join(analysis, on=(video.vid == analysis.vid))
-        .dicts())
-    data = [(lambda vid, results: {
-        'id': vid['vid'],
-        'description': vid['description'],
-        'fps': vid['fps'],
-        'length': results[-1]['frameindex'] / vid['fps'],
-        'variableFramerate': vid['variable_framerate'],
-        'uri': vid['uri'],
-        'analysis': {
-            'id': vid['aid'],
-            'status': vid['status'],
-            'results': [
-                {
-                    'detections': len(frame['detections']),
-                    'frameIndex': frame['frameindex']
-                } for frame in results if len(frame['detections']) > 0
-            ]
-        }
-    })(i, json.loads(i['results'])) for i in data]
-    return fr()(data)
-
-@get('/videos')
-def get_videos():
-    data = (video.select(video, analysis.aid, analysis.status, analysis.results)
-        .join(analysis, on=(video.vid == analysis.vid))
-        .dicts())
-    return fr()({'data': [i for i in data]})
 
 @post('/video')
 def post_video():
@@ -111,8 +90,46 @@ def post_video():
 
 @get('/video/<vid>')
 def get_video_vid(vid):
-    data = video.select().where(video.vid == vid).dicts().get()
+    data = video.select().where(video.vid == vid).dicts().get();
+
+    data = {
+        'id': data['vid'],
+        'filename': data['filename'],
+        'description': data['description'],
+        'fps': data['fps'],
+#        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
+        'variableFramerate': data['variable_framerate'],
+        'uri': data['uri'],
+        'analyses': [(lambda analysis, results: {
+            'id': analysis['aid'],
+            'status': analysis['status'],
+            'method': analysis['mid'],
+            'results': [
+                {
+                    'detections': frame['detections'],
+                    'frameIndex': frame['frameindex']
+                } for frame in results
+            ]
+        })(i, json.loads(i['results'] if i['results'] else '{}')) for i in analysis.select(analysis).where(analysis.vid == vid).dicts()]
+    }
     return fr()(data)
+
+drive_letter = re.compile('/[a-zA-Z]:')
+
+@route('/video/<vid>/file')
+def server_static(vid):
+    uri = video.select().where(video.vid == vid).dicts().get()['uri'];
+    if 'file://' in uri:
+        uri = uri.replace('file://', '')
+    if drive_letter.match(uri):
+        uri = uri[3:]
+    slash = uri.rfind('/')
+    # This assumes we trust what's in the database
+    root = uri[:slash]
+    filepath = uri[slash + 1:]
+    resp = static_file(filepath, root=root)
+    allow_cross_origin(resp)
+    return resp
 
 @put('/video/<vid>')
 def put_video_vid(vid):
@@ -173,6 +190,8 @@ def put_analysis_method_mid(mid):
     data = analysis_method.select().where(analysis_method.mid == mid).dicts().get()
     return fr()(data)
 
+# This doesn't seem very secure... and it doesn't seem to work on Windows (generates a 403 seemingly no matter what is passed)
+# See up above for the route '/video/<vid>/file'
 @route('/file/<filepath:path>')
 def server_static(filepath):
     return static_file(filepath, root='/')
@@ -188,7 +207,7 @@ def process_video():
             output = vid['uri'].replace('file://', '').split('.')[0] + '.json'
             args = [procargs['command'], procargs['videoarg'], vid['uri'].replace('file://', ''), procargs['outputarg'], output]
             aid = analysis.select().where(analysis.aid==analysis.insert({'mid': param['mid'], 'vid': param['vid'], 'status': 'QUEUED', 'parameters': json.dumps(args), 'results' : ''}).execute()).dicts().get()
-            print args
+            print(args)
             tasklist[aid['aid']] = {'p': Popen(args, env=eye_env), 'output' : output}
         else:
             return fr()('Unknown video file handler')
