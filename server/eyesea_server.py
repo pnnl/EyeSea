@@ -3,10 +3,22 @@ import json
 import bottle
 import os
 import re
+import subprocess
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+from PIL import Image
 from subprocess import check_output, Popen, PIPE
 from bottle import request, response, post, get, put, delete, hook, route, static_file
 from eyesea_db import *
 from peewee import fn
+
+cache = '.cache'
+if not os.path.isdir(cache):
+    os.mkdir(cache)
 
 eye_env = os.environ
 eye_env["PATH"] = os.path.join( os.path.dirname( __file__ ), '../../evaluation' ) + ':' + eye_env["PATH"]
@@ -130,6 +142,76 @@ def server_static(vid):
     resp = static_file(filepath, root=root)
     allow_cross_origin(resp)
     return resp
+
+@route('/video/<vid>/thumbnail')
+def video_thumbnail(vid):
+    uri = video.select().where(video.vid == vid).dicts().get()['uri']
+    if 'file://' in uri:
+        uri = uri.replace('file://', '')
+    if drive_letter.match(uri):
+        uri = uri[3:]
+    slash = uri.rfind('/')
+    image = uri.split('/')[-1].split('.')[0] + '.jpg'
+    if not os.path.isfile(cache + '/' + image):
+        subprocess.check_output(['ffmpeg', '-i', uri, '-ss','00:00:15.000', '-vframes', '1', cache + '/' + image])
+    # This assumes we trust what's in the database
+    root = uri[:slash]
+    filepath = uri[slash + 1:]
+    resp = static_file(image, root=cache)
+    allow_cross_origin(resp)
+    return resp
+
+
+
+@route('/video/<vid>/heatmap')
+def video_heatmap(vid):
+    v = video.select().where(video.vid == vid).dicts().get()
+    a = analysis.select().where(analysis.vid == vid, analysis.status == 'FINISHED').dicts().get()
+    uri = v['uri']
+    if 'file://' in uri:
+        uri = uri.replace('file://', '')
+    if drive_letter.match(uri):
+        uri = uri[3:]
+    image = uri.split('/')[-1].split('.')[0] + '.jpg'
+    output = image.split('.')[0] + '_heatmap.jpg'
+    if not os.path.isfile(cache + '/' + output):
+        if not os.path.isfile(cache + '/' + image):
+            video_thumbnail(vid)
+
+        def transparent_cmap(cmap, N=255):
+            mycmap = cmap
+            mycmap._init()
+            mycmap._lut[:,-1] = np.linspace(0, 0.8, N+4)
+            return mycmap
+
+        cmap = transparent_cmap(plt.cm.Reds)
+    
+        I = Image.open(cache + '/' + image)
+        w, h = I.size
+        y, x = np.mgrid[0:h, 0:w]
+        d = np.zeros((h, w))
+        for i in a:
+            for j in json.loads(a['results']):
+                for k in j['detections']:
+                    for l in range(k['y1'], k['y2'], 1):
+                        d[l][k['x1']:k['x2']] += 1
+
+        plt.style.use('dark_background')
+        fig = plt.figure()
+        ax = fig.subplots(1, 1)
+        ax.imshow(I)
+        ax.axes.get_xaxis().set_visible(False)
+        ax.axes.get_yaxis().set_visible(False)
+        cb = ax.contourf(x, y, d, cmap=cmap)
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        plt.colorbar(cb, cax=cax)
+        plt.savefig(cache + '/' + output, bbox_inches='tight')
+    
+    resp = static_file(output, root=cache)
+    allow_cross_origin(resp)
+    return resp
+
 
 @put('/video/<vid>')
 def put_video_vid(vid):
