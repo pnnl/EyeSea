@@ -184,9 +184,9 @@ def video_heatmap(vid):
             mycmap._lut[:,-1] = np.linspace(0, 0.8, N+4)
             return mycmap
 
-        cmap = transparent_cmap(plt.cm.Reds)
+        cmap = transparent_cmap(plt.cm.plasma)
     
-        I = Image.open(cache + '/' + image)
+        I = Image.open(cache + '/' + image).convert('LA')
         w, h = I.size
         y, x = np.mgrid[0:h, 0:w]
         d = np.zeros((h, w))
