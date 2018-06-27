@@ -21,6 +21,7 @@ export class Video extends React.Component {
 			paused: true,
 			detections: [],
 		};
+		this.updateLayout = _.debounce(this.updateLayout, 200);
 	}
 	// If we don't capature the mouse, then if the take the mouse out of the
 	// element and release it, we won't get notified and they'll be stuck
@@ -84,6 +85,7 @@ export class Video extends React.Component {
 			this.props.video.analyses.forEach(analysis => {
 				if (analysis.status === 'FINISHED') {
 					detections.push({
+						id: analysis.id,
 						name: this.props.methods.ids[analysis.method].description,
 						color: this.props.methods.ids[analysis.method].color,
 						results: analysis.results[frame] || {
@@ -98,18 +100,20 @@ export class Video extends React.Component {
 			});
 		}
 	};
-	computeFrame = () => {
-		var video = document.getElementById('video');
-		var canvas = document.getElementById('cvideo');
-		var canvasCtx = canvas.getContext('2d');
-		var canvasWidth = video.videoWidth;
-		var canvasHeight = video.videoHeight;
-		canvas.width = canvasWidth;
-		canvas.height = canvasHeight;
+	computeFrame = (time, single) => {
+		var canvasCtx = this.canvas.getContext('2d');
 		var frame = Math.floor(this.player.currentTime * this.props.video.fps);
 
-		requestAnimationFrame(this.computeFrame);
-		canvasCtx.drawImage(video, 0, 0, canvasWidth, canvasHeight);
+		if (!single) {
+			requestAnimationFrame(this.computeFrame);
+		}
+		canvasCtx.drawImage(
+			this.player,
+			0,
+			0,
+			this.canvas.width,
+			this.canvas.height
+		);
 		if (this.props.video.analyses) {
 			this.props.video.analyses.forEach(analysis => {
 				if (analysis.status === 'FINISHED') {
@@ -131,8 +135,17 @@ export class Video extends React.Component {
 			});
 		}
 	};
+	updateLayout = () => {
+		this.canvas.width = this.player.videoWidth;
+		this.canvas.height = this.player.videoHeight;
+		this.computeFrame(-1, true);
+	};
 	componentDidMount() {
 		this.props.requestVideo(this.props.match.params.id);
+		window.addEventListener('resize', this.updateLayout);
+	}
+	componentWillUnmount() {
+		window.removeEventListener('resize', this.updateLayout);
 	}
 	render() {
 		var video = <Busy error={this.props.error} />,
@@ -191,7 +204,6 @@ export class Video extends React.Component {
 					</header>
 					<div className="viewer">
 						<video
-							id="video"
 							ref={player => (this.player = player)}
 							src={
 								this.props.servicePath +
@@ -202,13 +214,18 @@ export class Video extends React.Component {
 							onPlay={() => this.setState({ paused: false })}
 							onPause={() => this.setState({ paused: true })}
 							onTimeUpdate={this.timeUpdate}
+							onLoadedData={() => {
+								if (this.player.readyState >= 2) {
+									this.updateLayout();
+								}
+							}}
 							onPlaying={this.computeFrame}
 							crossOrigin="anonymous"
 							playsInline
 						>
 							Sorry, this browser does not support video playback.
 						</video>
-						<canvas id="cvideo" />
+						<canvas ref={canvas => (this.canvas = canvas)} />
 						<div className="analyses">
 							{analyses}
 							{processing}
@@ -221,18 +238,16 @@ export class Video extends React.Component {
 						<h3>Detections and Annotations</h3>
 						<ul>
 							{this.state.detections.map(method => (
-								<li key={method.name} className="method">
+								<li key={method.id} className="method">
 									<span className="box" style={{ background: method.color }} />
 									<h4>{method.name}</h4>
 									<ul>
-										{(this.props.methods.ids[method.id] === 'manual' &&
+										{(method.name === 'manual' &&
 											method.results.detections.map((detection, index) => (
-												<li key={method.name + '-' + index}>
-													Fish {index + 1}
-												</li>
+												<li key={method.id + '-' + index}>Fish {index + 1}</li>
 											))) ||
 											(method.results.detections.length && (
-												<li key={method.name + '-count'}>
+												<li key={method.id + '-count'}>
 													Fish {method.results.detections.length}
 												</li>
 											)) ||
