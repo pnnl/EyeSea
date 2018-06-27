@@ -268,13 +268,17 @@
       top: 0;
       width: 2px;
       height: 100%;
+      margin-left: -1px;
       background: $standout-fg;
 
       &:after {
         content: '';
-        border-top: 10px solid $standout-fg;
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
+        display: block;
+        margin-top: -5px;
+        margin-left: -5px;
+        border-top: 6px solid $standout-fg;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
       }
     }
   }

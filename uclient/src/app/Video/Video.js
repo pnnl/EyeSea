@@ -84,7 +84,10 @@ export class Video extends React.Component {
 	}
 	timeUpdate = () => {
 		var detections = [],
-			frame = Math.floor(this.player.currentTime * this.props.video.fps);
+			frame = Math.floor(this.player.currentTime * this.props.video.fps),
+			scrubber =
+				(this.player.currentTime / this.player.duration) *
+				this.canvas.clientWidth;
 
 		if (this.props.video.analyses) {
 			this.props.video.analyses.forEach(analysis => {
@@ -102,6 +105,11 @@ export class Video extends React.Component {
 
 			this.setState({
 				detections,
+				scrubber,
+			});
+		} else {
+			this.setState({
+				scrubber,
 			});
 		}
 	};
@@ -234,9 +242,10 @@ export class Video extends React.Component {
 						<div className="analyses">
 							{analyses}
 							{processing}
-							<div className="scrubber">
-								<i className="fa fa-triangle-down" />
-							</div>
+							<div
+								className="scrubber"
+								style={{ left: this.state.scrubber + 'px' }}
+							/>
 						</div>
 					</div>
 					<div className="annotations">
