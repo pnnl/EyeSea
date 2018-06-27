@@ -56,21 +56,15 @@
       position: relative;
       cursor: help;
 
-      .icon {
-        width: 1em;
-        height: 1em;
-        vertical-align: -.45em;
-        line-height: 1.1em;
-        text-align: center;
-        color: $headings-fg;
-        border: 2px solid #{$headings-fg};
-        border-radius: 50%;
+      .icon:before {
+        content: url('../../../images/info.png');
+        display: block;
+        margin-top: .25em;
       }
 
       &:hover {
-        .icon {
-          color: $headings-reverse-fg;
-          background: $headings-fg;
+        .icon:before {
+          content: url('../../../images/info_hover.png');
         }
 
         .popup {
