@@ -4,8 +4,11 @@
   --color: $analysis-track-bg;
 
   position: relative;
-  height: .75em;
+  height: .9375em;
   margin-bottom: 3px;
+  font-size: .8em;
+  line-height: 1.1em;
+  text-align: center;
   background: $analysis-track-bg;
 
   &:last-child {

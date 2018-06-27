@@ -135,9 +135,37 @@ export class Video extends React.Component {
 		this.props.requestVideo(this.props.match.params.id);
 	}
 	render() {
-		var video = <Busy error={this.props.error} />;
+		var video = <Busy error={this.props.error} />,
+			analyses,
+			processing = 0;
 
 		if (this.props.video && !this.props.error) {
+			analyses = [];
+
+			this.props.video.analyses.forEach(analysis => {
+				if (analysis.status === 'FINISHED') {
+					analyses.push(
+						<OccurrencesBar
+							key={analysis.id}
+							analysis={analysis}
+							color={this.props.methods.ids[analysis.method].color}
+						/>
+					);
+				} else {
+					processing++;
+				}
+			});
+
+			if (processing) {
+				processing = (
+					<div className="occurrences-bar">
+						{processing} analys{processing === 1 ? 'i' : 'e'}s processing
+					</div>
+				);
+			} else {
+				processing = undefined;
+			}
+
 			video = (
 				<section>
 					<header>
@@ -182,13 +210,8 @@ export class Video extends React.Component {
 						</video>
 						<canvas id="cvideo" />
 						<div className="analyses">
-							{this.props.video.analyses.map(analysis => (
-								<OccurrencesBar
-									key={analysis.id}
-									analysis={analysis}
-									color={this.props.methods.ids[analysis.method].color}
-								/>
-							))}
+							{analyses}
+							{processing}
 							<div className="scrubber">
 								<i className="fa fa-triangle-down" />
 							</div>
