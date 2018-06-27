@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import { formatDuration } from '../util/videos';
+import Button from '../util/Button';
 import Busy from '../Busy';
 import OccurrencesBar from './OccurrencesBar';
 import {
@@ -69,12 +70,16 @@ export class Video extends React.Component {
 	}
 	fastForward(event, start) {
 		if (start) {
+			this.continuePlayback = !this.player.paused;
 			this.captureMouse(event);
 			this.player.playbackRate = this.player.defaultPlaybackRate * 4;
 			this.player.play();
 		} else {
 			this.releaseMouse(event);
 			this.player.playbackRate = this.player.defaultPlaybackRate;
+			if (!this.continuePlayback) {
+				this.player.pause();
+			}
 		}
 	}
 	timeUpdate = () => {
@@ -258,56 +263,51 @@ export class Video extends React.Component {
 						</ul>
 					</div>
 					<div className="controls">
-						<span
-							className="rewind button"
+						<Button
+							className="rewind"
 							onMouseDown={event => this.rewind(event, true)}
 							onMouseUp={event => this.rewind(event, false)}
+							iconOnly
 						>
-							<span className="icon-label">Rewind</span>
-							<i className="fa fa-backward" />
-						</span>
-						<span className="previous-frame button">
-							<span className="icon-label">Next Frame</span>
-							<i className="fa fa-square-o" />
-							<i className="fa fa-arrow-left" />
-						</span>
+							Rewind
+						</Button>
+						<Button className="previous-frame" iconOnly>
+							Previous Frame
+						</Button>
 						{this.state.paused ? (
-							<span className="play button" onClick={() => this.player.play()}>
-								<span className="icon-label">Play</span>
-								<i className="fa fa-play" />
-							</span>
-						) : (
-							<span
-								className="pause button"
-								onClick={() => this.player.pause()}
+							<Button
+								className="play"
+								onClick={() => this.player.play()}
+								iconOnly
 							>
-								<span className="icon-label">Pause</span>
-								<i className="fa fa-pause" />
-							</span>
+								Play
+							</Button>
+						) : (
+							<Button
+								className="pause"
+								onClick={() => this.player.pause()}
+								iconOnly
+							>
+								Pause
+							</Button>
 						)}
-						<span className="next-frame button">
-							<span className="icon-label">Next Frame</span>
-							<i className="fa fa-square-o" />
-							<i className="fa fa-arrow-right" />
-						</span>
-						<span
-							className="fast-forward button"
+						<Button className="next-frame" iconOnly>
+							Next Frame
+						</Button>
+						<Button
+							className="fast-forward"
 							onMouseDown={event => this.fastForward(event, true)}
 							onMouseUp={event => this.fastForward(event, false)}
+							iconOnly
 						>
-							<span className="icon-label">Fast forward</span>
-							<i className="fa fa-forward" />
-						</span>
+							Fast Forward
+						</Button>
 					</div>
 					<div className="options">
-						<span className="annotate">
-							<i className="fa fa-pencil-square-o" />
-							<span className="label">Annotation</span>
-						</span>
-						<span className="download disabled">
-							<i className="fa fa-download" />
-							<span className="label">Download</span>
-						</span>
+						<Button className="annotate">Annotation</Button>
+						<Button className="download" disabled>
+							Download
+						</Button>
 					</div>
 				</section>
 			);

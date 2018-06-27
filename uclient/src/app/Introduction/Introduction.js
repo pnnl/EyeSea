@@ -1,5 +1,5 @@
 import React from 'react';
-
+import Button from '../util/Button';
 import './Introduction.scss';
 
 export class Introduction extends React.Component {
@@ -24,14 +24,7 @@ export class Introduction extends React.Component {
 					cheese and wine.
 				</p>
 				<h2>Actions</h2>
-				<span
-					className="btn"
-					onClick={() => {
-						this.props.history.push('/videos');
-					}}
-				>
-					Upload a Video
-				</span>
+				<Button className="upload">Upload a Video</Button>
 			</section>
 		);
 	}

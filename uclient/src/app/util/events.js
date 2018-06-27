@@ -1,6 +1,16 @@
-export const generateEnterHandler = function(callback) {
-	return function(event) {
+export const generateAccessibleKeyDownClickHandler = function(callback) {
+	return callback && function(event) {
+		// https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_button_role
 		if (event.keyCode === 13) {
+			callback(event);
+		}
+	};
+};
+
+export const generateAccessibleKeyUpClickHandler = function(callback) {
+	return callback && function(event) {
+		// Empiracal testing shows enter triggers more than once before letting go, space only when let go.
+		if (event.keyCode === 32) {
 			callback(event);
 		}
 	};

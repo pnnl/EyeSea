@@ -6,8 +6,7 @@
   max-width: 900px;
   padding-top: 2em;
 
-  .btn {
-    flex-direction: column;
+  .upload {
     padding: 4.332em;
     font-size: 1.5em;
     background: $button-big-bg;
@@ -15,7 +14,10 @@
 
     &:before {
       content: url('../../../images/monitor.png');
-      margin-right: 0;
+    }
+
+    &:hover:before {
+      content: url('../../../images/monitor_hover.png');
     }
   }
 }

@@ -61,27 +61,18 @@ h2, h3 {
   color: $headings-fg;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  font-size: .875em;
-  cursor: pointer;
-
-  &:before {
-    margin-right: .25em;
-  }
-}
-
-.btn.add:before {
+.add:before {
   content: url('../images/add.png');
 }
 
-.btn.settings:before {
+.add:hover:before {
+  content:  url('../images/add_hover.png');
+}
+
+.settings:before {
   content: url('../images/settings.png');
 }
 
-.icon-label {
-  position: absolute;
-  top: -1000px;
-  left: -1000px;
+.settings:hover:before {
+  content:  url('../images/settings_hover.png');
 }

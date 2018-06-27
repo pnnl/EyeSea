@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Switch, Route, withRouter } from 'react-router-dom';
 import { setServicePath } from './app/module';
+import Button from './app/util/Button';
 import Introduction from './app/Introduction';
 import Videos from './app/Videos';
 import Video from './app/Video';
@@ -21,8 +22,12 @@ export class App extends React.Component {
 				<header>
 					<h1>EyeSea</h1>
 					<div>
-						<span className="btn add">Add Video(s)</span>
-						<span className="btn settings">Settings</span>
+						<Button className="add" wide>
+							Add Video(s)
+						</Button>
+						<Button className="settings" wide>
+							Settings
+						</Button>
 					</div>
 				</header>
 				<Switch>
