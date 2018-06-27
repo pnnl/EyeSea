@@ -26,6 +26,7 @@
     display: flex;
     flex-wrap: wrap;
     margin-top: 1.8125em;
+    margin-bottom: 1.8125em;
     background: $video-callout-bg;
     box-shadow: $video-callout-shadow;
 
@@ -248,7 +249,23 @@
   }
 
   .analyses {
+    position: relative;
     border-top: 5px solid $video-callout-bg;
+
+    .scrubber {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: $standout-fg;
+
+      &:after {
+        content: '';
+        border-top: 10px solid $standout-fg;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+      }
+    }
   }
 }
 

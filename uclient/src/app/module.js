@@ -27,11 +27,11 @@ export function requestAnalysisMethods() {
 }
 
 const colors = [
+	'#fe4040',
 	'#32e0fb',
 	'#de2cf7',
 	'#2fff97',
 	'#606efd',
-	'#fe4040',
 	'#bbfd23',
 ];
 

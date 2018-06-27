@@ -189,6 +189,9 @@ export class Video extends React.Component {
 									color={this.props.methods.ids[analysis.method].color}
 								/>
 							))}
+							<div className="scrubber">
+								<i className="fa fa-triangle-down" />
+							</div>
 						</div>
 					</div>
 					<div className="annotations">
@@ -199,9 +202,18 @@ export class Video extends React.Component {
 									<span className="box" style={{ background: method.color }} />
 									<h4>{method.name}</h4>
 									<ul>
-										{method.results.detections.map((detection, index) => (
-											<li key={method.name + '-' + index}>Fish {index + 1}</li>
-										))}
+										{(this.props.methods.ids[method.id] === 'manual' &&
+											method.results.detections.map((detection, index) => (
+												<li key={method.name + '-' + index}>
+													Fish {index + 1}
+												</li>
+											))) ||
+											(method.results.detections.length && (
+												<li key={method.name + '-count'}>
+													Fish {method.results.detections.length}
+												</li>
+											)) ||
+											''}
 									</ul>
 								</li>
 							))}
