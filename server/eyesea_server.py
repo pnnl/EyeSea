@@ -178,14 +178,12 @@ def video_heatmap(vid):
         if not os.path.isfile(cache + '/' + image):
             video_thumbnail(vid)
 
-        def transparent_cmap(cmap, N=255):
+        def transparent_cmap(cmap, N=8):
             mycmap = cmap
             mycmap._init()
-            mycmap._lut[:,-1] = np.linspace(0, 0.8, N+4)
+            mycmap._lut[:,-1] = np.linspace(0.5, 1, N+3)
             return mycmap
 
-        cmap = transparent_cmap(plt.cm.plasma)
-    
         I = Image.open(cache + '/' + image).convert('LA')
         w, h = I.size
         y, x = np.mgrid[0:h, 0:w]
@@ -206,7 +204,10 @@ def video_heatmap(vid):
                             else:
                                 d[l][k['x2']:k['x1']] += 1
 
+        det = np.max(d)
         plt.style.use('dark_background')
+        #cmap = transparent_cmap(mcolors.LinearSegmentedColormap.from_list("", ["#800026", "#ffffcc"]))
+        cmap = transparent_cmap(mcolors.LinearSegmentedColormap.from_list("", ["black", "#429321", "#F0ED5E", "#F40E06"], N=8))
         fig = plt.figure()
         ax = fig.subplots(1, 1)
         ax.imshow(I)
@@ -215,7 +216,9 @@ def video_heatmap(vid):
         cb = ax.contourf(x, y, d, cmap=cmap)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
-        plt.colorbar(cb, cax=cax)
+        cbar = plt.colorbar(cb, cax=cax)
+        cbar.set_ticks([0,0.125*det,0.25*det,0.375*det,0.5*det,0.625*det,0.75*det,0.875*det,det])
+        cbar.set_ticklabels(["0%", "12.5%", "25%", "37.5%", "50%", "62.5%", "75%", "87.5%", "100%"])
         plt.savefig(cache + '/' + output, bbox_inches='tight')
     
     resp = static_file(output, root=cache)
