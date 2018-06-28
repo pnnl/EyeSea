@@ -26,19 +26,25 @@ export class Video extends React.Component {
 	}
 	// If we don't capature the mouse, then if the take the mouse out of the
 	// element and release it, we won't get notified and they'll be stuck
-	captureMouse(event) {
+	captureMouse(event, target) {
+		if (!target) {
+			target = event.target;
+		}
 		// IE10; Do we care?
-		if (event.target.msSetPointerCapture) {
-			event.target.msSetPointerCapture(event.pointerId);
-		} else if (event.target.setPointerCapture) {
-			event.target.setPointerCapture(event.pointerId);
+		if (target.msSetPointerCapture) {
+			target.msSetPointerCapture(event.pointerId);
+		} else if (target.setPointerCapture) {
+			target.setPointerCapture(event.pointerId);
 		}
 	}
-	releaseMouse(event) {
-		if (event.target.msReleasePointerCapture) {
-			event.target.msReleasePointerCapture(event.pointerId);
-		} else if (event.target.releasePointerCapture) {
-			event.target.releasePointerCapture(event.pointerId);
+	releaseMouse(event, target) {
+		if (!target) {
+			target = event.target;
+		}
+		if (target.msReleasePointerCapture) {
+			target.msReleasePointerCapture(event.pointerId);
+		} else if (target.releasePointerCapture) {
+			target.releasePointerCapture(event.pointerId);
 		}
 	}
 	rewindFrame = timestamp => {
@@ -107,6 +113,10 @@ export class Video extends React.Component {
 				detections,
 				scrubber,
 			});
+
+			if (this.player.paused) {
+                this.computeFrame(-1, true);
+            }
 		} else {
 			this.setState({
 				scrubber,
@@ -147,7 +157,32 @@ export class Video extends React.Component {
 				}
 			});
 		}
-	};
+	}
+	scrubStart = event => {
+        event.preventDefault();
+
+        var target = event.target;
+        while (!target.classList.contains('analyses')) {
+            target = target.parentNode;
+        }
+		this.captureMouse(event, target);
+
+        this.boundingBox = target.getBoundingClientRect();
+        this.player.currentTime = this.player.duration * (event.clientX - this.boundingBox.left) / this.boundingBox.width;
+	}
+	scrubChange = event => {
+        if (this.boundingBox) {
+            this.player.currentTime = this.player.duration * (event.clientX - this.boundingBox.left) / this.boundingBox.width;
+        }
+    }
+	scrubEnd = event => {
+        var target = event.target;
+        while (!target.classList.contains('analyses')) {
+            target = target.parentNode;
+        }
+		this.releaseMouse(event, target);
+        delete this.boundingBox;
+	}
 	updateLayout = () => {
 		this.canvas.width = this.player.videoWidth;
 		this.canvas.height = this.player.videoHeight;
@@ -239,7 +274,7 @@ export class Video extends React.Component {
 							Sorry, this browser does not support video playback.
 						</video>
 						<canvas ref={canvas => (this.canvas = canvas)} />
-						<div className="analyses">
+						<div className="analyses" onMouseDown={this.scrubStart} onMouseMove={this.scrubChange} onMouseUp={this.scrubEnd}>
 							{analyses}
 							{processing}
 							<div
