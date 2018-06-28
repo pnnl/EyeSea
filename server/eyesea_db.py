@@ -13,6 +13,7 @@ class video(eyesea_model):
     filename = CharField()
     fps = IntegerField()
     variable_framerate = SmallIntegerField()
+    duration = IntegerField()
     uri = CharField()
 
 class analysis(eyesea_model):

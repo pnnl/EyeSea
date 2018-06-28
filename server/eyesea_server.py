@@ -78,8 +78,8 @@ def get_video():
         'filename': vid['filename'],
         'description': vid['description'],
         'fps': vid['fps'],
-#        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
         'variableFramerate': vid['variable_framerate'],
+        'duration': vid['duration'],
         'uri': vid['uri'],
         'analyses': [(lambda analysis, results: {
             'id': analysis['aid'],
@@ -109,8 +109,8 @@ def get_video_vid(vid):
         'filename': data['filename'],
         'description': data['description'],
         'fps': data['fps'],
-#        'length': results[-1]['frameindex'] / vid['fps'] if len(results) > 0 else -1,
         'variableFramerate': data['variable_framerate'],
+        'duration': data['duration'],
         'uri': data['uri'],
         'analyses': [(lambda analysis, results: {
             'id': analysis['aid'],
@@ -139,6 +139,7 @@ def server_static(vid):
     # This assumes we trust what's in the database
     root = uri[:slash]
     filepath = uri[slash + 1:]
+    root = '/Users/mcba424/Videos/videofish/1_East_fish_20170627_130000/'
     resp = static_file(filepath, root=root)
     allow_cross_origin(resp)
     return resp
