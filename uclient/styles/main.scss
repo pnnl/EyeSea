@@ -21,10 +21,24 @@ main {
   & > header {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    height: 5em;
+    z-index: 2;
     padding: 0 $header-padding;
     color: $header-fg;
     background: $header-bg;
-    border-bottom: 1px solid $header-border;
+    border-bottom: 1px solid transparent;
+
+    &:before {
+      content: '';
+      position: absolute;
+      left: calc(#{$header-padding} + 242px);
+      right: $header-padding;
+      bottom: -1px;
+      height: 1px;
+      background: $header-border;
+    }
 
     &:after {
       content: '';
@@ -51,10 +65,13 @@ main {
 }
 
 h1 {
-  margin: .6875em 0 .78125em;
-  font-size: 2em;
+  margin: 0;
+  margin-top: .65em;
+  font-size: 5em;
   font-variant: small-caps;
   line-height: 1em;
+  text-indent: -100%;
+  background: url('../images/logo.png') 0 0 / auto 100% no-repeat;
 }
 
 h2, h3 {
