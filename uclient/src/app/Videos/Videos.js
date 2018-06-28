@@ -12,7 +12,7 @@ import {
 	getSort,
 	setSort,
 } from './module';
-import { getAnalysisMethodsById } from '../module';
+import { getServicePath, getAnalysisMethodsById } from '../module';
 import Busy from '../Busy';
 import StackedOccurrencesGraph from './StackedOccurrencesGraph';
 import BarGraph from './BarGraph';
@@ -104,8 +104,16 @@ export class Videos extends React.PureComponent {
 							<Link key={video.id} className="video" to={'/video/' + video.id}>
 								<h3 title={video.filename}>{video.filename}</h3>
 								<span>{formatDuration(video)}</span>
-								<img src={video.preview} alt={'Preview of ' + video.filename} />
-								<StackedOccurrencesGraph values={video.analyses} colors={this.props.methods} />
+								<img
+									src={
+										this.props.servicePath + 'video/' + video.id + '/thumbnail'
+									}
+									alt={'Preview of ' + video.filename}
+								/>
+								<StackedOccurrencesGraph
+									values={video.analyses}
+									colors={this.props.methods}
+								/>
 							</Link>
 						))) || <Busy error={this.props.error} />}
 				</section>
@@ -114,11 +122,12 @@ export class Videos extends React.PureComponent {
 	}
 }
 const mapStateToProps = state => ({
+	servicePath: getServicePath(state),
 	padding: getPadding(state),
 	videos: getVideos(state),
 	error: getVideosError(state),
 	sortBy: getSort(state),
-	methods: getAnalysisMethodsById(state)
+	methods: getAnalysisMethodsById(state),
 });
 
 export default connect(
