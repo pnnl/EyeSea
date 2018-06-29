@@ -154,7 +154,7 @@ def video_thumbnail(vid):
     image = uri.split('/')[-1].split('.')[0] + '.jpg'
     if not os.path.isfile(cache + '/' + image):
         try:
-            subprocess.check_output(['ffmpeg', '-i', uri, '-ss','00:00:15.000', '-vframes', '1', cache + '/' + image])
+            subprocess.check_output(['ffmpeg', '-i', uri, '-ss','00:00:10.000', '-vframes', '1', cache + '/' + image])
         except subprocess.CalledProcessError as e:
             img = Image.new('RGB', (640,480), (255, 255, 255))
             img.save(cache + '/' + image, "jpeg")
