@@ -170,7 +170,7 @@ def video_thumbnail(vid):
 @route('/video/<vid>/heatmap')
 def video_heatmap(vid):
     v = video.select().where(video.vid == vid).dicts().get()
-    a = analysis.select().where(analysis.vid == vid, analysis.status == 'FINISHED').dicts().get()
+    a = analysis.select().where(analysis.vid == vid, analysis.status == 'FINISHED').dicts()
     uri = v['uri']
     if 'file://' in uri:
         uri = uri.replace('file://', '')
@@ -193,7 +193,7 @@ def video_heatmap(vid):
         y, x = np.mgrid[0:h, 0:w]
         d = np.zeros((h, w))
         for i in a:
-            for j in json.loads(a['results']):
+            for j in json.loads(i['results']):
                 for k in j['detections']:
                     if k['y1'] <= k['y2']:
                         for l in range(k['y1'], k['y2'], 1):
