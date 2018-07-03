@@ -115,8 +115,8 @@ export class Video extends React.Component {
 			});
 
 			if (this.player.paused) {
-                this.computeFrame(-1, true);
-            }
+				this.computeFrame(-1, true);
+			}
 		} else {
 			this.setState({
 				scrubber,
@@ -157,32 +157,36 @@ export class Video extends React.Component {
 				}
 			});
 		}
-	}
+	};
 	scrubStart = event => {
-        event.preventDefault();
+		event.preventDefault();
 
-        var target = event.target;
-        while (!target.classList.contains('analyses')) {
-            target = target.parentNode;
-        }
+		var target = event.target;
+		while (!target.classList.contains('analyses')) {
+			target = target.parentNode;
+		}
 		this.captureMouse(event, target);
 
-        this.boundingBox = target.getBoundingClientRect();
-        this.player.currentTime = this.player.duration * (event.clientX - this.boundingBox.left) / this.boundingBox.width;
-	}
+		this.boundingBox = target.getBoundingClientRect();
+		this.player.currentTime =
+			(this.player.duration * (event.clientX - this.boundingBox.left)) /
+			this.boundingBox.width;
+	};
 	scrubChange = event => {
-        if (this.boundingBox) {
-            this.player.currentTime = this.player.duration * (event.clientX - this.boundingBox.left) / this.boundingBox.width;
-        }
-    }
+		if (this.boundingBox) {
+			this.player.currentTime =
+				(this.player.duration * (event.clientX - this.boundingBox.left)) /
+				this.boundingBox.width;
+		}
+	};
 	scrubEnd = event => {
-        var target = event.target;
-        while (!target.classList.contains('analyses')) {
-            target = target.parentNode;
-        }
+		var target = event.target;
+		while (!target.classList.contains('analyses')) {
+			target = target.parentNode;
+		}
 		this.releaseMouse(event, target);
-        delete this.boundingBox;
-	}
+		delete this.boundingBox;
+	};
 	updateLayout = () => {
 		this.canvas.width = this.player.videoWidth;
 		this.canvas.height = this.player.videoHeight;
@@ -274,7 +278,12 @@ export class Video extends React.Component {
 							Sorry, this browser does not support video playback.
 						</video>
 						<canvas ref={canvas => (this.canvas = canvas)} />
-						<div className="analyses" onMouseDown={this.scrubStart} onMouseMove={this.scrubChange} onMouseUp={this.scrubEnd}>
+						<div
+							className="analyses"
+							onMouseDown={this.scrubStart}
+							onMouseMove={this.scrubChange}
+							onMouseUp={this.scrubEnd}
+						>
 							{analyses}
 							{processing}
 							<div
