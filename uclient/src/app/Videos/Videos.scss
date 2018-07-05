@@ -4,12 +4,13 @@
   display: flex;
   flex-wrap: wrap;
   flex-grow: 1;
-  position: relative;
   box-sizing: border-box;
   width: 100%;
 
   header {
     display: flex;
+    position: relative;
+    z-index: 2;
     width: 100%;
     height: 1.543em;
     margin-top: .913em;
@@ -33,6 +34,10 @@
         color: $inactive-fg;
       }
     }
+  }
+
+  .fish-loader {
+    top: 2.5em
   }
 
   .video {
