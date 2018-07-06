@@ -120,7 +120,7 @@ def post_video():
         file_path = "{p}/{f}".format(p=tmp, f=request.json['filename'])
         with open(file_path, 'wb') as f:
             f.write(upload.decode('base64'))
-        subprocess.check_output(['ffmpeg', '-i', file_path, '-an', '-vcodec', vcodec, videostore + '/' + name + '.' + vformat])
+        subprocess.check_output(['ffmpeg', '-y', '-i', file_path, '-an', '-vcodec', vcodec, videostore + '/' + name + '.' + vformat])
     else:
         file_path = "{p}/{f}".format(p=videostore, f=request.json['filename'])
         with open(file_path, 'wb') as f:
@@ -185,7 +185,7 @@ def video_thumbnail(vid):
     image = uri.split('/')[-1].split('.')[0] + '.jpg'
     if not os.path.isfile(cache + '/' + image):
         try:
-            subprocess.check_output(['ffmpeg', '-i', uri, '-ss','00:00:10.000', '-vframes', '1', cache + '/' + image])
+            subprocess.check_output(['ffmpeg', '-y', '-i', uri, '-ss','00:00:10.000', '-vframes', '1', cache + '/' + image])
         except subprocess.CalledProcessError as e:
             img = Image.new('RGB', (640,480), (255, 255, 255))
             img.save(cache + '/' + image, "jpeg")
