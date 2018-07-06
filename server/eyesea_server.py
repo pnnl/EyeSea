@@ -4,6 +4,7 @@ import bottle
 import os
 import re
 import subprocess
+import base64
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,12 +17,25 @@ from bottle import request, response, post, get, put, delete, hook, route, stati
 from eyesea_db import *
 from peewee import fn
 
-cache = '.cache'
+settings = json.loads(open("eyesea_settings.json").read())
+
+cache = settings["cache"]
 if not os.path.isdir(cache):
     os.mkdir(cache)
 
+videostore = settings["video_storage"]
+if not os.path.isdir(videostore):
+    os.mkdir(videostore)
+
+tmp = settings["temporary_storage"]
+if not os.path.isdir(tmp):
+    os.mkdir(tmp)
+
+vformat = settings["video_format"]
+vcodec = settings["ffmpeg_vcodec"]
+    
 eye_env = os.environ
-eye_env["PATH"] = os.path.join( os.path.dirname( __file__ ), '../../evaluation' ) + ':' + eye_env["PATH"]
+eye_env["PATH"] = os.path.abspath(settings["algorithm_bin"]) + ':' + eye_env["PATH"]
 tasklist = {}
 
 @route('/', method = 'OPTIONS')
@@ -97,7 +111,22 @@ def get_video():
 
 @post('/video')
 def post_video():
-    data = video.select().where(video.vid==video.insert(request.json).execute()).dicts().get()
+    print request.json
+    upload = request.json['upload']
+    name, ext = os.path.splitext(request.json['filename'])
+    if ext != vformat:
+        file_path = "{p}/{f}".format(p=tmp, f=request.json['filename'])
+        with open(file_path, 'wb') as f:
+            f.write(upload.decode('base64'))
+        subprocess.check_output(['ffmpeg', '-i', file_path, '-an', '-vcodec', vcodec, videostore + '/' + name + '.' + vformat])
+    else:
+        file_path = "{p}/{f}".format(p=videostore, f=request.json['filename'])
+        with open(file_path, 'wb') as f:
+            f.write(upload.decode('base64'))
+
+    dbdata = request.json.copy()
+    dbdata.pop('upload')
+    data = video.select().where(video.vid==video.insert(dbdata).execute()).dicts().get()
     return fr()(data)
 
 @get('/video/<vid>')
