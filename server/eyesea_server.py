@@ -30,6 +30,9 @@ if not os.path.isdir(videostore):
 tmp = settings["temporary_storage"]
 if not os.path.isdir(tmp):
     os.mkdir(tmp)
+else:
+    for i in os.listdir(tmp):
+        os.remove(os.path.join(tmp,i))
 
 vformat = settings["video_format"]
 vcodec = settings["ffmpeg_vcodec"]
@@ -111,7 +114,6 @@ def get_video():
 
 @post('/video')
 def post_video():
-    print request.json
     upload = request.json['upload']
     name, ext = os.path.splitext(request.json['filename'])
     if ext != vformat:
