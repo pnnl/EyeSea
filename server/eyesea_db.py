@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+import json
 from peewee import *
 
-db = SqliteDatabase('eyesea.db')
+settings = json.loads(open("eyesea_settings.json").read())
+db = SqliteDatabase(settings['database'])
 
 class eyesea_model(Model):
     class Meta:

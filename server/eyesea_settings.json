@@ -1,0 +1,9 @@
+{
+    "cache" : ".cache",
+    "temporary_storage" : ".tmp",
+    "video_storage" : ".files",
+    "algorithm_bin" : "../../evaluation",
+    "database" : "eyesea.db",
+    "video_format" : "mp4",
+    "ffmpeg_vcodec" : "libx264"
+}
