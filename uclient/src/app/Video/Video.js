@@ -371,6 +371,9 @@ export class Video extends React.Component {
 					<i className="icon fa fa-chevron-left" />
 					Thumbnail View
 				</Link>
+				<Link to={'/video/' + this.props.match.params.id + '/summary'}>
+					See Summary
+				</Link>
 				{video}
 			</div>
 		);

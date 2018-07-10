@@ -7,6 +7,7 @@ import subprocess
 import base64
 
 import numpy as np
+from numpy import inf
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -259,6 +260,48 @@ def video_heatmap(vid):
     resp = static_file(output, root=cache)
     allow_cross_origin(resp)
     return resp
+
+@route('/video/<vid>/statistics')
+def video_statistics(vid):
+    v = video.select().where(video.vid == vid).dicts().get()
+    a = analysis.select().where(analysis.vid == vid, analysis.status == 'FINISHED').dicts()
+    analyses = dict()
+    total_detections = 0
+    frames_with_detections = 0.0
+    frame_count = 0
+    max_detections = (0, 0)
+    min_bounding_box = inf
+    avg_bounding_box = 0
+    max_bounding_box = -inf
+
+    for i in a:
+        results = json.loads(i['results'])
+        analyses[i['aid']] = results
+        frame_count = max(frame_count, results[-1]['frameindex'])
+
+    for i in range(0, frame_count):
+        for j in a:
+            count = len(analyses[j['aid']][i]['detections'])
+            if count:
+                frames_with_detections += 1
+            total_detections += count
+            if count > max_detections[1]:
+                max_detections = (i, count)
+            for k in analyses[j['aid']][i]['detections']:
+                area = abs(k['x2'] - k['x1']) * abs(k['y2'] - k['y1'])
+                min_bounding_box = min(min_bounding_box, area)
+                avg_bounding_box += area
+                max_bounding_box = max(area, max_bounding_box)
+
+    print(avg_bounding_box, total_detections)
+    return fr()({
+        'totalDetections': total_detections,
+        'percentTimeWithDetections': frames_with_detections / frame_count,
+        'minBoundingBoxArea': min_bounding_box,
+        'avgBoundingBoxArea': avg_bounding_box / total_detections,
+        'maxBoundingBoxArea': max_bounding_box,
+        'frameIndexWithHighestDetections': max_detections[0]
+    })
 
 
 @put('/video/<vid>')

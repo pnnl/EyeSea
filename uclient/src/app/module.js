@@ -4,6 +4,7 @@ import { createSelector } from 'reselect';
 import { fromError, createToJSSelector } from './util/redux';
 import { reducer as videos } from './Videos';
 import { reducer as video } from './Video';
+import { reducer as summary } from './Summary';
 
 export const SERVICE_PATH = 'app/servicePath';
 
@@ -64,6 +65,7 @@ export default combineReducers({
 	reducer,
 	videos,
 	video,
+	summary,
 });
 
 ///-- SELECTORS --///

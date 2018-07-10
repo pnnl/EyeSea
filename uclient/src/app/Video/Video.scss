@@ -3,7 +3,8 @@
 .video-detail {
   display: flex;
   flex-grow: 1;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
   position: relative;
   box-sizing: border-box;
   width: calc(100% - #{$header-padding * 2});
@@ -11,22 +12,29 @@
   padding-top: 2em;
 
   > a {
-    align-self: flex-start;
-    font-size: 1.125em;
+    font-size: 1.5em;
     font-weight: bold;
-    line-height: 1.45em;
+    line-height: 1.25em;
     text-decoration: none;
     color: $back-fg;
 
     .icon {
       margin-right: .25em;
     }
+
+    + a {
+      font-size: 1.1em;
+      font-weight: normal;
+      line-height: 1.9em;
+      text-decoration: underline;
+    }
   }
 
   section {
     display: flex;
     flex-wrap: wrap;
-    margin-top: 1.8125em;
+    width: 100%;
+    margin-top: 1.55em;
     margin-bottom: 1.8125em;
     background: $video-callout-bg;
     box-shadow: $video-callout-shadow;
@@ -90,13 +98,7 @@
       background: $video-callout-panel-bg;
     }
 
-    // Original value, maxes out at bottom of the viewport: calc(100vh - 16.87825em - 6px)
-    // The one below gives a bit of margin at the bottom of the viewport. These values are
-    // calculated from all of the elements heights and any appropriate paddings or margins
-    // excepting this element. This currently doesn't account for the analysis bars.
     .viewer {
-      //max-height: calc(100vh - 19.06575em - 8px);
-
       video {
         display: none;
         width: 100%;

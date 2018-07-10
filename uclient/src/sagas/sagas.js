@@ -1,6 +1,7 @@
 import { put, takeLatest, call, select } from 'redux-saga/effects';
 import { sagas as videos } from '../app/Videos';
 import { sagas as video } from '../app/Video';
+import { sagas as summary } from '../app/Summary';
 
 import { get } from '../app/util/request';
 
@@ -34,5 +35,6 @@ export default function*() {
 		takeLatest(SERVICE_PATH, requestAnalysisMethods),
 		call(videos),
 		call(video),
+		call(summary),
 	];
 }

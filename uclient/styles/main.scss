@@ -44,6 +44,7 @@ main {
       content: '';
       flex-grow: 1;
       order: 1;
+      display: inline-block; /* for IE */
     }
 
     > div {
@@ -65,6 +66,7 @@ main {
 }
 
 h1 {
+  width: 274px; /* Fix cross-browser text-indent issues. */
   margin: 0;
   margin-top: .65em;
   font-size: 5em;
