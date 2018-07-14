@@ -57,7 +57,7 @@ def scanmethods():
                         if k['parameters'] == fjson:
                             found = True
                 if found == False and 'name' in fdict:
-                    analysis_method.insert({'description' : fdict['name'], 'parameters' : fjson, 'creation_date' : int(time.time()), 'results' : ''}).execute()
+                    analysis_method.insert({'description' : fdict['name'], 'parameters' : fjson, 'creation_date' : int(time.time()), 'automated' : 1}).execute()
                     methods = analysis_method.select().dicts()
 
 scanmethods()
@@ -366,8 +366,8 @@ def get_analysis_method():
         'mid': method['mid'],
         'description': method['description'],
         'automated': method['automated'],
-        'parameters': json.loads(method['parameters']) if method['parameters'] else dict(),
-        'results': method['results']
+        'parameters': json.loads(method['parameters'])['parameters'] if method['parameters'] else dict(),
+        'creationDate': method['creation_date']
     })(i) for i in data]
     return fr()(data)
 
