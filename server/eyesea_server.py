@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import json
 import bottle
 import os
 import re
 import subprocess
 import base64
+import time
 
 import numpy as np
 from numpy import inf
@@ -39,8 +40,27 @@ vformat = settings["video_format"]
 vcodec = settings["ffmpeg_vcodec"]
     
 eye_env = os.environ
-eye_env["PATH"] = os.path.abspath(settings["algorithm_bin"]) + ':' + eye_env["PATH"]
+eye_env["PATH"] = os.path.abspath(settings["algorithm_bin"]) + os.pathsep + eye_env["PATH"]
 tasklist = {}
+
+def scanmethods():
+    methods = analysis_method.select().dicts()
+    for i in eye_env["PATH"].split(os.pathsep):
+        for j in os.listdir(i):
+            name, ext = os.path.splitext(j)
+            if ext == '.json':
+                fdict = json.loads(open(os.path.abspath(i) + os.sep + j).read())
+                fjson = json.dumps(fdict) #normalize json
+                found = False
+                for k in methods:
+                    if 'name' in fdict:
+                        if k['parameters'] == fjson:
+                            found = True
+                if found == False and 'name' in fdict:
+                    analysis_method.insert({'description' : fdict['name'], 'parameters' : fjson, 'creation_date' : int(time.time()), 'results' : ''}).execute()
+                    methods = analysis_method.select().dicts()
+
+scanmethods()
 
 @route('/', method = 'OPTIONS')
 @route('/<path:path>', method = 'OPTIONS')
@@ -197,8 +217,6 @@ def video_thumbnail(vid):
     allow_cross_origin(resp)
     return resp
 
-
-
 @route('/video/<vid>/heatmap')
 def video_heatmap(vid):
     v = video.select().where(video.vid == vid).dicts().get()
@@ -303,7 +321,6 @@ def video_statistics(vid):
         'frameIndexWithHighestDetections': max_detections[0]
     })
 
-
 @put('/video/<vid>')
 def put_video_vid(vid):
     updata = video.update(request.json).where(video.vid == vid).execute()
@@ -379,8 +396,14 @@ def server_static(filepath):
 @post('/process')
 def process_video():
     param = request.json
-    if ("vid" in param and "mid" in param):
-        method = analysis_method.select().where(analysis_method.mid == param["mid"]).dicts().get()
+    if "vid" in param:
+        if "mid" in param:
+            method = analysis_method.select().where(analysis_method.mid == param["mid"]).dicts().get()
+        elif "name" in param:
+            scanmethods()
+            method = analysis_method.select().where(analysis_method.description == name).order_by(analysis_method.creation_date.desc()).dicts().get()
+        else:
+            return fr()("No analysis method specified")
         procargs = json.loads(method['parameters'])
         vid = video.select().where(video.vid == param["vid"]).dicts().get()
         if 'file://' in vid['uri']:

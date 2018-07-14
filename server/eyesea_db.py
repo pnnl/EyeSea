@@ -31,4 +31,4 @@ class analysis_method(eyesea_model):
     description = TextField()
     automated = BooleanField()
     parameters = TextField()
-    results = TextField()
+    creation_date = IntegerField()
