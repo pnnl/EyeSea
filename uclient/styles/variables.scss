@@ -10,9 +10,16 @@ $headings-reverse-fg: black;
 $header-line-height: 2.286em;
 $header-padding: 4.375em;
 
+$header-height: 5em;
 $header-fg: white;
 $header-bg: $site-bg;
 $header-border: #979797;
+
+$upload-popup-bg: #17191b;
+$upload-popup-shadow: 0 -1px 13px 0 rgba(255, 255, 255, .53);
+
+$btn-cancel-border: #979797;
+$input-border: $btn-cancel-border;
 
 $graph-labels: white;
 $graph-lines: white;
@@ -40,7 +47,8 @@ $help-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
 
 $back-fg: #00cfef;
 
-$analysis-track-bg: RGBA(255, 255, 255, .1);
+$upload-table-cell-bg: RGBA(255, 255, 255, .1);
+$analysis-track-bg: $upload-table-cell-bg;
 
 $button-icon-fg: #4a4a4a;
 $button-big-bg: $videos-video-bg;

@@ -15,7 +15,7 @@ class video(eyesea_model):
     filename = CharField()
     fps = IntegerField()
     variable_framerate = SmallIntegerField()
-    duration = IntegerField()
+    duration = FloatField()
     uri = CharField()
 
 class analysis(eyesea_model):
@@ -29,5 +29,6 @@ class analysis(eyesea_model):
 class analysis_method(eyesea_model):
     mid = IntegerField(primary_key=True)
     description = TextField()
+    automated = BooleanField()
     parameters = TextField()
     results = TextField()

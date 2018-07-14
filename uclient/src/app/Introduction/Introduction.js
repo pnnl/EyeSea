@@ -1,5 +1,7 @@
 import React from 'react';
-import Button from '../util/Button';
+import { connect } from 'react-redux';
+import FileSelectButton from '../Uploader/FileSelectButton';
+import { getSupportedVideoFormats } from '../module';
 import './Introduction.scss';
 
 export class Introduction extends React.Component {
@@ -24,9 +26,17 @@ export class Introduction extends React.Component {
 					cheese and wine.
 				</p>
 				<h2>Actions</h2>
-				<Button className="upload">Upload a Video</Button>
+				<FileSelectButton className="upload">Upload a Video</FileSelectButton>
 			</section>
 		);
 	}
 }
-export default Introduction;
+
+const mapStateToProps = state => ({
+	supportedVideoFormats: getSupportedVideoFormats(state),
+});
+
+export default connect(
+	mapStateToProps,
+	{}
+)(Introduction);

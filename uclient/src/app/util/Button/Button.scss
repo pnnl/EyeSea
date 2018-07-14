@@ -16,6 +16,12 @@
     }
   }
 
+  &.file input {
+    position: fixed;
+    top: -100%;
+    left: -100%;
+  }
+
   &.disabled, &.disabled:hover {
     color: $disabled-fg;
     cursor: default;

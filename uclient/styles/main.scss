@@ -23,7 +23,7 @@ main {
     align-items: center;
     flex-shrink: 0;
     position: relative;
-    height: 5em;
+    height: $header-height;
     z-index: 2;
     padding: 0 $header-padding;
     color: $header-fg;
@@ -55,7 +55,7 @@ main {
         color: $site-fg;
     }
 
-    .btn:first-child {
+    .add {
         margin-right: 4.787em;
     }
   }
@@ -78,14 +78,6 @@ h1 {
 
 h2, h3 {
   color: $headings-fg;
-}
-
-.add:before {
-  content: url('../images/add.png');
-}
-
-.add:hover:before {
-  content:  url('../images/add_hover.png');
 }
 
 .settings:before {

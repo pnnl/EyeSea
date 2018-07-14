@@ -345,7 +345,14 @@ def put_analysis_aid(aid):
 @get('/analysis/method')
 def get_analysis_method():
     data = analysis_method.select().dicts()
-    return fr()([method for method in data])
+    data = [(lambda method: {
+        'mid': method['mid'],
+        'description': method['description'],
+        'automated': method['automated'],
+        'parameters': json.loads(method['parameters']) if method['parameters'] else dict(),
+        'results': method['results']
+    })(i) for i in data]
+    return fr()(data)
 
 @post('/analysis/method')
 def post_analysis_method():
