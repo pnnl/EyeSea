@@ -146,17 +146,17 @@
         }
 
         .revert {
+          padding-left: 1.125em;
           background: none;
 
-          span {
-            margin-left: 1em;
-            color: $headings-fg;
-            cursor: pointer;
+          .btn {
+            height: 19px;
+            vertical-align: -.5em;
+            overflow: hidden;
           }
 
-          .icon {
-            vertical-align: text-bottom;
-            font-size: 1.6em;
+          .btn:before {
+            content: url('../../../images/reset.png');
           }
         }
       }

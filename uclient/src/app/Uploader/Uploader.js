@@ -123,24 +123,14 @@ export class Uploader extends React.Component {
 															</td>
 															<td className="revert">
 																{index === 0 ? (
-																	<span
-																		role="button"
-																		tabIndex="0"
-																		onKeyUp={generateAccessibleKeyUpClickHandler(
-																			this.revertInstanceParameters(algorithm)
-																		)}
+																	<Button
 																		onClick={this.revertInstanceParameters(
 																			algorithm
 																		)}
+																		iconOnly
 																	>
-																		<i
-																			className="icon fa fa-undo"
-																			title="Revert to original parameters"
-																		/>
-																		<span className="icon-label">
-																			Revert to original paramters
-																		</span>
-																	</span>
+																		Revert to original paramters
+																	</Button>
 																) : null}
 															</td>
 														</tr>
