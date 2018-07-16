@@ -350,7 +350,7 @@ def get_analysis_aid(aid):
                 data = analysis.select().where(analysis.aid == aid).dicts().get()
                 del tasklist[int(aid)]
     else:
-        data = "Not a valid analysis ID"
+        data = {'error': 'Not a valid analysis ID'}
     return fr()(data)
 
 @put('/analysis/<aid>')
@@ -403,7 +403,7 @@ def process_video():
             scanmethods()
             method = analysis_method.select().where(analysis_method.description == name).order_by(analysis_method.creation_date.desc()).dicts().get()
         else:
-            return fr()("No analysis method specified")
+            return fr()({'error': 'No analysis method specified'})
         procargs = json.loads(method['parameters'])
         vid = video.select().where(video.vid == param["vid"]).dicts().get()
         if 'file://' in vid['uri']:
@@ -418,7 +418,7 @@ def process_video():
         data = analysis.select().where(analysis.aid == aid['aid']).dicts().get()
         return fr()(data)
     else:
-        return fr()("No video or analysis method specified")
+        return fr()({'error': 'No video or analysis method specified'})
 
 app = application = bottle.default_app()
 
