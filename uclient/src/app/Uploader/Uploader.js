@@ -140,28 +140,26 @@ export class Uploader extends React.Component {
 										</table>
 									</li>
 								))}
-							<li>
-								<Select
-									onBlurResetsInput={false}
-									onSelectResetsInput={false}
-									placeholder={'Select an algorithm to add\u2026'}
-									options={this.props.methods.list
-										.filter(method => method.automated)
-										.map(method => ({
-											value: method.mid,
-											label: method.description,
-										}))}
-									simpleValue
-									value=""
-									onChange={value =>
-										this.props.addAlgorithmInstance(
-											this.props.methods.ids[value]
-										)
-									}
-									searchable={false}
-								/>
-							</li>
 						</ul>
+						<Select
+							onBlurResetsInput={false}
+							onSelectResetsInput={false}
+							placeholder={'Select an algorithm to add\u2026'}
+							options={this.props.methods.list
+								.filter(method => method.automated)
+								.map(method => ({
+									value: method.mid,
+									label: method.description,
+								}))}
+							simpleValue
+							value=""
+							onChange={value =>
+								this.props.addAlgorithmInstance(
+									this.props.methods.ids[value]
+								)
+							}
+							searchable={false}
+						/>
 						<div className="buttons">
 							<Button className="save">Select</Button>
 							<Button

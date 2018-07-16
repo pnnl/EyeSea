@@ -74,6 +74,8 @@
     }
 
     ul {
+      max-height: calc(100vh - 21.05em - 2px);
+      overflow: auto;
       padding-left: 3.25em;
 
       li {
