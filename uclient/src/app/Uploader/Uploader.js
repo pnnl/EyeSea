@@ -6,6 +6,7 @@ import {
 } from '../util/events';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
+import * as moment from 'moment';
 import Button from '../util/Button';
 import {
 	getSupportedVideoFormats,
@@ -51,6 +52,17 @@ export class Uploader extends React.Component {
 			algorithm,
 			this.props.methods.ids[algorithm.mid].parameters
 		);
+	formatDescription(method) {
+		var description = method.description;
+		if (method.creationDate) {
+			description += ' (';
+			description += moment(method.creationDate * 1000).format(
+				'YYYY-MM-DD HH:mm:ss'
+			);
+			description += ')';
+		}
+		return description;
+	}
 	render() {
 		var popup;
 		if (this.props.files) {
@@ -96,7 +108,7 @@ export class Uploader extends React.Component {
 													: 'Open parameters'}
 											</span>
 										</span>
-										<h4>{algorithm.description}</h4>
+										<h4>{this.formatDescription(algorithm)}</h4>
 										<table id={'a' + algorithm.id} className="parameters">
 											<thead>
 												<tr>
@@ -149,7 +161,7 @@ export class Uploader extends React.Component {
 								.filter(method => method.automated)
 								.map(method => ({
 									value: method.mid,
-									label: method.description,
+									label: this.formatDescription(method),
 								}))}
 							simpleValue
 							value=""
