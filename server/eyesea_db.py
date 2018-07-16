@@ -2,7 +2,7 @@
 import json
 from peewee import *
 
-settings = json.loads(open("eyesea_settings.json").read())
+settings = json.loads(open('eyesea_settings.json').read())
 db = SqliteDatabase(settings['database'])
 
 class eyesea_model(Model):

@@ -19,33 +19,33 @@ from bottle import request, response, post, get, put, delete, hook, route, stati
 from eyesea_db import *
 from peewee import fn
 
-settings = json.loads(open("eyesea_settings.json").read())
+settings = json.loads(open('eyesea_settings.json').read())
 
-cache = settings["cache"]
+cache = settings['cache']
 if not os.path.isdir(cache):
     os.mkdir(cache)
 
-videostore = settings["video_storage"]
+videostore = settings['video_storage']
 if not os.path.isdir(videostore):
     os.mkdir(videostore)
 
-tmp = settings["temporary_storage"]
+tmp = settings['temporary_storage']
 if not os.path.isdir(tmp):
     os.mkdir(tmp)
 else:
     for i in os.listdir(tmp):
         os.remove(os.path.join(tmp,i))
 
-vformat = settings["video_format"]
-vcodec = settings["ffmpeg_vcodec"]
+vformat = settings['video_format']
+vcodec = settings['ffmpeg_vcodec']
     
 eye_env = os.environ
-eye_env["PATH"] = os.path.abspath(settings["algorithm_bin"]) + os.pathsep + eye_env["PATH"]
+eye_env['PATH'] = os.path.abspath(settings['algorithm_bin']) + os.pathsep + eye_env['PATH']
 tasklist = {}
 
 def scanmethods():
     methods = analysis_method.select().dicts()
-    for i in eye_env["PATH"].split(os.pathsep):
+    for i in eye_env['PATH'].split(os.pathsep):
         for j in os.listdir(i):
             name, ext = os.path.splitext(j)
             if ext == '.json':
@@ -76,7 +76,7 @@ def fr():
     elif hdr.lower() == 'application/json':
         return json.dumps
     else:
-        return lambda x: "Unknown request header: " + hdr
+        return lambda x: 'Unknown request header: ' + hdr
 
 @hook('before_request')
 def br():
@@ -135,15 +135,58 @@ def get_video():
 
 @post('/video')
 def post_video():
+    file_name = request.forms.get('filename')
+    name, ext = os.path.splitext(file_name)
+
+    upload = request.files.get('upload')
+    hash = hashlib.sha256()
+    for bytes in iter(lambda: upload.file.read(65536), b''):
+        hash.update(bytes)
+    hash = hash.hexdigest()
+
+    dest_path = '{p}/{f}'.format(p=videostore, f=hash + '.' + vformat)
+    if not os.path.exists(dest_path):
+        if ext == vformat:
+            upload.save(dest_path)
+        else:
+            temp_path = '{p}/{f}'.format(p=tmp, f=file_name)
+            upload.save(temp_path)
+            # No error handling here... should have some.
+            subprocess.check_call(['ffmpeg', '-y', '-i', temp_path, '-an', '-vcodec', vcodec, videostore + '/' + hash + '.' + vformat])
+            os.remove(temp_path)
+
+    info = json.loads(subprocess.check_output(['ffprobe', dest_path,
+        '-v error -print_format=json -show_entries stream=duration,r_frame_rate,avg_frame_rate']).decode('UTF-8'))
+
+    if 'streams' in info and len(info['streams']) > 0:
+        info = info['streams'][0]
+        fps = info['avg_frame_rate'].split('/')
+        fps = float(fps[0]) / float(fps[1])
+        dbdata = dict()
+        dbdata['description'] = request.forms.get('description')
+        dbdata['filename'] = file_name
+        # [Ab]using SQLite's soft typing here, giving it the integer type we declared only if it works out to be a nice number
+        # Digitally recorded or pre-converted videos should give us a nice exact FPS like 30 or 60.
+        dbdata['fps'] = int(fps) if int(fps) == fps else fps
+        # r_frame_rate is apparently a guess on their part, so this necessarily is too
+        dbdata['variable_framerate'] = info['r_frame_rate'] != info['avg_frame_rate']
+        dbdata['duration'] = float(info['duration'])
+        dbdata['uri'] = dest_path
+        data = video.select().where(video.vid==video.insert(dbdata).execute()).dicts().get()
+        return fr()(data)
+    return fr()({'error': 'Unable to get stream info.'})
+
+@post('/video2')
+def post_video():
     upload = request.json['upload']
     name, ext = os.path.splitext(request.json['filename'])
     if ext != vformat:
-        file_path = "{p}/{f}".format(p=tmp, f=request.json['filename'])
+        file_path = '{p}/{f}'.format(p=tmp, f=request.json['filename'])
         with open(file_path, 'wb') as f:
             f.write(upload.decode('base64'))
         subprocess.check_output(['ffmpeg', '-y', '-i', file_path, '-an', '-vcodec', vcodec, videostore + '/' + name + '.' + vformat])
     else:
-        file_path = "{p}/{f}".format(p=videostore, f=request.json['filename'])
+        file_path = '{p}/{f}'.format(p=videostore, f=request.json['filename'])
         with open(file_path, 'wb') as f:
             f.write(upload.decode('base64'))
 
@@ -209,7 +252,7 @@ def video_thumbnail(vid):
             subprocess.check_output(['ffmpeg', '-y', '-i', uri, '-ss','00:00:10.000', '-vframes', '1', cache + '/' + image])
         except subprocess.CalledProcessError as e:
             img = Image.new('RGB', (640,480), (255, 255, 255))
-            img.save(cache + '/' + image, "jpeg")
+            img.save(cache + '/' + image, 'jpeg')
     # This assumes we trust what's in the database
     root = uri[:slash]
     filepath = uri[slash + 1:]
@@ -260,8 +303,8 @@ def video_heatmap(vid):
 
         det = np.max(d)
         plt.style.use('dark_background')
-        #cmap = transparent_cmap(mcolors.LinearSegmentedColormap.from_list("", ["#800026", "#ffffcc"]))
-        cmap = transparent_cmap(mcolors.LinearSegmentedColormap.from_list("", ["black", "#429321", "#F0ED5E", "#F40E06"], N=8))
+        #cmap = transparent_cmap(mcolors.LinearSegmentedColormap.from_list('', ['#800026', '#ffffcc']))
+        cmap = transparent_cmap(mcolors.LinearSegmentedColormap.from_list('', ['black', '#429321', '#F0ED5E', '#F40E06'], N=8))
         fig = plt.figure()
         ax = fig.subplots(1, 1)
         ax.imshow(I)
@@ -269,10 +312,10 @@ def video_heatmap(vid):
         ax.axes.get_yaxis().set_visible(False)
         cb = ax.contourf(x, y, d, cmap=cmap)
         divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cax = divider.append_axes('right', size='5%', pad=0.05)
         cbar = plt.colorbar(cb, cax=cax)
         cbar.set_ticks([0,0.125*det,0.25*det,0.375*det,0.5*det,0.625*det,0.75*det,0.875*det,det])
-        cbar.set_ticklabels(["0%", "12.5%", "25%", "37.5%", "50%", "62.5%", "75%", "87.5%", "100%"])
+        cbar.set_ticklabels(['0%', '12.5%', '25%', '37.5%', '50%', '62.5%', '75%', '87.5%', '100%'])
         plt.savefig(cache + '/' + output, bbox_inches='tight')
     
     resp = static_file(output, root=cache)
@@ -393,19 +436,20 @@ def put_analysis_method_mid(mid):
 def server_static(filepath):
     return static_file(filepath, root='/')
 
+# FIXME set up to call the schedule function for new analyses
 @post('/process')
 def process_video():
     param = request.json
-    if "vid" in param:
-        if "mid" in param:
-            method = analysis_method.select().where(analysis_method.mid == param["mid"]).dicts().get()
-        elif "name" in param:
+    if 'vid' in param:
+        if 'mid' in param:
+            method = analysis_method.select().where(analysis_method.mid == param['mid']).dicts().get()
+        elif 'name' in param:
             scanmethods()
             method = analysis_method.select().where(analysis_method.description == name).order_by(analysis_method.creation_date.desc()).dicts().get()
         else:
             return fr()({'error': 'No analysis method specified'})
         procargs = json.loads(method['parameters'])
-        vid = video.select().where(video.vid == param["vid"]).dicts().get()
+        vid = video.select().where(video.vid == param['vid']).dicts().get()
         if 'file://' in vid['uri']:
             output = vid['uri'].replace('file://', '').split('.')[0] + '.json'
             args = [procargs['command'], procargs['videoarg'], vid['uri'].replace('file://', ''), procargs['outputarg'], output]
