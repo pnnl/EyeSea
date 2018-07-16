@@ -25,7 +25,7 @@ export class App extends React.Component {
 					<h1>EyeSea</h1>
 					<div>
 						<Uploader />
-						<Button className="settings" wide>
+						<Button className="settings" wide disabled>
 							Settings
 						</Button>
 					</div>

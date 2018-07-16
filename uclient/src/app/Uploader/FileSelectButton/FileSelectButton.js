@@ -13,6 +13,7 @@ export class FileSelectButton extends React.PureComponent {
 				file
 				accept={this.props.supportedVideoFormats}
 				wide={this.props.wide}
+				disabled={this.props.disabled}
 			>
 				{this.props.children}
 			</Button>

@@ -12,11 +12,15 @@
     background: $button-big-bg;
     border: 5px dashed $button-big-border;
 
+    &.disabled {
+      border-color: $disabled-fg;
+    }
+
     &:before {
       content: url('../../../images/monitor.png');
     }
 
-    &:hover:before {
+    &:not(.disabled):hover:before {
       content: url('../../../images/monitor_hover.png');
     }
   }

@@ -23,7 +23,9 @@ export default class Button extends React.PureComponent {
 			this.props.onMouseDown
 				? event => {
 						this.props.onMouseDown(event);
-						this.props.onClick && this.props.onClick(event);
+						!this.props.disabled &&
+							this.props.onClick &&
+							this.props.onClick(event);
 				  }
 				: this.props.onClick
 		);
@@ -32,7 +34,9 @@ export default class Button extends React.PureComponent {
 			this.props.onMouseUp
 				? event => {
 						this.props.onMouseUp(event);
-						this.props.onClick && this.props.onClick(event);
+						!this.props.disabled &&
+							this.props.onClick &&
+							this.props.onClick(event);
 				  }
 				: this.props.onClick
 		);
@@ -46,7 +50,7 @@ export default class Button extends React.PureComponent {
 					onDragOver={event => e.preventDefault()}
 					onDrop={event => {
 						event.preventDefault();
-						if (this.props.onSelect) {
+						if (this.props.onSelect && !this.props.disabled) {
 							this.props.onSelect(event.dataTransfer.files);
 						}
 					}}
@@ -54,16 +58,23 @@ export default class Button extends React.PureComponent {
 					onKeyUp={onKeyUp}
 					onMouseDown={event => {
 						event.preventDefault();
-						this.fileInput.value = '';
-						this.props.onMouseDown && this.props.onMouseDown(event);
+						if (!this.props.disabled) {
+							this.fileInput.value = '';
+							this.props.onMouseDown && this.props.onMouseDown(event);
+						}
 					}}
 					onMouseUp={this.props.onMouseUp}
-					onClick={this.props.onClick}
+					onClick={event =>
+						!this.props.disabled &&
+						this.props.onClick &&
+						this.props.onClick(event)
+					}
 				>
 					<input
 						ref={input => (this.fileInput = input)}
 						type="file"
 						accept={this.props.accept || ''}
+						disabled={this.props.disabled}
 						onChange={event => {
 							if (this.props.onSelect) {
 								this.props.onSelect(this.fileInput.files);
@@ -86,7 +97,11 @@ export default class Button extends React.PureComponent {
 						this.props.onMouseDown && this.props.onMouseDown(event);
 					}}
 					onMouseUp={this.props.onMouseUp}
-					onClick={this.props.onClick}
+					onClick={event =>
+						!this.props.disabled &&
+						this.props.onClick &&
+						this.props.onClick(event)
+					}
 				>
 					{content}
 				</span>

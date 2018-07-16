@@ -25,6 +25,10 @@
   &.disabled, &.disabled:hover {
     color: $disabled-fg;
     cursor: default;
+
+    &:before {
+      opacity: .5;
+    }
   }
 
   &:hover {

@@ -7,7 +7,7 @@
     content: url('../../../images/add.png');
   }
 
-  .add:hover:before {
+  .add:not(.disabled):hover:before {
     content:  url('../../../images/add_hover.png');
   }
 
@@ -58,6 +58,12 @@
     .save {
       color: $upload-popup-bg;
       background: $headings-fg;
+
+      &.disabled, &.disabled:hover {
+        color: $disabled-fg;
+        background: none;
+        border: 1px solid $headings-fg;
+      }
 
       &:hover {
         background: $hover-fg;

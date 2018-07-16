@@ -154,14 +154,14 @@ export class Uploader extends React.Component {
 							simpleValue
 							value=""
 							onChange={value =>
-								this.props.addAlgorithmInstance(
-									this.props.methods.ids[value]
-								)
+								this.props.addAlgorithmInstance(this.props.methods.ids[value])
 							}
 							searchable={false}
 						/>
 						<div className="buttons">
-							<Button className="save">Select</Button>
+							<Button className="save" disabled={!this.props.algorithms.length}>
+								Select
+							</Button>
 							<Button
 								className="cancel"
 								onClick={event => this.props.setFiles(null)}

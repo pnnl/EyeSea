@@ -84,6 +84,6 @@ h2, h3 {
   content: url('../images/settings.png');
 }
 
-.settings:hover:before {
+.settings:not(.disabled):hover:before {
   content:  url('../images/settings_hover.png');
 }
