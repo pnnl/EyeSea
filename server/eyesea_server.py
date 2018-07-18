@@ -6,6 +6,7 @@ import re
 import subprocess
 import base64
 import time
+import hashlib
 
 import numpy as np
 from numpy import inf
@@ -14,10 +15,14 @@ import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from PIL import Image
-from subprocess import check_output, Popen, PIPE
+from subprocess import check_output, Popen, PIPE, CalledProcessError
 from bottle import request, response, post, get, put, delete, hook, route, static_file
 from eyesea_db import *
 from peewee import fn
+
+# 1.5 GB, which could cause issues on machines without enough RAM if it doesn't use a
+# disk-based temporary file.
+bottle.BaseRequest.MEMFILE_MAX = 1610612736;
 
 settings = json.loads(open('eyesea_settings.json').read())
 
@@ -62,6 +67,92 @@ def scanmethods():
 
 scanmethods()
 
+def format_video(vid, analyses = None):
+    if not analyses:
+        analyses = [get_or_update_analysis(i) for i in analysis.select(analysis).where(analysis.vid == vid['vid']).dicts()]
+    return {
+        'id': vid['vid'],
+        'filename': vid['filename'],
+        'description': vid['description'],
+        'fps': vid['fps'],
+        'variableFramerate': vid['variable_framerate'],
+        'duration': vid['duration'],
+        'uri': vid['uri'],
+        'analyses': analyses
+    }
+
+def get_or_update_analysis(a):
+    if a['aid'] in tasklist:
+        p = tasklist[a['aid']]['p'].poll()
+        if p is not None:
+            data = {'status' : 'FINISHED', 'results' : ''}
+            if tasklist[a['aid']]['output'] != 'STDOUT':
+                data['results'] = open(tasklist[a['aid']]['output']).read()
+            analysis.update(data).where(analysis.aid == a['aid']).execute()
+            a = analysis.select().where(analysis.aid == a['aid']).dicts().get()
+            del tasklist[a['aid']]
+
+    results = json.loads(a['results'] if a['results'] else '{}')
+    return {
+        'id': a['aid'],
+        'status': a['status'],
+        'method': a['mid'],
+        'results': [
+            {
+                'detections': frame['detections'],
+                'frameIndex': frame['frameindex']
+            } for frame in results
+        ]
+    }
+
+# Not everything is friendly with a file:// path.
+def fix_path(uri):
+    is_file_scheme = False
+    if 'file://' in uri:
+        uri = uri.replace('file://', '')
+        is_file_scheme = True
+    if drive_letter.match(uri):
+        uri = uri[3:]
+    return (uri, is_file_scheme)
+
+# We do one or more of these frequently:
+# - getting the file name with extension
+# - getting the file name without extension
+# - getting the root folder for the file
+def get_video_path_parts(vid):
+    uri, is_file_scheme = fix_path(vid['uri'])
+    slash = uri.rfind('/')
+    pathname = uri[slash + 1:] if is_file_scheme else uri
+    filename = os.path.splitext(pathname)[0]
+    root = uri[:slash] if is_file_scheme else videostore
+    return (pathname, filename, root)
+
+def queue_analysis(vid, method, procargs = None):
+    try:
+        vid = video.select().where(video.vid == vid).dicts().get()
+        aid = None
+
+        base_args = json.loads(method['parameters'])
+        if procargs == None:
+            procargs = base_args
+
+        try:
+            output = '{p}/{f}'.format(p=tmp, f=vid['uri'].split('.')[0] + '.json')
+            args = [base_args['command'], base_args['videoarg'], vid['uri'].replace('file://', ''), base_args['outputarg'], output]
+            args.extend(np.array(procargs).flatten())
+            aid = analysis.select().where(analysis.aid==analysis.insert({'mid': method['mid'], 'vid': vid, 'status': 'QUEUED', 'parameters': json.dumps(args), 'results' : ''}).execute()).dicts().get()
+            tasklist[aid['aid']] = {'p': Popen(args, env=eye_env), 'output' : output}
+            analysis.update({'status' : 'PROCESSING'}).where(analysis.aid == aid['aid']).execute()
+            return analysis.select().where(analysis.aid == aid['aid']).dicts().get()
+        except:
+            if aid:
+                analysis.update({'status' : 'ERROR'}).where(analysis.aid == aid['aid']).execute()
+                # FIXME this and the following are quite unhelpful as errors
+                return {'error': 'Executing video analysis returned an error.'}
+            return {'error': 'Error queing video analysis.'}
+    except:
+        return {'error': 'Invalid video ID specified.'}
+
 @route('/', method = 'OPTIONS')
 @route('/<path:path>', method = 'OPTIONS')
 def options_handler(path = None):
@@ -73,7 +164,7 @@ def fr():
         return lambda x: x
     elif hdr.lower() == 'text/plain':
         return lambda x: x
-    elif hdr.lower() == 'application/json':
+    elif hdr.lower() == 'application/json' or hdr.lower().find('multipart/form-data') == 0:
         return json.dumps
     else:
         return lambda x: 'Unknown request header: ' + hdr
@@ -110,152 +201,98 @@ def get_statistics():
 @get('/video')
 def get_video():
     data = video.select(video).dicts()
-
-    data = [(lambda vid: {
-        'id': vid['vid'],
-        'filename': vid['filename'],
-        'description': vid['description'],
-        'fps': vid['fps'],
-        'variableFramerate': vid['variable_framerate'],
-        'duration': vid['duration'],
-        'uri': vid['uri'],
-        'analyses': [(lambda analysis, results: {
-            'id': analysis['aid'],
-            'status': analysis['status'],
-            'method': analysis['mid'],
-            'results': [
-                {
-                    'detections': frame['detections'],
-                    'frameIndex': frame['frameindex']
-                } for frame in results
-            ]
-        })(i, json.loads(i['results'] if i['results'] else '{}')) for i in analysis.select(analysis).where(analysis.vid == vid['vid']).dicts()]
-    })(i) for i in data]
+    print(request.query['sortBy'])
+    data = [format_video(i) for i in data]
     return fr()(data)
+
+import cgi
 
 @post('/video')
 def post_video():
-    file_name = request.forms.get('filename')
-    name, ext = os.path.splitext(file_name)
-
     upload = request.files.get('upload')
+    name, ext = os.path.splitext(upload.filename)
+
     hash = hashlib.sha256()
     for bytes in iter(lambda: upload.file.read(65536), b''):
         hash.update(bytes)
-    hash = hash.hexdigest()
+    filename = hash.hexdigest() + '.' + vformat
+    upload.file.seek(0)
 
-    dest_path = '{p}/{f}'.format(p=videostore, f=hash + '.' + vformat)
+    dest_path = '{p}/{f}'.format(p=videostore, f=filename)
     if not os.path.exists(dest_path):
-        if ext == vformat:
+        if ext[1:] == vformat:
             upload.save(dest_path)
         else:
-            temp_path = '{p}/{f}'.format(p=tmp, f=file_name)
+            temp_path = '{p}/{f}'.format(p=tmp, f=upload.filename)
             upload.save(temp_path)
-            # No error handling here... should have some.
-            subprocess.check_call(['ffmpeg', '-y', '-i', temp_path, '-an', '-vcodec', vcodec, videostore + '/' + hash + '.' + vformat])
-            os.remove(temp_path)
+            try:
+                subprocess.check_call(['ffmpeg', '-y', '-i', temp_path, '-an', '-vcodec', vcodec,
+                    '{p}/{f}'.format(p=videostore, f=filename)])
+            except CalledProcessError as error:
+                return fr()({'error': 'Error converting video to format ' + vcodec, details: error.output})
+            finally:
+                os.remove(temp_path)
 
-    info = json.loads(subprocess.check_output(['ffprobe', dest_path,
-        '-v error -print_format=json -show_entries stream=duration,r_frame_rate,avg_frame_rate']).decode('UTF-8'))
+    try:
+        info = json.loads(subprocess.check_output(['ffprobe', dest_path, '-v', 'error', '-print_format', 'json',
+            '-show_entries', 'stream=duration,r_frame_rate,avg_frame_rate']).decode('UTF-8'))
 
-    if 'streams' in info and len(info['streams']) > 0:
-        info = info['streams'][0]
-        fps = info['avg_frame_rate'].split('/')
-        fps = float(fps[0]) / float(fps[1])
-        dbdata = dict()
-        dbdata['description'] = request.forms.get('description')
-        dbdata['filename'] = file_name
-        # [Ab]using SQLite's soft typing here, giving it the integer type we declared only if it works out to be a nice number
-        # Digitally recorded or pre-converted videos should give us a nice exact FPS like 30 or 60.
-        dbdata['fps'] = int(fps) if int(fps) == fps else fps
-        # r_frame_rate is apparently a guess on their part, so this necessarily is too
-        dbdata['variable_framerate'] = info['r_frame_rate'] != info['avg_frame_rate']
-        dbdata['duration'] = float(info['duration'])
-        dbdata['uri'] = dest_path
-        data = video.select().where(video.vid==video.insert(dbdata).execute()).dicts().get()
-        return fr()(data)
-    return fr()({'error': 'Unable to get stream info.'})
+        if 'streams' in info and len(info['streams']) > 0:
+            info = info['streams'][0]
+            fps = info['avg_frame_rate'].split('/')
+            fps = float(fps[0]) / float(fps[1])
+            dbdata = dict()
+            dbdata['description'] = request.forms.get('description')
+            dbdata['filename'] = upload.raw_filename
+            # [Ab]using SQLite's soft typing here, giving it the integer type we declared only if it works out to be a nice number
+            # Digitally recorded or pre-converted videos should give us a nice exact FPS like 30 or 60.
+            dbdata['fps'] = int(fps) if int(fps) == fps else fps
+            # r_frame_rate is apparently a guess on their part, so this necessarily is too
+            dbdata['variable_framerate'] = info['r_frame_rate'] != info['avg_frame_rate']
+            dbdata['duration'] = float(info['duration'])
+            dbdata['uri'] = filename
+            data = video.select().where(video.vid==video.insert(dbdata).execute()).dicts().get()
 
-@post('/video2')
-def post_video():
-    upload = request.json['upload']
-    name, ext = os.path.splitext(request.json['filename'])
-    if ext != vformat:
-        file_path = '{p}/{f}'.format(p=tmp, f=request.json['filename'])
-        with open(file_path, 'wb') as f:
-            f.write(upload.decode('base64'))
-        subprocess.check_output(['ffmpeg', '-y', '-i', file_path, '-an', '-vcodec', vcodec, videostore + '/' + name + '.' + vformat])
-    else:
-        file_path = '{p}/{f}'.format(p=videostore, f=request.json['filename'])
-        with open(file_path, 'wb') as f:
-            f.write(upload.decode('base64'))
+            results = []
+            try:
+                analyses = json.loads(request.forms.get('analyses'))
+                for a in analyses:
+                    results.append(queue_analysis(data['vid'], a['mid'], a['parameters']))
+            except:
+                return fr()({'error': 'Unable to parse list of analyses.'})
 
-    dbdata = request.json.copy()
-    dbdata.pop('upload')
-    data = video.select().where(video.vid==video.insert(dbdata).execute()).dicts().get()
-    return fr()(data)
+            return fr()(format_video(data, results))
+        return fr()({'error': 'Video metadata returned no streams.'})
+    except CalledProcessError as error:
+        return fr()({'error': 'Error getting video metadata', details: error.output})
 
 @get('/video/<vid>')
 def get_video_vid(vid):
     data = video.select().where(video.vid == vid).dicts().get();
-
-    data = {
-        'id': data['vid'],
-        'filename': data['filename'],
-        'description': data['description'],
-        'fps': data['fps'],
-        'variableFramerate': data['variable_framerate'],
-        'duration': data['duration'],
-        'uri': data['uri'],
-        'analyses': [(lambda analysis, results: {
-            'id': analysis['aid'],
-            'status': analysis['status'],
-            'method': analysis['mid'],
-            'results': [
-                {
-                    'detections': frame['detections'],
-                    'frameIndex': frame['frameindex']
-                } for frame in results
-            ]
-        })(i, json.loads(i['results'] if i['results'] else '{}')) for i in analysis.select(analysis).where(analysis.vid == vid).dicts()]
-    }
-    return fr()(data)
+    return fr()(format_video(data))
 
 drive_letter = re.compile('/[a-zA-Z]:')
 
 @route('/video/<vid>/file')
 def server_static(vid):
-    uri = video.select().where(video.vid == vid).dicts().get()['uri'];
-    if 'file://' in uri:
-        uri = uri.replace('file://', '')
-    if drive_letter.match(uri):
-        uri = uri[3:]
-    slash = uri.rfind('/')
-    # This assumes we trust what's in the database
-    root = uri[:slash]
-    filepath = uri[slash + 1:]
-    resp = static_file(filepath, root=root)
+    v = video.select().where(video.vid == vid).dicts().get();
+    pathname, filename, root = get_video_path_parts(v)
+    resp = static_file(pathname, root=root)
     allow_cross_origin(resp)
     return resp
 
 @route('/video/<vid>/thumbnail')
 def video_thumbnail(vid):
-    uri = video.select().where(video.vid == vid).dicts().get()['uri']
-    if 'file://' in uri:
-        uri = uri.replace('file://', '')
-    if drive_letter.match(uri):
-        uri = uri[3:]
-    slash = uri.rfind('/')
-    image = uri.split('/')[-1].split('.')[0] + '.jpg'
+    v = video.select().where(video.vid == vid).dicts().get()
+    pathname, filename, root = get_video_path_parts(v)
+    image = filename + '.jpg'
     if not os.path.isfile(cache + '/' + image):
         try:
-            subprocess.check_output(['ffmpeg', '-y', '-i', uri, '-ss','00:00:10.000', '-vframes', '1', cache + '/' + image])
+            subprocess.check_output(['ffmpeg', '-y', '-i', '{p}/{f}'.format(p=root, f=pathname),
+                '-ss','00:00:10.000', '-vframes', '1', cache + '/' + image])
         except subprocess.CalledProcessError as e:
             img = Image.new('RGB', (640,480), (255, 255, 255))
             img.save(cache + '/' + image, 'jpeg')
-    # This assumes we trust what's in the database
-    root = uri[:slash]
-    filepath = uri[slash + 1:]
     resp = static_file(image, root=cache)
     allow_cross_origin(resp)
     return resp
@@ -264,13 +301,9 @@ def video_thumbnail(vid):
 def video_heatmap(vid):
     v = video.select().where(video.vid == vid).dicts().get()
     a = analysis.select().where(analysis.vid == vid, analysis.status == 'FINISHED').dicts()
-    uri = v['uri']
-    if 'file://' in uri:
-        uri = uri.replace('file://', '')
-    if drive_letter.match(uri):
-        uri = uri[3:]
-    image = uri.split('/')[-1].split('.')[0] + '.jpg'
-    output = image.split('.')[0] + '_heatmap.jpg'
+    pathname, filename, root = get_video_path_parts(v)
+    image = filename + '.jpg'
+    output = filename + '_heatmap.jpg'
     if not os.path.isfile(cache + '/' + output):
         if not os.path.isfile(cache + '/' + image):
             video_thumbnail(vid)
@@ -368,7 +401,7 @@ def video_statistics(vid):
 def put_video_vid(vid):
     updata = video.update(request.json).where(video.vid == vid).execute()
     data = video.select().where(video.vid == vid).dicts().get()
-    return fr()(data)
+    return fr()(format_video(data))
 
 @get('/analysis')
 def get_analysis():
@@ -384,14 +417,7 @@ def post_analysis():
 def get_analysis_aid(aid):
     if aid.isdigit():
         data = analysis.select().where(analysis.aid == aid).dicts().get()
-        if int(aid) in tasklist:
-            p = tasklist[int(aid)]['p'].poll()
-            param = json.loads(data['parameters'])
-            if p is not None:
-                if tasklist[int(aid)]['output'] != 'STDOUT':
-                    analysis.update({'status' : 'FINISHED', 'results' : open(tasklist[int(aid)]['output']).read()}).where(analysis.aid == aid).execute()
-                data = analysis.select().where(analysis.aid == aid).dicts().get()
-                del tasklist[int(aid)]
+        data = get_or_update_analysis(data)
     else:
         data = {'error': 'Not a valid analysis ID'}
     return fr()(data)
@@ -436,33 +462,17 @@ def put_analysis_method_mid(mid):
 def server_static(filepath):
     return static_file(filepath, root='/')
 
-# FIXME set up to call the schedule function for new analyses
 @post('/process')
 def process_video():
     param = request.json
-    if 'vid' in param:
-        if 'mid' in param:
-            method = analysis_method.select().where(analysis_method.mid == param['mid']).dicts().get()
-        elif 'name' in param:
-            scanmethods()
-            method = analysis_method.select().where(analysis_method.description == name).order_by(analysis_method.creation_date.desc()).dicts().get()
-        else:
-            return fr()({'error': 'No analysis method specified'})
-        procargs = json.loads(method['parameters'])
-        vid = video.select().where(video.vid == param['vid']).dicts().get()
-        if 'file://' in vid['uri']:
-            output = vid['uri'].replace('file://', '').split('.')[0] + '.json'
-            args = [procargs['command'], procargs['videoarg'], vid['uri'].replace('file://', ''), procargs['outputarg'], output]
-            aid = analysis.select().where(analysis.aid==analysis.insert({'mid': param['mid'], 'vid': param['vid'], 'status': 'QUEUED', 'parameters': json.dumps(args), 'results' : ''}).execute()).dicts().get()
-            print(args)
-            tasklist[aid['aid']] = {'p': Popen(args, env=eye_env), 'output' : output}
-        else:
-            return fr()('Unknown video file handler')
-        analysis.update({'status' : 'PROCESSING'}).where(analysis.aid == aid['aid']).execute()
-        data = analysis.select().where(analysis.aid == aid['aid']).dicts().get()
-        return fr()(data)
+    if 'mid' in param:
+        method = analysis_method.select().where(analysis_method.mid == param['mid']).dicts().get()
+    elif 'name' in param:
+        scanmethods()
+        method = analysis_method.select().where(analysis_method.description == name).order_by(analysis_method.creation_date.desc()).dicts().get()
     else:
-        return fr()({'error': 'No video or analysis method specified'})
+        return fr()({'error': 'No analysis method specified.'})
+    return fr()(queue_analysis(param['vid'], method))
 
 app = application = bottle.default_app()
 

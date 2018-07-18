@@ -82,7 +82,24 @@ export function post(url, data, options = {}) {
 		Object.assign(
 			{},
 			baseOptions,
-			{ method: 'POST', body: JSON.stringify(data) },
+			{ method: 'POST', body: data instanceof FormData ? data : JSON.stringify(data) },
+			options
+		)
+	);
+}
+
+/**
+ * This is a POST method call that assumes multipart/form-data. It does not inherit base options from this library.
+ * @param {string} url - The URL used in the method request.
+ * @param {Object} data - Used as the body payload for the method.
+ * @param {Object} [options] - Optional. Used to override the base options for the method. Any options passed in will override the defaults.
+ * @return {Object} - The response object from the HTTP call. It will be in JSON format if successful.
+ **/
+export function send(url, data, options = {}) {
+	return request(
+		url,
+		Object.assign(
+			{ method: 'POST', body: data },
 			options
 		)
 	);

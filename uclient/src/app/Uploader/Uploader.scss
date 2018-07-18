@@ -80,7 +80,7 @@
     }
 
     ul {
-      max-height: calc(100vh - 21.05em - 2px);
+      max-height: calc(100vh - 27.05em - 2px);
       overflow: auto;
       padding-left: 3.25em;
 
@@ -117,9 +117,14 @@
       }
 
       h4 {
+        flex-grow: 1;
         margin: 0;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+
+      .delete {
+        cursor: pointer;
       }
 
       .parameters {
@@ -172,10 +177,16 @@
       [aria-expanded='true'] ~ .parameters {
         display: block;
       }
-
-      .Select {
-        flex-grow: 1;
-      }
     }
+
+      .description-label {
+        margin-bottom: 0;
+        color: $headings-fg;
+      }
+
+      textarea {
+        box-sizing: border-box;
+        width: 100%;
+      }
   }
 }

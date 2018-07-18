@@ -18,19 +18,21 @@ import FileSelectButton from './FileSelectButton';
 import {
 	request,
 	setFiles,
+	setDescription,
 	addAlgorithmInstance,
 	deleteAlgorithmInstance,
 	enableAlgorithmInstance,
 	enableCustomAlgorithmInstanceParameters,
 	setCustomAlgorithmInstanceParameters,
 	getFiles,
+	getDescription,
 	getAlgorithmInstances,
 	getResult,
 	getError,
 } from './module';
 import './Uploader.scss';
 
-export class Uploader extends React.Component {
+export class Uploader extends React.PureComponent {
 	handleEnableAlgorithm = algorithm => event =>
 		this.props.enableAlgorithmInstance(algorithm, algorithm.disabled);
 	handleEnableParameters = algorithm => event =>
@@ -109,6 +111,23 @@ export class Uploader extends React.Component {
 											</span>
 										</span>
 										<h4>{this.formatDescription(algorithm)}</h4>
+										<span
+											className="delete"
+											roll="button"
+											title="Delete algorithm instance"
+											tabIndex="0"
+											onKeyUp={generateAccessibleKeyUpClickHandler(event =>
+												this.props.deleteAlgorithmInstance(algorithm)
+											)}
+											onClick={event =>
+												this.props.deleteAlgorithmInstance(algorithm)
+											}
+										>
+											<i className="fa fa-times" />
+											<span className="icon-label">
+												delete algorithm instance
+											</span>
+										</span>
 										<table id={'a' + algorithm.id} className="parameters">
 											<thead>
 												<tr>
@@ -170,8 +189,20 @@ export class Uploader extends React.Component {
 							}
 							searchable={false}
 						/>
+						<h4 class="description-label">Video Description</h4>
+						<textarea
+							onInput={event => this.props.setDescription(event.target.value)}
+						>
+							{this.props.description}
+						</textarea>
 						<div className="buttons">
-							<Button className="save" disabled={!this.props.algorithms.length}>
+							<Button
+								className="save"
+								onClick={this.props.upload}
+								disabled={
+									!this.props.algorithms.length || !this.props.description
+								}
+							>
 								Select
 							</Button>
 							<Button
@@ -198,6 +229,7 @@ export class Uploader extends React.Component {
 const mapStateToProps = state => ({
 	supportedVideoFormats: getSupportedVideoFormats(state),
 	files: getFiles(state),
+	description: getDescription(state),
 	algorithms: getAlgorithmInstances(state),
 	result: getResult(state),
 	methods: {
@@ -213,6 +245,7 @@ export default connect(
 	{
 		upload: request,
 		setFiles,
+		setDescription,
 		addAlgorithmInstance,
 		deleteAlgorithmInstance,
 		enableAlgorithmInstance,

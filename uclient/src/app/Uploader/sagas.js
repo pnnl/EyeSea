@@ -1,11 +1,35 @@
 import { put, takeLatest, call, select } from 'redux-saga/effects';
-import { get } from '../util/request';
+import { send } from '../util/request';
 
-import { REQUEST, SUCCESS, ERROR } from './module';
+import {
+	REQUEST,
+	SUCCESS,
+	ERROR,
+	getFiles,
+	getDescription,
+	getAlgorithmInstances,
+} from './module';
 
 export function* uploadVideos(action) {
 	try {
-		let payload = yield call(post, action.servicePath + 'video');
+		let files = yield select(getFiles);
+		let description = yield select(getDescription);
+		let algorithms = yield select(getAlgorithmInstances);
+
+		let form = new FormData();
+		form.append('upload', files[0]);
+		form.append('description', description);
+		form.append(
+			'analyses',
+			JSON.stringify(
+				algorithms.map(algorithm => ({
+					mid: algorithm.mid,
+					parameters: algorithm.parameters,
+				}))
+			)
+		);
+
+		let payload = yield call(send, action.servicePath + 'video', form);
 
 		yield put({
 			type: SUCCESS,
