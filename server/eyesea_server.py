@@ -253,6 +253,7 @@ def post_video():
             dbdata['variable_framerate'] = info['r_frame_rate'] != info['avg_frame_rate']
             dbdata['duration'] = float(info['duration'])
             dbdata['uri'] = filename
+            dbdata['creation_date'] = int(time.time())
             data = video.select().where(video.vid==video.insert(dbdata).execute()).dicts().get()
 
             results = []

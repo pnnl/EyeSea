@@ -17,6 +17,7 @@ class video(eyesea_model):
     variable_framerate = SmallIntegerField()
     duration = FloatField()
     uri = CharField()
+    creation_date = IntegerField()
 
 class analysis(eyesea_model):
     aid = IntegerField(primary_key=True)
