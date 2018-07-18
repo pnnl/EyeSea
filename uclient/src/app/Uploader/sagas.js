@@ -22,7 +22,7 @@ export function* uploadVideos(action) {
 		form.append(
 			'analyses',
 			JSON.stringify(
-				algorithms.map(algorithm => ({
+				algorithms.filter(algorithm => !algorithm.disabled).map(algorithm => ({
 					mid: algorithm.mid,
 					parameters: algorithm.parameters,
 				}))
