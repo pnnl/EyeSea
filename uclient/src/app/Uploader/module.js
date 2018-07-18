@@ -13,6 +13,7 @@ export const ERROR = 'app/uploader/error';
 
 export const FILES = 'app/uploader/files';
 export const DESCRIPTION = 'app/uploader/description';
+export const RESET = 'app/uploader/reset';
 
 export const ALGORITHMS = 'app/uploader/algorithms';
 export const ALGORITHM_ADD = 'app/uploader/addAlgorithm';
@@ -34,6 +35,12 @@ export function setFiles(payload) {
 	return {
 		type: FILES,
 		payload,
+	};
+}
+
+export function reset() {
+	return {
+		type: RESET,
 	};
 }
 
@@ -102,6 +109,8 @@ const reducer = (state = fromJS(initialState), action) => {
 		case DESCRIPTION:
 			// string is already immutable
 			return state.set(type, payload);
+		case RESET:
+			return state.delete(FILES).delete(SUCCESS);
 		case ALGORITHM_ADD:
 			return state.update(ALGORITHMS, list =>
 				list.push(
@@ -151,10 +160,12 @@ const reducer = (state = fromJS(initialState), action) => {
 					payload.value
 				)
 			);
+		case REQUEST:
+			return state.set(type, true);
 		case SUCCESS:
-			return state.set(type, fromJS(payload));
+			return state.delete(REQUEST).set(type, fromJS(payload));
 		case ERROR:
-			return state.set(type, fromError(payload));
+			return state.delete(REQUEST).set(type, fromError(payload));
 		default:
 			return state;
 	}
@@ -166,11 +177,14 @@ export default reducer;
 var getKeyImmutable = key => state => state.getIn(['app', 'uploader', key]);
 
 export const getFiles = createIdentitySelector(getKeyImmutable(FILES));
-export const getDescription = createIdentitySelector(getKeyImmutable(DESCRIPTION));
+export const getDescription = createIdentitySelector(
+	getKeyImmutable(DESCRIPTION)
+);
 
 export const getAlgorithmInstances = createToJSSelector(
 	getKeyImmutable(ALGORITHMS)
 );
 
+export const getRequest = createIdentitySelector(getKeyImmutable(REQUEST));
 export const getResult = createToJSSelector(getKeyImmutable(SUCCESS));
 export const getError = createToJSSelector(getKeyImmutable(ERROR));

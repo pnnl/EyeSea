@@ -4,6 +4,7 @@ import {
 	generateAccessibleKeyUpClickHandler,
 	generateAccessibleKeyDownClickHandler,
 } from '../util/events';
+import { Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import * as moment from 'moment';
@@ -19,6 +20,7 @@ import {
 	request,
 	setFiles,
 	setDescription,
+	reset,
 	addAlgorithmInstance,
 	deleteAlgorithmInstance,
 	enableAlgorithmInstance,
@@ -27,6 +29,7 @@ import {
 	getFiles,
 	getDescription,
 	getAlgorithmInstances,
+	getRequest,
 	getResult,
 	getError,
 } from './module';
@@ -64,6 +67,11 @@ export class Uploader extends React.PureComponent {
 			description += ')';
 		}
 		return description;
+	}
+	componentDidUpdate() {
+		if (this.props.result) {
+			this.props.reset();
+		}
 	}
 	render() {
 		var popup;
@@ -189,7 +197,7 @@ export class Uploader extends React.PureComponent {
 							}
 							searchable={false}
 						/>
-						<h4 class="description-label">Video Description</h4>
+						<h4 className="description-label">Video Description</h4>
 						<textarea
 							onInput={event => this.props.setDescription(event.target.value)}
 						>
@@ -200,7 +208,9 @@ export class Uploader extends React.PureComponent {
 								className="save"
 								onClick={this.props.upload}
 								disabled={
-									!this.props.algorithms.length || !this.props.description
+									!this.props.algorithms.length ||
+									!this.props.description ||
+									this.props.request
 								}
 							>
 								Select
@@ -208,6 +218,7 @@ export class Uploader extends React.PureComponent {
 							<Button
 								className="cancel"
 								onClick={event => this.props.setFiles(null)}
+								disabled={this.props.request}
 							>
 								Cancel
 							</Button>
@@ -215,6 +226,9 @@ export class Uploader extends React.PureComponent {
 					</div>
 				</div>
 			);
+		}
+		if (this.props.result) {
+			popup = <Redirect to="/" />;
 		}
 		return (
 			<div className="uploader">
@@ -231,6 +245,7 @@ const mapStateToProps = state => ({
 	files: getFiles(state),
 	description: getDescription(state),
 	algorithms: getAlgorithmInstances(state),
+	request: getRequest(state),
 	result: getResult(state),
 	methods: {
 		list: getAnalysisMethods(state),
@@ -246,6 +261,7 @@ export default connect(
 		upload: request,
 		setFiles,
 		setDescription,
+		reset,
 		addAlgorithmInstance,
 		deleteAlgorithmInstance,
 		enableAlgorithmInstance,

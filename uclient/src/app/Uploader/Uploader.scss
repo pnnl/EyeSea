@@ -77,6 +77,11 @@
       &:hover {
         color: $hover-fg;
       }
+
+      &.disabled, &.disabled:hover {
+        color: $disabled-fg;
+        opacity: .5;
+      }
     }
 
     ul {
