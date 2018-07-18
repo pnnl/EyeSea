@@ -390,10 +390,10 @@ def video_statistics(vid):
     print(avg_bounding_box, total_detections)
     return fr()({
         'totalDetections': total_detections,
-        'percentTimeWithDetections': frames_with_detections / frame_count,
-        'minBoundingBoxArea': min_bounding_box,
-        'avgBoundingBoxArea': avg_bounding_box / total_detections,
-        'maxBoundingBoxArea': max_bounding_box,
+        'percentTimeWithDetections': frames_with_detections / frame_count if frame_count else 0,
+        'minBoundingBoxArea': min_bounding_box if not np.isposinf(min_bounding_box) else 0,
+        'avgBoundingBoxArea': avg_bounding_box / total_detections if total_detections else 0,
+        'maxBoundingBoxArea': max_bounding_box if max_bounding_box >= 0 else 0,
         'frameIndexWithHighestDetections': max_detections[0]
     })
 
