@@ -84,14 +84,25 @@ def format_video(vid, analyses = None):
 
 def get_or_update_analysis(a):
     if a['aid'] in tasklist:
-        p = tasklist[a['aid']]['p'].poll()
+        task = tasklist[a['aid']]
+        p = task['p'].poll()
         if p is not None:
             data = {'status' : 'FINISHED', 'results' : ''}
-            if tasklist[a['aid']]['output'] != 'STDOUT':
-                data['results'] = open(tasklist[a['aid']]['output']).read()
+            if p:
+                data['status'] = 'ERROR'
+                task['error'].flush()
+                os.fsync(task['error'].fileno())
+                data['results'] = task['error'].read()
+            else:
+                data['results'] = open(task['output']).read()
             analysis.update(data).where(analysis.aid == a['aid']).execute()
             a = analysis.select().where(analysis.aid == a['aid']).dicts().get()
             del tasklist[a['aid']]
+            try:
+                task['error'].close()
+                os.remove(task['error'].name)
+            except OSError:
+                pass
 
     results = json.loads(a['results'] if a['results'] else '{}')
     return {
@@ -139,20 +150,15 @@ def queue_analysis(vid, method, procargs = None):
         if procargs == None:
             procargs = base_args
 
-        try:
-            output = '{p}/{f}'.format(p=tmp, f=vid['uri'].split('.')[0] + '.json')
-            args = [base_args['command'], base_args['videoarg'], vid['uri'].replace('file://', ''), base_args['outputarg'], output]
-            args.extend(np.array(procargs).flatten())
-            aid = analysis.select().where(analysis.aid==analysis.insert({'mid': method['mid'], 'vid': vid, 'status': 'QUEUED', 'parameters': json.dumps(args), 'results' : ''}).execute()).dicts().get()
-            tasklist[aid['aid']] = {'p': Popen(args, env=eye_env), 'output' : output}
-            analysis.update({'status' : 'PROCESSING'}).where(analysis.aid == aid['aid']).execute()
-            return analysis.select().where(analysis.aid == aid['aid']).dicts().get()
-        except:
-            if aid:
-                analysis.update({'status' : 'ERROR'}).where(analysis.aid == aid['aid']).execute()
-                # FIXME this and the following are quite unhelpful as errors
-                return {'error': 'Executing video analysis returned an error.'}
-            return {'error': 'Error queing video analysis.'}
+        pathname, filename, root = get_video_path_parts(vid)
+        output = '{p}/{f}'.format(p=tmp, f=filename + '.json')
+        args = [base_args['command'], base_args['videoarg'], '{p}/{f}'.format(p=root, f=pathname), base_args['outputarg'], output]
+        args.extend(np.array(procargs).flatten())
+        aid = analysis.select().where(analysis.aid==analysis.insert({'mid': method['mid'], 'vid': vid, 'status': 'QUEUED', 'parameters': json.dumps(args), 'results' : ''}).execute()).dicts().get()
+        stderr = open('{p}/{f}'.format(p=tmp, f=filename + '.err'), 'w+')
+        tasklist[aid['aid']] = {'p': Popen(args, env=eye_env, stderr=stderr), 'output' : output, 'error' : stderr}
+        analysis.update({'status' : 'PROCESSING'}).where(analysis.aid == aid['aid']).execute()
+        return analysis.select().where(analysis.aid == aid['aid']).dicts().get()
     except:
         return {'error': 'Invalid video ID specified.'}
 
@@ -262,7 +268,7 @@ def post_video():
                 os.remove(temp_path)
 
     try:
-        info = json.loads(check_output_with_error(['ffprobe', dest_path + 'f', '-v', 'error', '-print_format', 'json',
+        info = json.loads(check_output_with_error(['ffprobe', dest_path, '-v', 'error', '-print_format', 'json',
             '-show_entries', 'stream=duration,r_frame_rate,avg_frame_rate']).decode('UTF-8'))
 
         if 'streams' in info and len(info['streams']) > 0:

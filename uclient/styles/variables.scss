@@ -5,6 +5,8 @@ $site-bg-raw: 10, 23, 38; // 0a1726
 $site-fg: #d1d1d1;
 $site-bg: RGB(#{$site-bg-raw}); // Workaround; SASS wants to call its own function here
 
+$error: #fe4040;
+
 $headings-fg: #2fff97;
 $headings-reverse-fg: black;
 $header-line-height: 2.286em;

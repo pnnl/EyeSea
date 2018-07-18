@@ -26,6 +26,7 @@ import {
 	enableAlgorithmInstance,
 	enableCustomAlgorithmInstanceParameters,
 	setCustomAlgorithmInstanceParameters,
+	dismissError,
 	getFiles,
 	getDescription,
 	getAlgorithmInstances,
@@ -74,8 +75,28 @@ export class Uploader extends React.PureComponent {
 		}
 	}
 	render() {
-		var popup;
+		var popup, error;
 		if (this.props.files) {
+			if (this.props.error) {
+				error = (
+					<div className="popup-overlay">
+						<div className="popup error">
+							<h3>
+								{this.props.error.message.error || "We've encountered an error"}
+							</h3>
+							<p>The server had this to say:</p>
+							<p className="details">
+								{this.props.error.message.details || this.props.error.message}
+							</p>
+							<div className="buttons">
+								<Button className="ok" onClick={this.props.dismissError}>
+									OK
+								</Button>
+							</div>
+						</div>
+					</div>
+				);
+			}
 			popup = (
 				<div className="popup-overlay">
 					<div className={'popup' + (this.props.request ? ' busy' : '')}>
@@ -224,10 +245,11 @@ export class Uploader extends React.PureComponent {
 							</Button>
 						</div>
 					</div>
+					{error}
 				</div>
 			);
 		}
-		if (this.props.result) {
+		if (this.props.result && !this.props.error) {
 			popup = <Redirect to="/" />;
 		}
 		return (
@@ -267,5 +289,6 @@ export default connect(
 		enableAlgorithmInstance,
 		enableCustomAlgorithmInstanceParameters,
 		setCustomAlgorithmInstanceParameters,
+		dismissError,
 	}
 )(Uploader);

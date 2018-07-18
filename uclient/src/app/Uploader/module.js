@@ -10,6 +10,7 @@ import _ from 'lodash';
 export const REQUEST = 'app/uploader/request';
 export const SUCCESS = 'app/uploader/success';
 export const ERROR = 'app/uploader/error';
+export const ERROR_DISMISS = 'app/uploader/errorDismiss';
 
 export const FILES = 'app/uploader/files';
 export const DESCRIPTION = 'app/uploader/description';
@@ -95,6 +96,12 @@ export function setCustomAlgorithmInstanceParameters(key, value) {
 	};
 }
 
+export function dismissError() {
+	return {
+		type: ERROR_DISMISS,
+	};
+}
+
 const initialState = {
 	[ALGORITHMS]: [],
 };
@@ -160,10 +167,15 @@ const reducer = (state = fromJS(initialState), action) => {
 					payload.value
 				)
 			);
+		case ERROR_DISMISS:
+			return state.delete(ERROR);
 		case REQUEST:
 			return state.set(type, true);
 		case SUCCESS:
-			return state.delete(REQUEST).set(type, fromJS(payload));
+			return state
+				.delete(REQUEST)
+				.delete(ERROR)
+				.set(type, fromJS(payload));
 		case ERROR:
 			return state.delete(REQUEST).set(type, fromError(payload));
 		default:

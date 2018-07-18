@@ -31,10 +31,17 @@ export function* uploadVideos(action) {
 
 		let payload = yield call(send, action.servicePath + 'video', form);
 
-		yield put({
-			type: SUCCESS,
-			payload,
-		});
+		if (payload.error) {
+			yield put({
+				type: ERROR,
+				payload: payload,
+			});
+		} else {
+			yield put({
+				type: SUCCESS,
+				payload,
+			});
+		}
 	} catch (error) {
 		console.log('uploadVideos', error);
 		yield put({

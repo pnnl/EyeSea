@@ -222,6 +222,23 @@
         box-sizing: border-box;
         width: 100%;
       }
+
+      &.error {
+        border-color: $error;
+
+        h3 {
+          background-color: $error;
+        }
+      }
+
+      .details {
+        font-family: monospace;
+      }
+
+      .ok, .ok:hover {
+        color: $site-bg;
+        background: $site-fg;
+      }
   }
 }
 
