@@ -106,6 +106,8 @@ def get_or_update_analysis(a):
     }
 
 # Not everything is friendly with a file:// path.
+drive_letter = re.compile('/[a-zA-Z]:')
+
 def fix_path(uri):
     is_file_scheme = False
     if 'file://' in uri:
@@ -270,8 +272,6 @@ def post_video():
 def get_video_vid(vid):
     data = video.select().where(video.vid == vid).dicts().get();
     return fr()(format_video(data))
-
-drive_letter = re.compile('/[a-zA-Z]:')
 
 @route('/video/<vid>/file')
 def server_static(vid):
