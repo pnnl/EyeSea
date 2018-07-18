@@ -7,6 +7,7 @@ import subprocess
 import base64
 import time
 import hashlib
+import sys
 
 import numpy as np
 from numpy import inf
@@ -155,6 +156,30 @@ def queue_analysis(vid, method, procargs = None):
     except:
         return {'error': 'Invalid video ID specified.'}
 
+# Should be similar to what subprocess.checkout_output does, except it handles stderr
+def check_output_with_error(*pargs, **args):
+    if 'stdout' in args or 'stderr' in args:
+        raise ValueError('stdout and stderr not allowed, as they are overriden')
+
+    proc = subprocess.Popen(stdout=subprocess.PIPE, stderr=subprocess.PIPE, *pargs, **args)
+    stdout, stderr = proc.communicate()
+    exit_code = proc.poll()
+
+    if exit_code:
+        cmd = args.get('args') if 'args' in args else pargs[0]
+        error = CalledProcessError(exit_code, cmd, output=stdout)
+
+        # Python 3
+        if 'stderr' in error.__dict__:
+            error.stderr = stderr
+        else:
+            # Python 2.7, make it behave like Python 3
+            error.__dict__['stdout'] = error.output
+            error.__dict__['stderr'] = stderr
+
+        raise error
+    return stdout
+
 @route('/', method = 'OPTIONS')
 @route('/<path:path>', method = 'OPTIONS')
 def options_handler(path = None):
@@ -228,15 +253,16 @@ def post_video():
             temp_path = '{p}/{f}'.format(p=tmp, f=upload.filename)
             upload.save(temp_path)
             try:
-                subprocess.check_call(['ffmpeg', '-y', '-i', temp_path, '-an', '-vcodec', vcodec,
+                check_output_with_error(['ffmpeg', '-y', '-i', temp_path, '-an', '-vcodec', vcodec,
                     '{p}/{f}'.format(p=videostore, f=filename)])
             except CalledProcessError as error:
-                return fr()({'error': 'Error converting video to format ' + vcodec, details: error.output})
+                return fr()({'error': 'Error converting video to format ' + vcodec,
+                    'details': error.stderr.decode(sys.getfilesystemencoding())})
             finally:
                 os.remove(temp_path)
 
     try:
-        info = json.loads(subprocess.check_output(['ffprobe', dest_path, '-v', 'error', '-print_format', 'json',
+        info = json.loads(check_output_with_error(['ffprobe', dest_path + 'f', '-v', 'error', '-print_format', 'json',
             '-show_entries', 'stream=duration,r_frame_rate,avg_frame_rate']).decode('UTF-8'))
 
         if 'streams' in info and len(info['streams']) > 0:
@@ -267,7 +293,8 @@ def post_video():
             return fr()(format_video(data, results))
         return fr()({'error': 'Video metadata returned no streams.'})
     except CalledProcessError as error:
-        return fr()({'error': 'Error getting video metadata', details: error.output})
+        return fr()({'error': 'Error getting video metadata',
+            'details': error.stderr.decode(sys.getfilesystemencoding())})
 
 @get('/video/<vid>')
 def get_video_vid(vid):
