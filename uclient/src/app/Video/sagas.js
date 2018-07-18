@@ -5,7 +5,10 @@ import { REQUEST, SUCCESS, ERROR } from './module';
 
 export function* requestVideo(action) {
 	try {
-		let payload = yield call(get, action.servicePath + 'video/' + action.payload);
+		let payload = yield call(
+			get,
+			action.servicePath + 'video/' + action.payload
+		);
 
 		yield put({
 			type: SUCCESS,
