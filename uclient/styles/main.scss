@@ -65,6 +65,8 @@ main {
 }
 
 h1 {
+  position: relative;
+  z-index: 2;
   width: 274px; /* Fix cross-browser text-indent issues. */
   margin: 0;
   margin-top: .65em;
