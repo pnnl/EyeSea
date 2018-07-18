@@ -78,7 +78,7 @@ export class Uploader extends React.PureComponent {
 		if (this.props.files) {
 			popup = (
 				<div className="popup-overlay">
-					<div className="popup">
+					<div className={'popup' + (this.props.request ? ' busy' : '')}>
 						<h3>Select one or more algorithms for automation</h3>
 						<ul>
 							{this.props.algorithms &&

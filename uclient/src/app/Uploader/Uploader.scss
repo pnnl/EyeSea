@@ -34,6 +34,35 @@
     border: 1px solid $headings-fg;
     box-shadow: $upload-popup-shadow;
 
+    &.busy {
+        &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1;
+            background: rgba(0, 0, 0, .3);
+        }
+
+        &:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 2;
+            width: 48px;
+            height: 48px;
+            margin-top: -31px;
+            margin-left: -31px;
+            border: 8px solid #80231c;
+            border-left-color: #ef4135;
+            border-radius: 50%;
+            animation: rotate 1s linear infinite;
+        }
+    }
+
     h3 {
       margin: -.8em;
       margin-bottom: 0;
@@ -194,4 +223,13 @@
         width: 100%;
       }
   }
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
