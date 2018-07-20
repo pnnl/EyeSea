@@ -86,12 +86,13 @@ export function enableCustomAlgorithmInstanceParameters(key, value) {
 	};
 }
 
-export function setCustomAlgorithmInstanceParameters(key, value) {
+export function setCustomAlgorithmInstanceParameters(key, value, dirty) {
 	return {
 		type: ALGORITHM_PARAMETERS,
 		payload: {
 			key,
 			value,
+			dirty,
 		},
 	};
 }
@@ -159,12 +160,12 @@ const reducer = (state = fromJS(initialState), action) => {
 			);
 		case ALGORITHM_PARAMETERS:
 			return state.update(ALGORITHMS, list =>
-				list.setIn(
-					[
-						list.findIndex(algorithm => algorithm.get('id') === payload.key.id),
-						'parameters',
-					],
-					payload.value
+				list.update(
+					list.findIndex(algorithm => algorithm.get('id') === payload.key.id),
+					instance =>
+						instance
+							.set('dirty', payload.dirty)
+							.set('parameters', payload.value)
 				)
 			);
 		case ERROR_DISMISS:

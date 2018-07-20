@@ -198,18 +198,14 @@
         }
 
         .revert {
-          padding-left: 1.125em;
-          background: none;
+          float: right;
+          height: 19px;
+          vertical-align: -.5em;
+          overflow: hidden;
+        }
 
-          .btn {
-            height: 19px;
-            vertical-align: -.5em;
-            overflow: hidden;
-          }
-
-          .btn:before {
-            content: url('../../../images/reset.png');
-          }
+        .revert:before {
+          content: url('../../../images/reset.png');
         }
       }
 

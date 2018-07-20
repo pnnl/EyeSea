@@ -51,7 +51,11 @@ export class Uploader extends React.PureComponent {
 		).forEach(input => {
 			parameters[input.name] = input.value;
 		});
-		this.props.setCustomAlgorithmInstanceParameters(algorithm, parameters);
+		this.props.setCustomAlgorithmInstanceParameters(
+			algorithm,
+			parameters,
+			true
+		);
 	};
 	revertInstanceParameters = algorithm => event =>
 		this.props.setCustomAlgorithmInstanceParameters(
@@ -180,7 +184,20 @@ export class Uploader extends React.PureComponent {
 												<thead>
 													<tr>
 														<th>Parameter</th>
-														<th>Value</th>
+														<th>
+															Value
+															{algorithm.dirty && (
+																<Button
+																	className="revert"
+																	onClick={this.revertInstanceParameters(
+																		algorithm
+																	)}
+																	iconOnly
+																>
+																	Revert to original paramters
+																</Button>
+															)}
+														</th>
 													</tr>
 												</thead>
 												<tbody>
@@ -199,18 +216,6 @@ export class Uploader extends React.PureComponent {
 																		}
 																		value={algorithm.parameters[parameter]}
 																	/>
-																</td>
-																<td className="revert">
-																	{index === 0 ? (
-																		<Button
-																			onClick={this.revertInstanceParameters(
-																				algorithm
-																			)}
-																			iconOnly
-																		>
-																			Revert to original paramters
-																		</Button>
-																	) : null}
 																</td>
 															</tr>
 														)
