@@ -65,7 +65,7 @@
 
     h3 {
       margin: -.8em;
-      margin-bottom: 0;
+      margin-bottom: .8em;
       padding: 0 1.5em;
       font-size: 1.25em;
       line-height: 1.85em;
@@ -116,6 +116,7 @@
     ul {
       max-height: calc(100vh - 27.05em - 2px);
       overflow: auto;
+      margin-bottom: 0;
       padding-left: 3.25em;
 
       li {
@@ -159,6 +160,10 @@
 
       .delete {
         cursor: pointer;
+      }
+
+      p.parameters {
+        font-style: italic;
       }
 
       .parameters {
@@ -214,7 +219,7 @@
     }
 
       .description-label {
-        margin-bottom: 0;
+        margin: 0;
         color: $headings-fg;
       }
 
