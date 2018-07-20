@@ -45,25 +45,34 @@ else:
 vformat = settings['video_format']
 vcodec = settings['ffmpeg_vcodec']
     
+abs_algorithm_path = os.path.abspath(settings['algorithm_bin'])
 eye_env = os.environ
-eye_env['PATH'] = os.path.abspath(settings['algorithm_bin']) + os.pathsep + eye_env['PATH']
+eye_env['PATH'] = abs_algorithm_path + os.pathsep + eye_env['PATH']
 tasklist = {}
 
+# store path of things not in the algorithm_bin folder
 def scanmethods():
     methods = analysis_method.select().dicts()
     for i in eye_env['PATH'].split(os.pathsep):
         for j in os.listdir(i):
             name, ext = os.path.splitext(j)
             if ext == '.json':
-                fdict = json.loads(open(os.path.abspath(i) + os.sep + j).read())
+                root = os.path.abspath(i)
+                fdict = json.loads(open(root + os.sep + j).read())
                 fjson = json.dumps(fdict) #normalize json
                 found = False
+                # TODO How do we want to handle two algorithms which might have the same parameter names
+                #      but do different things with them? Is that even a concern?
                 for k in methods:
                     if 'name' in fdict:
                         if k['parameters'] == fjson:
                             found = True
-                if found == False and 'name' in fdict:
-                    analysis_method.insert({'description' : fdict['name'], 'parameters' : fjson, 'creation_date' : int(time.time()), 'automated' : 1}).execute()
+                if not found and 'name' in fdict:
+                    # The code for running these knows what this path is, assuming it hasn't changed, and
+                    # will run them from there; this makes it more portable and no worse than before this
+                    # was changed to become path aware
+                    path = '' if abs_algorithm_path == root else root
+                    analysis_method.insert({'description' : fdict['name'], 'parameters' : fjson, 'creation_date' : int(time.time()), 'automated' : 1, 'path': path}).execute()
                     methods = analysis_method.select().dicts()
 
 scanmethods()
@@ -89,15 +98,22 @@ def get_or_update_analysis(a):
         if p is not None:
             data = {'status' : 'FINISHED', 'results' : ''}
             if p:
-                data['status'] = 'ERROR'
+                data['status'] = 'FAILED'
                 task['error'].flush()
                 os.fsync(task['error'].fileno())
                 data['results'] = task['error'].read()
             else:
-                data['results'] = open(task['output']).read()
+                with open(task['output']) as f:
+                    results = json.loads(f.read())['frames']
+                    data['results'] = json.dumps(results, separators=(',', ':'))
             analysis.update(data).where(analysis.aid == a['aid']).execute()
             a = analysis.select().where(analysis.aid == a['aid']).dicts().get()
             del tasklist[a['aid']]
+            # cleanup time
+            try:
+                os.remove(task['output'])
+            except OSError:
+                pass
             try:
                 task['error'].close()
                 os.remove(task['error'].name)
@@ -141,26 +157,47 @@ def get_video_path_parts(vid):
     root = uri[:slash] if is_file_scheme else videostore
     return (pathname, filename, root)
 
-def queue_analysis(vid, method, procargs = None):
+def queue_analysis(index, vid, method, procargs = None):
+    # Will throw an error if vid is not-existent, this is on purpose because all future
+    # analyses would die with the same error so we cut out early.
+    vid = video.select(video).where(video.vid == vid).dicts().get()
+
+    if isinstance(method, (int, long)):
+        try:
+            method = analysis_method.select(analysis_method).where(analysis_method.mid == method).dicts().get()
+        except analysis_method.DoesNotExist:
+            return {'error': 'Invalid method ID specified.', details: str(method)}
+
     try:
-        vid = video.select().where(video.vid == vid).dicts().get()
-        aid = None
-
         base_args = json.loads(method['parameters'])
-        if procargs == None:
+        if procargs == None or not len(procargs):
             procargs = base_args
+    except ValueError as err:
+        # Will also catch JSONDecodeError if we switch to Python 3 as that's a subclass
+        return {'error': 'Error parsing parameters', 'details': str(err)}
 
+    aid = None
+    try:
         pathname, filename, root = get_video_path_parts(vid)
-        output = '{p}/{f}'.format(p=tmp, f=filename + '.json')
-        args = [base_args['command'], base_args['videoarg'], '{p}/{f}'.format(p=root, f=pathname), base_args['outputarg'], output]
-        args.extend(np.array(procargs).flatten())
-        aid = analysis.select().where(analysis.aid==analysis.insert({'mid': method['mid'], 'vid': vid, 'status': 'QUEUED', 'parameters': json.dumps(args), 'results' : ''}).execute()).dicts().get()
-        stderr = open('{p}/{f}'.format(p=tmp, f=filename + '.err'), 'w+')
-        tasklist[aid['aid']] = {'p': Popen(args, env=eye_env, stderr=stderr), 'output' : output, 'error' : stderr}
+        # Purposely using base_args for 'command' here, to avoid the user being able to change it with custom args
+        script = '{p}/{f}'.format(p=method['path'] if method['path'] else abs_algorithm_path, f=base_args['command'])
+        input = '{p}/{f}'.format(p=root, f=pathname)
+        # Prevent stepping on toes if for some reason the user selects the same algorithm twice for a video or one
+        # in use by another video whose source hashes to the same as this video.
+        slug = '{p}/{f}-{v}-{i}-{m}'.format(p=tmp, f=filename, v=vid['vid'], i=index, m=method['mid'])
+        output = slug + '.json'
+        args = ['python', script, base_args['videoarg'], input, base_args['outputarg'], output]
+        args.extend(np.array([[k, v] for k, v in procargs['parameters'].items()]).flatten())
+        aid = analysis.select().where(analysis.aid==analysis.insert({'mid': method['mid'], 'vid': vid['vid'], 'status': 'QUEUED', 'parameters': json.dumps(procargs), 'results' : ''}).execute()).dicts().get()
+        stderr = open(slug + '.err', 'w+')
+        # Python on Windows hates u'' strings apparently; This should go away with a switch to Python 3.x
+        local_env = {str(key): str(value) for key, value in eye_env.iteritems()}
+        tasklist[aid['aid']] = {'p': Popen(args, env=local_env, stderr=stderr), 'output' : output, 'error' : stderr}
         analysis.update({'status' : 'PROCESSING'}).where(analysis.aid == aid['aid']).execute()
         return analysis.select().where(analysis.aid == aid['aid']).dicts().get()
     except:
-        return {'error': 'Invalid video ID specified.'}
+        if aid:
+            analysis.update({'status' : 'FAILED'}).where(analysis.aid == aid['aid']).execute()
 
 # Should be similar to what subprocess.checkout_output does, except it handles stderr
 def check_output_with_error(*pargs, **args):
@@ -267,40 +304,42 @@ def post_video():
             finally:
                 os.remove(temp_path)
 
+    info = None
     try:
         info = json.loads(check_output_with_error(['ffprobe', dest_path, '-v', 'error', '-print_format', 'json',
             '-show_entries', 'stream=duration,r_frame_rate,avg_frame_rate']).decode('UTF-8'))
-
-        if 'streams' in info and len(info['streams']) > 0:
-            info = info['streams'][0]
-            fps = info['avg_frame_rate'].split('/')
-            fps = float(fps[0]) / float(fps[1])
-            dbdata = dict()
-            dbdata['description'] = request.forms.get('description')
-            dbdata['filename'] = upload.raw_filename
-            # [Ab]using SQLite's soft typing here, giving it the integer type we declared only if it works out to be a nice number
-            # Digitally recorded or pre-converted videos should give us a nice exact FPS like 30 or 60.
-            dbdata['fps'] = int(fps) if int(fps) == fps else fps
-            # r_frame_rate is apparently a guess on their part, so this necessarily is too
-            dbdata['variable_framerate'] = info['r_frame_rate'] != info['avg_frame_rate']
-            dbdata['duration'] = float(info['duration'])
-            dbdata['uri'] = filename
-            dbdata['creation_date'] = int(time.time())
-            data = video.select().where(video.vid==video.insert(dbdata).execute()).dicts().get()
-
-            results = []
-            try:
-                analyses = json.loads(request.forms.get('analyses'))
-                for a in analyses:
-                    results.append(queue_analysis(data['vid'], a['mid'], a['parameters']))
-            except:
-                return fr()({'error': 'Unable to parse list of analyses.'})
-
-            return fr()(format_video(data, results))
-        return fr()({'error': 'Video metadata returned no streams.'})
     except CalledProcessError as error:
         return fr()({'error': 'Error getting video metadata',
             'details': error.stderr.decode(sys.getfilesystemencoding())})
+
+    if info and 'streams' in info and len(info['streams']) > 0:
+        info = info['streams'][0]
+        fps = info['avg_frame_rate'].split('/')
+        fps = float(fps[0]) / float(fps[1])
+        dbdata = dict()
+        dbdata['description'] = request.forms.get('description')
+        dbdata['filename'] = upload.raw_filename
+        # [Ab]using SQLite's soft typing here, giving it the integer type we declared only if it works out to be a nice number
+        # Digitally recorded or pre-converted videos should give us a nice exact FPS like 30 or 60.
+        dbdata['fps'] = int(fps) if int(fps) == fps else fps
+        # r_frame_rate is apparently a guess on their part, so this necessarily is too
+        dbdata['variable_framerate'] = info['r_frame_rate'] != info['avg_frame_rate']
+        dbdata['duration'] = float(info['duration'])
+        dbdata['uri'] = filename
+        dbdata['creation_date'] = int(time.time())
+        data = video.select().where(video.vid==video.insert(dbdata).execute()).dicts().get()
+
+        try:
+            analyses = json.loads(request.forms.get('analyses'))
+        except ValueError as error:
+            return fr()({'error': 'Unable to parse list of analyses.', 'details': str(error)})
+
+        results = []
+        for i, a in enumerate(analyses):
+            results.append(queue_analysis(i, data['vid'], a['mid'], a['parameters']))
+
+        return fr()(format_video(data, results))
+    return fr()({'error': 'Video metadata returned no streams.'})
 
 @get('/video/<vid>')
 def get_video_vid(vid):
@@ -506,7 +545,10 @@ def process_video():
         method = analysis_method.select().where(analysis_method.description == name).order_by(analysis_method.creation_date.desc()).dicts().get()
     else:
         return fr()({'error': 'No analysis method specified.'})
-    return fr()(queue_analysis(param['vid'], method))
+    try:
+        return fr()(queue_analysis(0, param['vid'], method))
+    except video.DoesNotExist as error:
+        return fr()({'error': 'Invalid video ID specified.', 'details': str(param['vid'])})
 
 app = application = bottle.default_app()
 
