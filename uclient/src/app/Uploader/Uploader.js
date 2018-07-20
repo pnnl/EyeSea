@@ -86,7 +86,8 @@ export class Uploader extends React.PureComponent {
 							</h3>
 							<p>The server had this to say:</p>
 							<p className="details">
-								{this.props.error.message.details || this.props.error.message}
+								{this.props.error.message.details ||
+									this.props.error.message.error}
 							</p>
 							<div className="buttons">
 								<Button className="ok" onClick={this.props.dismissError}>
