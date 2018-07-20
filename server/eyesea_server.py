@@ -151,7 +151,7 @@ def fix_path(uri):
 # - getting the root folder for the file
 def get_video_path_parts(vid):
     uri, is_file_scheme = fix_path(vid['uri'])
-    slash = uri.rfind('/')
+    slash = uri.rfind(os.sep)
     pathname = uri[slash + 1:] if is_file_scheme else uri
     filename = os.path.splitext(pathname)[0]
     root = uri[:slash] if is_file_scheme else videostore
@@ -271,7 +271,7 @@ def get_statistics():
 @get('/video')
 def get_video():
     data = video.select(video).dicts()
-    print(request.query['sortBy'])
+    #print(request.query['sortBy'])
     data = [format_video(i) for i in data]
     return fr()(data)
 
@@ -359,13 +359,13 @@ def video_thumbnail(vid):
     v = video.select().where(video.vid == vid).dicts().get()
     pathname, filename, root = get_video_path_parts(v)
     image = filename + '.jpg'
-    if not os.path.isfile(cache + '/' + image):
+    if not os.path.isfile(cache + os.sep + image):
         try:
             subprocess.check_output(['ffmpeg', '-y', '-i', '{p}/{f}'.format(p=root, f=pathname),
-                '-ss','00:00:10.000', '-vframes', '1', cache + '/' + image])
+                '-ss','00:00:10.000', '-vframes', '1', cache + os.sep + image])
         except subprocess.CalledProcessError as e:
             img = Image.new('RGB', (640,480), (255, 255, 255))
-            img.save(cache + '/' + image, 'jpeg')
+            img.save(cache + os.sep + image, 'jpeg')
     resp = static_file(image, root=cache)
     allow_cross_origin(resp)
     return resp
@@ -377,8 +377,8 @@ def video_heatmap(vid):
     pathname, filename, root = get_video_path_parts(v)
     image = filename + '.jpg'
     output = filename + '_heatmap.jpg'
-    if not os.path.isfile(cache + '/' + output):
-        if not os.path.isfile(cache + '/' + image):
+    if not os.path.isfile(cache + os.sep + output):
+        if not os.path.isfile(cache + os.sep + image):
             video_thumbnail(vid)
 
         def transparent_cmap(cmap, N=8):
@@ -387,7 +387,7 @@ def video_heatmap(vid):
             mycmap._lut[:,-1] = np.linspace(0.5, 1, N+3)
             return mycmap
 
-        I = Image.open(cache + '/' + image).convert('LA')
+        I = Image.open(cache + os.sep + image).convert('LA')
         w, h = I.size
         y, x = np.mgrid[0:h, 0:w]
         d = np.zeros((h, w))
@@ -422,7 +422,7 @@ def video_heatmap(vid):
         cbar = plt.colorbar(cb, cax=cax)
         cbar.set_ticks([0,0.125*det,0.25*det,0.375*det,0.5*det,0.625*det,0.75*det,0.875*det,det])
         cbar.set_ticklabels(['0%', '12.5%', '25%', '37.5%', '50%', '62.5%', '75%', '87.5%', '100%'])
-        plt.savefig(cache + '/' + output, bbox_inches='tight')
+        plt.savefig(cache + os.sep + output, bbox_inches='tight')
     
     resp = static_file(output, root=cache)
     allow_cross_origin(resp)
