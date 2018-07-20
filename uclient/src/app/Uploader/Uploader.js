@@ -102,6 +102,23 @@ export class Uploader extends React.PureComponent {
 				<div className="popup-overlay">
 					<div className={'popup' + (this.props.request ? ' busy' : '')}>
 						<h3>Select one or more algorithms for automation</h3>
+						<Select
+							onBlurResetsInput={false}
+							onSelectResetsInput={false}
+							placeholder={'Select an algorithm to add\u2026'}
+							options={this.props.methods.list
+								.filter(method => method.automated)
+								.map(method => ({
+									value: method.mid,
+									label: this.formatDescription(method),
+								}))}
+							simpleValue
+							value=""
+							onChange={value =>
+								this.props.addAlgorithmInstance(this.props.methods.ids[value])
+							}
+							searchable={false}
+						/>
 						<ul>
 							{this.props.algorithms &&
 								this.props.algorithms.map(algorithm => (
@@ -158,67 +175,56 @@ export class Uploader extends React.PureComponent {
 												delete algorithm instance
 											</span>
 										</span>
-										<table id={'a' + algorithm.id} className="parameters">
-											<thead>
-												<tr>
-													<th>Parameter</th>
-													<th>Value</th>
-												</tr>
-											</thead>
-											<tbody>
-												{Object.keys(algorithm.parameters).map(
-													(parameter, index) => (
-														<tr key={algorithm.id + '-' + parameter}>
-															<td>{parameter}</td>
-															<td className="value">
-																<input
-																	name={parameter}
-																	onChange={event =>
-																		this.setInstanceParameters(
-																			algorithm,
-																			'a' + algorithm.id
-																		)
-																	}
-																	value={algorithm.parameters[parameter]}
-																/>
-															</td>
-															<td className="revert">
-																{index === 0 ? (
-																	<Button
-																		onClick={this.revertInstanceParameters(
-																			algorithm
-																		)}
-																		iconOnly
-																	>
-																		Revert to original paramters
-																	</Button>
-																) : null}
-															</td>
-														</tr>
-													)
-												)}
-											</tbody>
-										</table>
+										{Object.keys(algorithm.parameters).length ? (
+											<table id={'a' + algorithm.id} className="parameters">
+												<thead>
+													<tr>
+														<th>Parameter</th>
+														<th>Value</th>
+													</tr>
+												</thead>
+												<tbody>
+													{Object.keys(algorithm.parameters).map(
+														(parameter, index) => (
+															<tr key={algorithm.id + '-' + parameter}>
+																<td>{parameter}</td>
+																<td className="value">
+																	<input
+																		name={parameter}
+																		onChange={event =>
+																			this.setInstanceParameters(
+																				algorithm,
+																				'a' + algorithm.id
+																			)
+																		}
+																		value={algorithm.parameters[parameter]}
+																	/>
+																</td>
+																<td className="revert">
+																	{index === 0 ? (
+																		<Button
+																			onClick={this.revertInstanceParameters(
+																				algorithm
+																			)}
+																			iconOnly
+																		>
+																			Revert to original paramters
+																		</Button>
+																	) : null}
+																</td>
+															</tr>
+														)
+													)}
+												</tbody>
+											</table>
+										) : (
+											<p className="parameters">
+												This algortihm is not configurable.
+											</p>
+										)}
 									</li>
 								))}
 						</ul>
-						<Select
-							onBlurResetsInput={false}
-							onSelectResetsInput={false}
-							placeholder={'Select an algorithm to add\u2026'}
-							options={this.props.methods.list
-								.filter(method => method.automated)
-								.map(method => ({
-									value: method.mid,
-									label: this.formatDescription(method),
-								}))}
-							simpleValue
-							value=""
-							onChange={value =>
-								this.props.addAlgorithmInstance(this.props.methods.ids[value])
-							}
-							searchable={false}
-						/>
 						<h4 className="description-label">Video Description</h4>
 						<textarea
 							onInput={event => this.props.setDescription(event.target.value)}
