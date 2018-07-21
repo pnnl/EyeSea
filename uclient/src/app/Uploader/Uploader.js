@@ -74,7 +74,7 @@ export class Uploader extends React.PureComponent {
 		return description;
 	}
 	componentDidUpdate() {
-		if (this.props.result) {
+		if (this.props.result && !this.props.result.progress) {
 			this.props.reset();
 		}
 	}
@@ -104,7 +104,16 @@ export class Uploader extends React.PureComponent {
 			}
 			popup = (
 				<div className="popup-overlay">
-					<div className={'popup' + (this.props.request ? ' busy' : '')}>
+					<div
+						className={
+							'popup' +
+							(this.props.request &&
+							(!this.props.result ||
+								this.props.result.progress === 'indefinite')
+								? ' busy'
+								: '')
+						}
+					>
 						<h3>Select one or more algorithms for automation</h3>
 						<Select
 							onBlurResetsInput={false}
@@ -256,12 +265,28 @@ export class Uploader extends React.PureComponent {
 								Cancel
 							</Button>
 						</div>
+						{this.props.result &&
+							this.props.result.progress !== 'indefinite' && (
+								<svg width="100%" height="100%">
+									<circle className="background" cx="0" cy="0" r="15.9155" />
+									<circle
+										className="foreground"
+										cx="0"
+										cy="0"
+										r="15.9155"
+										style={{
+											strokeDasharray:
+												this.props.result.progress * 100 + ' 100',
+										}}
+									/>
+								</svg>
+							)}
 					</div>
 					{error}
 				</div>
 			);
 		}
-		if (this.props.result && !this.props.error) {
+		if (this.props.result && !this.props.result.progress && !this.props.error) {
 			popup = <Redirect to="/" />;
 		}
 		return (

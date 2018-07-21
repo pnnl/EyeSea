@@ -63,6 +63,26 @@
         }
     }
 
+    svg {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, .3);
+    }
+
+    circle {
+        fill: none;
+        stroke: #80231c;
+        stroke-width: 4px;
+        transform: scale(2) translate(25%, 25%);
+    }
+
+    .foreground {
+        stroke: #ef4135;
+    }
+
     h3 {
       margin: -.8em;
       margin-bottom: .8em;
