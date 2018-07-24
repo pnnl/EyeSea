@@ -3,8 +3,9 @@ export const formatDuration = function(video) {
 		video.analyses &&
 		video.analyses.find(analysis => analysis.status === 'FINISHED');
 
-	if (analysis) {
+	if (video.duration || analysis) {
 		let length =
+			video.duration ||
 			analysis.results[analysis.results.length - 1].frameIndex / video.fps;
 		let hours = Math.floor(length / 3600);
 		let minutes = Math.floor((length - hours * 3600) / 60);

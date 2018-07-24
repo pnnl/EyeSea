@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+import json
 from peewee import *
 
-db = SqliteDatabase('eyesea.db')
+settings = json.loads(open('eyesea_settings.json').read())
+db = SqliteDatabase(settings['database'])
 
 class eyesea_model(Model):
     class Meta:
@@ -13,7 +15,9 @@ class video(eyesea_model):
     filename = CharField()
     fps = IntegerField()
     variable_framerate = SmallIntegerField()
+    duration = FloatField()
     uri = CharField()
+    creation_date = IntegerField()
 
 class analysis(eyesea_model):
     aid = IntegerField(primary_key=True)
@@ -26,5 +30,7 @@ class analysis(eyesea_model):
 class analysis_method(eyesea_model):
     mid = IntegerField(primary_key=True)
     description = TextField()
+    automated = BooleanField()
     parameters = TextField()
-    results = TextField()
+    path = TextField()
+    creation_date = IntegerField()

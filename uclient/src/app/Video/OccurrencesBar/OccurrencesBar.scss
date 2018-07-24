@@ -4,20 +4,15 @@
   --color: $analysis-track-bg;
 
   position: relative;
-  height: .75em;
+  height: .9375em;
   margin-bottom: 3px;
+  font-size: .8em;
+  line-height: 1.1em;
+  text-align: center;
   background: $analysis-track-bg;
 
   &:last-child {
     margin-bottom: 0;
-  }
-
-  &:not(.FINISHED) {
-    background: repeating-linear-gradient(-45deg, #{$analysis-track-bg}, #{$analysis-track-bg} 12px, #{$video-callout-panel-bg} 12px, #{$video-callout-panel-bg} 24px);
-    background: repeating-linear-gradient(-45deg, rgba(34, 36, 38, .4), rgba(34, 36, 38, .4) 12px, transparent 12px, transparent 24px),
-                repeating-linear-gradient(-45deg, var(--color, #{$analysis-track-bg}), var(--color, #{$analysis-track-bg}) 12px, #{$analysis-track-bg} 12px, #{$analysis-track-bg} 24px);
-    background-size: 350% 100%;
-    animation: stripes .5s infinite linear;
   }
 
   div {

@@ -1,0 +1,50 @@
+@import '../../../styles/variables';
+
+.video-summary {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  width: calc(100% - #{$header-padding * 2});
+  margin: 0 auto;
+  padding-top: 2em;
+
+  > a {
+    align-self: flex-start;
+    font-size: 1.5em;
+    font-weight: bold;
+    line-height: 1.25em;
+    text-decoration: none;
+    color: $back-fg;
+
+    .icon {
+      margin-right: .25em;
+    }
+  }
+
+  > div {
+    display: flex;
+
+    h3 {
+      font-size: 1.3em;
+      font-weight: normal;
+      color: $standout-fg;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+
+    img {
+      align-self: self-start;
+      margin-right: 5.3125em;
+    }
+
+    p {
+      margin: 0;
+      font-size: 4.3em;
+      color: $standout-fg;
+    }
+  }
+}

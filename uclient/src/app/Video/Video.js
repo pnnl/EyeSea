@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import { formatDuration } from '../util/videos';
+import Button from '../util/Button';
 import Busy from '../Busy';
 import OccurrencesBar from './OccurrencesBar';
 import {
@@ -21,22 +22,29 @@ export class Video extends React.Component {
 			paused: true,
 			detections: [],
 		};
+		this.updateLayout = _.debounce(this.updateLayout, 200);
 	}
 	// If we don't capature the mouse, then if the take the mouse out of the
 	// element and release it, we won't get notified and they'll be stuck
-	captureMouse(event) {
+	captureMouse(event, target) {
+		if (!target) {
+			target = event.target;
+		}
 		// IE10; Do we care?
-		if (event.target.msSetPointerCapture) {
-			event.target.msSetPointerCapture(event.pointerId);
-		} else if (event.target.setPointerCapture) {
-			event.target.setPointerCapture(event.pointerId);
+		if (target.msSetPointerCapture) {
+			target.msSetPointerCapture(event.pointerId);
+		} else if (target.setPointerCapture) {
+			target.setPointerCapture(event.pointerId);
 		}
 	}
-	releaseMouse(event) {
-		if (event.target.msReleasePointerCapture) {
-			event.target.msReleasePointerCapture(event.pointerId);
-		} else if (event.target.releasePointerCapture) {
-			event.target.releasePointerCapture(event.pointerId);
+	releaseMouse(event, target) {
+		if (!target) {
+			target = event.target;
+		}
+		if (target.msReleasePointerCapture) {
+			target.msReleasePointerCapture(event.pointerId);
+		} else if (target.releasePointerCapture) {
+			target.releasePointerCapture(event.pointerId);
 		}
 	}
 	rewindFrame = timestamp => {
@@ -68,22 +76,30 @@ export class Video extends React.Component {
 	}
 	fastForward(event, start) {
 		if (start) {
+			this.continuePlayback = !this.player.paused;
 			this.captureMouse(event);
 			this.player.playbackRate = this.player.defaultPlaybackRate * 4;
 			this.player.play();
 		} else {
 			this.releaseMouse(event);
 			this.player.playbackRate = this.player.defaultPlaybackRate;
+			if (!this.continuePlayback) {
+				this.player.pause();
+			}
 		}
 	}
 	timeUpdate = () => {
 		var detections = [],
-			frame = Math.floor(this.player.currentTime * this.props.video.fps);
+			frame = Math.floor(this.player.currentTime * this.props.video.fps),
+			scrubber =
+				(this.player.currentTime / this.player.duration) *
+				this.canvas.clientWidth;
 
 		if (this.props.video.analyses) {
 			this.props.video.analyses.forEach(analysis => {
 				if (analysis.status === 'FINISHED') {
 					detections.push({
+						id: analysis.id,
 						name: this.props.methods.ids[analysis.method].description,
 						color: this.props.methods.ids[analysis.method].color,
 						results: analysis.results[frame] || {
@@ -95,21 +111,32 @@ export class Video extends React.Component {
 
 			this.setState({
 				detections,
+				scrubber,
+			});
+
+			if (this.player.paused) {
+				this.computeFrame(-1, true);
+			}
+		} else {
+			this.setState({
+				scrubber,
 			});
 		}
 	};
-	computeFrame = () => {
-		var video = document.getElementById('video');
-		var canvas = document.getElementById('cvideo');
-		var canvasCtx = canvas.getContext('2d');
-		var canvasWidth = video.videoWidth;
-		var canvasHeight = video.videoHeight;
-		canvas.width = canvasWidth;
-		canvas.height = canvasHeight;
+	computeFrame = (time, single) => {
+		var canvasCtx = this.canvas.getContext('2d');
 		var frame = Math.floor(this.player.currentTime * this.props.video.fps);
 
-		requestAnimationFrame(this.computeFrame);
-		canvasCtx.drawImage(video, 0, 0, canvasWidth, canvasHeight);
+		if (!single) {
+			requestAnimationFrame(this.computeFrame);
+		}
+		canvasCtx.drawImage(
+			this.player,
+			0,
+			0,
+			this.canvas.width,
+			this.canvas.height
+		);
 		if (this.props.video.analyses) {
 			this.props.video.analyses.forEach(analysis => {
 				if (analysis.status === 'FINISHED') {
@@ -131,21 +158,86 @@ export class Video extends React.Component {
 			});
 		}
 	};
+	scrubStart = event => {
+		event.preventDefault();
+
+		var target = event.target;
+		while (!target.classList.contains('analyses')) {
+			target = target.parentNode;
+		}
+		this.captureMouse(event, target);
+
+		this.boundingBox = target.getBoundingClientRect();
+		this.player.currentTime =
+			(this.player.duration * (event.clientX - this.boundingBox.left)) /
+			this.boundingBox.width;
+	};
+	scrubChange = event => {
+		if (this.boundingBox) {
+			this.player.currentTime =
+				(this.player.duration * (event.clientX - this.boundingBox.left)) /
+				this.boundingBox.width;
+		}
+	};
+	scrubEnd = event => {
+		var target = event.target;
+		while (!target.classList.contains('analyses')) {
+			target = target.parentNode;
+		}
+		this.releaseMouse(event, target);
+		delete this.boundingBox;
+	};
+	updateLayout = () => {
+		this.canvas.width = this.player.videoWidth;
+		this.canvas.height = this.player.videoHeight;
+		this.computeFrame(-1, true);
+	};
 	componentDidMount() {
 		this.props.requestVideo(this.props.match.params.id);
+		window.addEventListener('resize', this.updateLayout);
+	}
+	componentWillUnmount() {
+		window.removeEventListener('resize', this.updateLayout);
 	}
 	render() {
-		var video = <Busy error={this.props.error} />;
+		var video = <Busy error={this.props.error} />,
+			analyses,
+			processing = 0;
 
 		if (this.props.video && !this.props.error) {
+			analyses = [];
+
+			this.props.video.analyses.forEach(analysis => {
+				if (analysis.status === 'FINISHED') {
+					analyses.push(
+						<OccurrencesBar
+							key={analysis.id}
+							analysis={analysis}
+							color={this.props.methods.ids[analysis.method].color}
+						/>
+					);
+				} else {
+					processing++;
+				}
+			});
+
+			if (processing) {
+				processing = (
+					<div className="occurrences-bar">
+						{processing} analys{processing === 1 ? 'i' : 'e'}s processing
+					</div>
+				);
+			} else {
+				processing = undefined;
+			}
+
 			video = (
 				<section>
 					<header>
 						<h2>{this.props.video.filename}</h2>
 						<div className="info">
 							<span className="icon-label">Info</span>
-							<i className="icon fa fa-info" />
-
+							<i className="icon info" />
 							<div className="popup">
 								<div>
 									<strong>Name:</strong> {this.props.video.filename}
@@ -164,7 +256,6 @@ export class Video extends React.Component {
 					</header>
 					<div className="viewer">
 						<video
-							id="video"
 							ref={player => (this.player = player)}
 							src={
 								this.props.servicePath +
@@ -175,90 +266,101 @@ export class Video extends React.Component {
 							onPlay={() => this.setState({ paused: false })}
 							onPause={() => this.setState({ paused: true })}
 							onTimeUpdate={this.timeUpdate}
+							onLoadedData={() => {
+								if (this.player.readyState >= 2) {
+									this.updateLayout();
+								}
+							}}
 							onPlaying={this.computeFrame}
 							crossOrigin="anonymous"
 							playsInline
 						>
 							Sorry, this browser does not support video playback.
 						</video>
-						<canvas id="cvideo" />
-						<div className="analyses">
-							{this.props.video.analyses.map(analysis => (
-								<OccurrencesBar
-									key={analysis.id}
-									analysis={analysis}
-									color={this.props.methods.ids[analysis.method].color}
-								/>
-							))}
+						<canvas ref={canvas => (this.canvas = canvas)} />
+						<div
+							className="analyses"
+							onMouseDown={this.scrubStart}
+							onMouseMove={this.scrubChange}
+							onMouseUp={this.scrubEnd}
+						>
+							{analyses}
+							{processing}
+							<div
+								className="scrubber"
+								style={{ left: this.state.scrubber + 'px' }}
+							/>
 						</div>
 					</div>
 					<div className="annotations">
 						<h3>Detections and Annotations</h3>
 						<ul>
 							{this.state.detections.map(method => (
-								<li key={method.name} className="method">
+								<li key={method.id} className="method">
 									<span className="box" style={{ background: method.color }} />
 									<h4>{method.name}</h4>
 									<ul>
-										{method.results.detections.map((detection, index) => (
-											<li key={method.name + '-' + index}>Fish {index + 1}</li>
-										))}
+										{(method.name === 'manual' &&
+											method.results.detections.map((detection, index) => (
+												<li key={method.id + '-' + index}>Fish {index + 1}</li>
+											))) ||
+											(method.results.detections.length && (
+												<li key={method.id + '-count'}>
+													Fish {method.results.detections.length}
+												</li>
+											)) ||
+											''}
 									</ul>
 								</li>
 							))}
 						</ul>
 					</div>
 					<div className="controls">
-						<span
-							className="rewind button"
+						<Button
+							className="rewind"
 							onMouseDown={event => this.rewind(event, true)}
 							onMouseUp={event => this.rewind(event, false)}
+							iconOnly
 						>
-							<span className="icon-label">Rewind</span>
-							<i className="fa fa-backward" />
-						</span>
-						<span className="previous-frame button">
-							<span className="icon-label">Next Frame</span>
-							<i className="fa fa-square-o" />
-							<i className="fa fa-arrow-left" />
-						</span>
+							Rewind
+						</Button>
+						<Button className="previous-frame" iconOnly>
+							Previous Frame
+						</Button>
 						{this.state.paused ? (
-							<span className="play button" onClick={() => this.player.play()}>
-								<span className="icon-label">Play</span>
-								<i className="fa fa-play" />
-							</span>
-						) : (
-							<span
-								className="pause button"
-								onClick={() => this.player.pause()}
+							<Button
+								className="play"
+								onClick={() => this.player.play()}
+								iconOnly
 							>
-								<span className="icon-label">Pause</span>
-								<i className="fa fa-pause" />
-							</span>
+								Play
+							</Button>
+						) : (
+							<Button
+								className="pause"
+								onClick={() => this.player.pause()}
+								iconOnly
+							>
+								Pause
+							</Button>
 						)}
-						<span className="next-frame button">
-							<span className="icon-label">Next Frame</span>
-							<i className="fa fa-square-o" />
-							<i className="fa fa-arrow-right" />
-						</span>
-						<span
-							className="fast-forward button"
+						<Button className="next-frame" iconOnly>
+							Next Frame
+						</Button>
+						<Button
+							className="fast-forward"
 							onMouseDown={event => this.fastForward(event, true)}
 							onMouseUp={event => this.fastForward(event, false)}
+							iconOnly
 						>
-							<span className="icon-label">Fast forward</span>
-							<i className="fa fa-forward" />
-						</span>
+							Fast Forward
+						</Button>
 					</div>
 					<div className="options">
-						<span className="annotate">
-							<i className="fa fa-pencil-square-o" />
-							<span className="label">Annotation</span>
-						</span>
-						<span className="download disabled">
-							<i className="fa fa-download" />
-							<span className="label">Download</span>
-						</span>
+						<Button className="annotate">Annotation</Button>
+						<Button className="download" disabled>
+							Download
+						</Button>
 					</div>
 				</section>
 			);
@@ -268,6 +370,9 @@ export class Video extends React.Component {
 				<Link to="/">
 					<i className="icon fa fa-chevron-left" />
 					Thumbnail View
+				</Link>
+				<Link to={'/video/' + this.props.match.params.id + '/summary'}>
+					See Summary
 				</Link>
 				{video}
 			</div>

@@ -3,31 +3,43 @@
 .video-detail {
   display: flex;
   flex-grow: 1;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
   position: relative;
   box-sizing: border-box;
   width: calc(100% - #{$header-padding * 2});
   margin: 0 auto;
-  padding-top: 1.25em;
+  padding-top: 2em;
 
   > a {
-    font-size: 1.125em;
+    align-self: start;
+    margin-left: 3.35em;
+    font-size: 1.5em;
     font-weight: bold;
-    line-height: 1.45em;
+    line-height: 1.25em;
     text-decoration: none;
     color: $back-fg;
 
     .icon {
       margin-right: .25em;
     }
+
+    + a {
+      font-size: 1.1em;
+      font-weight: normal;
+      line-height: 1.9em;
+      text-decoration: underline;
+    }
   }
 
   section {
     display: flex;
     flex-wrap: wrap;
-    margin-top: 1.8125em;
+    width: 100%;
+    margin-top: 1.55em;
+    margin-bottom: 1.8125em;
     background: $video-callout-bg;
-    box-shadow: 0 0 5px white;
+    box-shadow: $video-callout-shadow;
 
     h2 {
       overflow: hidden;
@@ -55,21 +67,15 @@
       position: relative;
       cursor: help;
 
-      .icon {
-        width: 1em;
-        height: 1em;
-        vertical-align: -.45em;
-        line-height: 1.1em;
-        text-align: center;
-        color: $headings-fg;
-        border: 2px solid #{$headings-fg};
-        border-radius: 50%;
+      .icon:before {
+        content: url('../../../images/info.png');
+        display: block;
+        margin-top: .25em;
       }
 
       &:hover {
-        .icon {
-          color: $headings-reverse-fg;
-          background: $headings-fg;
+        .icon:before {
+          content: url('../../../images/info_hover.png');
         }
 
         .popup {
@@ -86,6 +92,7 @@
         font-size: .9em;
         color: $help-fg;
         background: $help-bg;
+        box-shadow: $help-shadow;
       }
     }
 
@@ -93,19 +100,12 @@
       background: $video-callout-panel-bg;
     }
 
-    // Original value, maxes out at bottom of the viewport: calc(100vh - 16.87825em - 6px)
-    // The one below gives a bit of margin at the bottom of the viewport. These values are
-    // calculated from all of the elements heights and any appropriate paddings or margins
-    // excepting this element. This currently doesn't account for the analysis bars.
     .viewer {
-      max-height: calc(100vh - 18.31575em - 8px);
-
       video {
         display: none;
         width: 100%;
         max-height: 100%;
         object-fit: contain;
-	
       }
       canvas {
         display: block;
@@ -120,47 +120,59 @@
     }
 
     .controls {
-      padding: 7px 0;
+      padding-top: 7px;
 
-      .button {
-        display: inline-block;
-        position: relative;
-        width: 1.375em;
-        height: 1.375em;
-        margin-right: .681em;
-        font-size: 2.57em;
-        line-height: 1.28em;
-        text-align: center;
-        color: $standout-fg;
-        cursor: pointer;
-      }
-
-      .previous-frame, .next-frame {
-        .fa + .fa {
-          position: absolute;
-          top: .85em;
-          left: -.1em;
-          font-size: .45em;
+      .rewind {
+        &:before {
+          content: url('../../../images/rewind.png');
+        }
+        &:hover:before {
+          content: url('../../../images/rewind_hover.png');
         }
       }
 
-      .next-frame .fa + .fa {
-        left: auto;
-        right: -.1em;
+      .previous-frame {
+        &:before {
+          content: url('../../../images/previous-frame.png');
+        }
+        &:hover:before {
+          content: url('../../../images/previous-frame_hover.png');
+        }
       }
 
-      .play, .pause {
-        border: 3px solid $standout-fg;
-        border-radius: 50%;
-      }
-
-      // Play arrows look odd when perfectly mathematically centered
       .play {
-        text-align: left;
+        &:before {
+          content: url('../../../images/play.png');
+        }
+        &:hover:before {
+          content: url('../../../images/play_hover.png');
+        }
+      }
 
-        .fa {
-           margin-left: 50%;
-           transform: translateX(-38%);
+      .pause {
+        &:before {
+          content: url('../../../images/pause.png');
+        }
+        &:hover:before {
+          content: url('../../../images/pause_hover.png');
+        }
+      }
+
+      .next-frame {
+        &:before {
+          content: url('../../../images/next-frame.png');
+        }
+        &:hover:before {
+          content: url('../../../images/next-frame_hover.png');
+        }
+      }
+
+      .fast-forward {
+        &:before {
+          content: url('../../../images/fast-forward.png');
+        }
+        &:hover:before {
+          content: url('../../../images/fast-forward_hover.png');
         }
       }
     }
@@ -184,35 +196,39 @@
       margin-top: 5px;
       margin-bottom: 2px;
 
-      > span {
+      .btn {
         margin-right: 1.75em;
-        cursor: pointer;
 
         &:last-child {
           margin-right: 0;
-        }
-
-        &.disabled {
-          opacity: .5;
         }
       }
     }
 
     .options {
-      color: $standout-fg;
-
-      .fa {
-        display: block;
-        font-size: 2.5em;
-      }
-
-      .label {
-        display: block;
+      .btn {
         font-size: .5em;
       }
 
-      .annotate .label {
-        transform: translateX(-.5em);
+      .annotate:before {
+        content: url('../../../images/edit.png');
+        transform: translateX(.25em);
+      }
+
+      .annotate:hover:before {
+        content: url('../../../images/edit_hover.png');
+      }
+
+      .download {
+        margin-top: 5px;
+
+        &:before {
+          content: url('../../../images/download.png');
+        }
+
+        &:not(.disabled):hover:before {
+          content: url('../../../images/download_hover.png');
+        }
       }
     }
   }
@@ -224,7 +240,6 @@
       display: inline-block;
       width: .75em;
       height: .75em;
-      vertical-align: middle;
       margin-right: .5em;
     }
 
@@ -248,7 +263,27 @@
   }
 
   .analyses {
+    position: relative;
     border-top: 5px solid $video-callout-bg;
+
+    .scrubber {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      margin-left: -1px;
+      background: $standout-fg;
+
+      &:after {
+        content: '';
+        display: block;
+        margin-top: -5px;
+        margin-left: -5px;
+        border-top: 6px solid $standout-fg;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+      }
+    }
   }
 }
 

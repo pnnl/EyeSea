@@ -2,9 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Switch, Route, withRouter } from 'react-router-dom';
 import { setServicePath } from './app/module';
+import Uploader from './app/Uploader';
+import Button from './app/util/Button';
 import Introduction from './app/Introduction';
 import Videos from './app/Videos';
 import Video from './app/Video';
+import Summary from './app/Summary';
 import Error404 from './app/errors/404';
 import '../styles/index.scss';
 
@@ -21,19 +24,16 @@ export class App extends React.Component {
 				<header>
 					<h1>EyeSea</h1>
 					<div>
-						<button>
-							<i className="fa fa-plus" />
-							Add Video(s)
-						</button>
-						<button>
-							<i className="fa fa-sliders" />
+						<Uploader />
+						<Button className="settings" wide disabled>
 							Settings
-						</button>
+						</Button>
 					</div>
 				</header>
 				<Switch>
 					<Route exact path="/" component={Videos} />
 					<Route exact path="/new" component={Introduction} />
+					<Route path="/video/:id/summary" component={Summary} />
 					<Route path="/video/:id" component={Video} />
 					<Route component={Error404} />
 				</Switch>

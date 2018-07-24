@@ -11,24 +11,6 @@ export function* requestVideos(action) {
 			sortBy: [sort],
 		});
 
-		let count = 280;
-		payload.forEach((video, index) => {
-			if (index % 2) {
-				video.preview =
-					'https://placebear.com/g/' +
-					count +
-					'/' +
-					Math.floor(count * 0.57142857142857142857142857142857);
-			} else {
-				video.preview =
-					'https://placebear.com/' +
-					count +
-					'/' +
-					Math.floor(count * 0.57142857142857142857142857142857);
-			}
-			count += 25;
-		});
-
 		yield put({
 			type: SUCCESS,
 			payload,

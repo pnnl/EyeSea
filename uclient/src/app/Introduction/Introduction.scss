@@ -6,13 +6,22 @@
   max-width: 900px;
   padding-top: 2em;
 
-  button {
-    padding: 5.875em 6.13em;
+  .upload {
+    padding: 4.332em;
+    font-size: 1.5em;
     background: $button-big-bg;
     border: 5px dashed $button-big-border;
 
-    .fa {
-      font-size: 10.625em;
+    &.disabled {
+      border-color: $disabled-fg;
+    }
+
+    &:before {
+      content: url('../../../images/monitor.png');
+    }
+
+    &:not(.disabled):hover:before {
+      content: url('../../../images/monitor_hover.png');
     }
   }
 }
