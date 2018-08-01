@@ -1,0 +1,13 @@
+{
+    "name" : "bgsubtract-MOG2",
+    "command" : "bgsubtract-MOG2.py",
+    "videoarg" : "--videofile",
+    "outputarg" : "--outputfile",
+    "parameters" : {
+	"--detectShadows" : 1,
+	"--history" : 500,
+	"--varThreshold" : 16,
+	"--kw" : 3,
+	"--kh" : 3
+    }
+}
