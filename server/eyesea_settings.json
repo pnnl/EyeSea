@@ -2,7 +2,7 @@
     "cache" : ".cache",
     "temporary_storage" : ".tmp",
     "video_storage" : ".files",
-    "algorithm_bin" : "../../evaluation",
+    "algorithm_bin" : "../algorithms",
     "database" : "eyesea.db",
     "video_format" : "mp4",
     "ffmpeg_vcodec" : "libx264"
