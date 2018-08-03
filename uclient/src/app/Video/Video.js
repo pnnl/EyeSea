@@ -6,6 +6,7 @@ import { formatDuration } from '../util/videos';
 import Button from '../util/Button';
 import Busy from '../Busy';
 import OccurrencesBar from './OccurrencesBar';
+import Analyze from '../Analyze';
 import {
 	getServicePath,
 	getAnalysisMethods,
@@ -224,7 +225,8 @@ export class Video extends React.Component {
 			if (processing) {
 				processing = (
 					<div className="occurrences-bar">
-						{processing} analys{processing === 1 ? 'i' : 'e'}s processing
+						{processing} analys
+						{processing === 1 ? 'i' : 'e'}s processing
 					</div>
 				);
 			} else {
@@ -253,6 +255,7 @@ export class Video extends React.Component {
 								</div>
 							</div>
 						</div>
+						<Analyze vid={this.props.video.id} />
 					</header>
 					<div className="viewer">
 						<video

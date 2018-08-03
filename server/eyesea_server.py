@@ -196,6 +196,7 @@ def queue_analysis(index, vid, method, procargs = None):
         analysis.update({'status' : 'PROCESSING'}).where(analysis.aid == aid['aid']).execute()
         return analysis.select().where(analysis.aid == aid['aid']).dicts().get()
     except:
+        print("Unexpected error:", sys.exc_info()[0])
         if aid:
             analysis.update({'status' : 'FAILED'}).where(analysis.aid == aid['aid']).execute()
 
@@ -537,18 +538,18 @@ def server_static(filepath):
 
 @post('/process')
 def process_video():
-    param = request.json
-    if 'mid' in param:
-        method = analysis_method.select().where(analysis_method.mid == param['mid']).dicts().get()
-    elif 'name' in param:
-        scanmethods()
-        method = analysis_method.select().where(analysis_method.description == name).order_by(analysis_method.creation_date.desc()).dicts().get()
-    else:
-        return fr()({'error': 'No analysis method specified.'})
+    vid = int(request.forms.get('vid'))
+    data = video.select().where(video.vid==vid).dicts().get()
     try:
-        return fr()(queue_analysis(0, param['vid'], method))
-    except video.DoesNotExist as error:
-        return fr()({'error': 'Invalid video ID specified.', 'details': str(param['vid'])})
+        analyses = json.loads(request.forms.get('analyses'))
+    except ValueError as error:
+        return fr()({'error': 'Unable to parse list of analyses.', 'details': str(error)})
+    
+    results = []
+    for i, a in enumerate(analyses):
+        results.append(queue_analysis(i, vid, a['mid'], a))
+    print(results)
+    return fr()(format_video(data, results))
 
 app = application = bottle.default_app()
 

@@ -3,6 +3,7 @@ import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
 import { fromError, createToJSSelector } from './util/redux';
 import { reducer as uploader } from './Uploader';
+import { reducer as analyze } from './Analyze';
 import { reducer as videos } from './Videos';
 import { reducer as video } from './Video';
 import { reducer as summary } from './Summary';
@@ -79,6 +80,7 @@ const reducer = (state = fromJS(initialState), action) => {
 export default combineReducers({
 	reducer,
 	uploader,
+	analyze,
 	videos,
 	video,
 	summary,
