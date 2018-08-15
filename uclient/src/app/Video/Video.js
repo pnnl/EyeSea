@@ -236,7 +236,7 @@ export class Video extends React.Component {
 			video = (
 				<section>
 					<header>
-						<h2>{this.props.video.filename}</h2>
+						<h2>{this.props.video.description}</h2>
 						<div className="info">
 							<span className="icon-label">Info</span>
 							<i className="icon info" />
