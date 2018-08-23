@@ -152,6 +152,8 @@ def fix_path(uri):
 def get_video_path_parts(vid):
     uri, is_file_scheme = fix_path(vid['uri'])
     slash = uri.rfind(os.sep)
+    if slash < 0 and uri[0] == '/':
+        slash = uri.rfind('/')
     pathname = uri[slash + 1:] if is_file_scheme else uri
     filename = os.path.splitext(pathname)[0]
     root = uri[:slash] if is_file_scheme else videostore
