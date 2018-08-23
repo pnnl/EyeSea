@@ -16,6 +16,7 @@ import { getServicePath, getAnalysisMethodsById } from '../module';
 import Busy from '../Busy';
 import StackedOccurrencesGraph from './StackedOccurrencesGraph';
 import BarGraph from './BarGraph';
+import missingThumbnail from '../../../images/missing.thumb.png';
 import './Videos.scss';
 
 export class Videos extends React.PureComponent {
@@ -109,6 +110,7 @@ export class Videos extends React.PureComponent {
 										this.props.servicePath + 'video/' + video.id + '/thumbnail'
 									}
 									alt={'Preview of ' + video.filename}
+									onError={event => (event.target.src = missingThumbnail)}
 								/>
 								<StackedOccurrencesGraph
 									values={video.analyses}
@@ -130,14 +132,11 @@ const mapStateToProps = state => ({
 	methods: getAnalysisMethodsById(state),
 });
 
-export default connect(
-	mapStateToProps,
-	{
-		requestVideos: request,
-		setPadding,
-		setSort,
-	}
-)(Videos);
+export default connect(mapStateToProps, {
+	requestVideos: request,
+	setPadding,
+	setSort,
+})(Videos);
 
 export class SortIndicator extends React.PureComponent {
 	render() {
