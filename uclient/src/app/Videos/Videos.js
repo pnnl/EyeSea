@@ -20,10 +20,6 @@ import missingThumbnail from '../../../images/missing.thumb.png';
 import './Videos.scss';
 
 export class Videos extends React.PureComponent {
-	constructor() {
-		super();
-		this.checkLayout = _.debounce(this.checkLayout, 125);
-	}
 	onSortPropertyChange = event => {
 		this.props.setSort({
 			property: event.target.dataset.property,
@@ -33,26 +29,8 @@ export class Videos extends React.PureComponent {
 	onSortDirectionChange = event => {
 		this.props.setSort(event);
 	};
-	checkLayout = () => {
-		if (this.container) {
-			var offsetWidth = this.container.offsetWidth;
-			var padding =
-				(offsetWidth - Math.floor((offsetWidth - 175) / 320) * 320 + 25) / 2;
-
-			if (padding !== this.props.padding) {
-				this.props.setPadding(padding);
-			}
-		}
-	};
 	componentDidMount() {
 		this.props.requestVideos();
-		window.addEventListener('resize', this.checkLayout);
-	}
-	componentDidUpdate() {
-		this.checkLayout();
-	}
-	componentWillUnmount() {
-		window.removeEventListener('resize', this.checkLayout);
 	}
 	render() {
 		if (this.props.videos && !this.props.videos.length) {
@@ -61,14 +39,7 @@ export class Videos extends React.PureComponent {
 			let count = (this.props.videos && this.props.videos.length) || 0;
 			let byDate = this.props.sortBy.property === 'Added Date';
 			return (
-				<section
-					ref={ref => (this.container = ref)}
-					className="videos"
-					style={{
-						paddingLeft: this.props.padding + 'px',
-						paddingRight: this.props.padding - 25 + 'px',
-					}}
-				>
+				<section ref={ref => (this.container = ref)} className="videos">
 					<header>
 						Sort By:
 						<div className={'sortBy' + (byDate ? ' selected' : '')}>
