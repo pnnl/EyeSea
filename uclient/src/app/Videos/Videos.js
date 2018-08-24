@@ -3,15 +3,7 @@ import { connect } from 'react-redux';
 import { Redirect, Link } from 'react-router-dom';
 import _ from 'lodash';
 import { formatDuration } from '../util/videos';
-import {
-	request,
-	setPadding,
-	getPadding,
-	getVideos,
-	getVideosError,
-	getSort,
-	setSort,
-} from './module';
+import { request, getVideos, getVideosError, getSort, setSort } from './module';
 import { getServicePath, getAnalysisMethodsById } from '../module';
 import Busy from '../Busy';
 import StackedOccurrencesGraph from './StackedOccurrencesGraph';
@@ -72,23 +64,62 @@ export class Videos extends React.PureComponent {
 						</div>
 					</header>
 					{(this.props.videos &&
-						this.props.videos.map(video => (
-							<Link key={video.id} className="video" to={'/video/' + video.id}>
-								<h3 title={video.description}>{video.description}</h3>
-								<span>{formatDuration(video)}</span>
-								<img
-									src={
-										this.props.servicePath + 'video/' + video.id + '/thumbnail'
-									}
-									alt={'Preview of ' + video.filename}
-									onError={event => (event.target.src = missingThumbnail)}
-								/>
-								<StackedOccurrencesGraph
-									values={video.analyses}
-									colors={this.props.methods}
-								/>
-							</Link>
-						))) || <Busy error={this.props.error} />}
+						this.props.videos.map(video => {
+							var stats = [],
+								counts;
+							counts = video.analyses.reduce((counts, analysis) => {
+								counts[analysis.status] = (counts[analysis.status] || 0) + 1;
+								return counts;
+							}, {});
+							if (counts['FAILED']) {
+								stats.push(
+									<span key="failed" className="failed">
+										{counts['FAILED']} failed
+									</span>
+								);
+							}
+							if (counts['QUEUED']) {
+								stats.push(
+									<span key="queued" className="queued">
+										{counts['QUEUED']} queued
+									</span>
+								);
+							}
+							if (counts['PROCESSING']) {
+								stats.push(
+									<span key="processing" className="processing">
+										{counts['PROCESSING']} processing<em>...</em>
+									</span>
+								);
+							}
+							return (
+								<Link
+									key={video.id}
+									className="video"
+									to={'/video/' + video.id}
+								>
+									<h3 title={video.description}>{video.description}</h3>
+									<span>{formatDuration(video)}</span>
+									<div className="thumbnail">
+										<img
+											src={
+												this.props.servicePath +
+												'video/' +
+												video.id +
+												'/thumbnail'
+											}
+											alt={'Preview of ' + video.filename}
+											onError={event => (event.target.src = missingThumbnail)}
+										/>
+										<div className="stats">{stats}</div>
+									</div>
+									<StackedOccurrencesGraph
+										values={video.analyses}
+										colors={this.props.methods}
+									/>
+								</Link>
+							);
+						})) || <Busy error={this.props.error} />}
 				</section>
 			);
 		}
@@ -96,7 +127,6 @@ export class Videos extends React.PureComponent {
 }
 const mapStateToProps = state => ({
 	servicePath: getServicePath(state),
-	padding: getPadding(state),
 	videos: getVideos(state),
 	error: getVideosError(state),
 	sortBy: getSort(state),
@@ -105,7 +135,6 @@ const mapStateToProps = state => ({
 
 export default connect(mapStateToProps, {
 	requestVideos: request,
-	setPadding,
 	setSort,
 })(Videos);
 

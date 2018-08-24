@@ -87,10 +87,72 @@
       text-align: right;
     }
 
+    .thumbnail {
+        position: relative;
+    }
+
     img {
       width: 280px;
       height: 160px;
       object-fit: contain; // no IE... hmm.
+    }
+
+    .stats {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+
+        span {
+            display: block;
+            width: auto;
+            margin-top: 2px;
+            padding-top: .3em;
+            padding-left: calc(.75em + 15px);
+            text-align: left;
+            background-color: rgba(0, 0, 0, .7);
+            background-position: .5em center;
+            background-repeat: no-repeat;
+
+            &.failed {
+                background-image: url('../../../images/alert-small.png');
+                background-size: auto 15px;
+            }
+
+            &.queued {
+                background-image: url('../../../images/hourglass.png');
+            }
+
+            &.processing {
+                background-image: url('../../../images/analytics.png');
+            }
+
+            em {
+                display: inline-block;
+                width: .703125em;
+                vertical-align: bottom;
+                overflow: hidden;
+                font-style: normal;
+                animation: dotdotdot 4s steps(2, start) infinite;
+            }
+
+            @keyframes dotdotdot {
+                0% {
+                    width: 0;
+                }
+
+                25% {
+                    width: .234375em;
+                }
+
+                50% {
+                    width: .46875em;
+                }
+
+                75% {
+                    width: .703125em;
+                }
+            }
+        }
     }
 
     svg {
