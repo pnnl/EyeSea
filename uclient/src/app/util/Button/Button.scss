@@ -1,0 +1,43 @@
+@import '../../../../styles/variables';
+
+.btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: .875em;
+  color: $standout-fg;
+  cursor: pointer;
+
+  &.wide {
+    flex-direction: row;
+
+    &:before {
+      margin-right: .25em;
+    }
+  }
+
+  &.file input {
+    position: fixed;
+    top: -100%;
+    left: -100%;
+  }
+
+  &.disabled, &.disabled:hover {
+    color: $disabled-fg;
+    cursor: default;
+
+    &:before {
+      opacity: .5;
+    }
+  }
+
+  &:hover {
+    color: $hover-fg;
+  }
+}
+
+.icon-label {
+  position: absolute;
+  top: -1000px;
+  left: -1000px;
+}

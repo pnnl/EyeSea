@@ -1,0 +1,337 @@
+@import '../../../styles/variables';
+
+.video-detail {
+  display: flex;
+  flex-grow: 1;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  position: relative;
+  box-sizing: border-box;
+  width: calc(100% - #{$header-padding * 2});
+  margin: 0 auto;
+  padding-top: 2em;
+
+  > a {
+    align-self: start;
+    margin-top: 7px;
+    font-size: 1.5em;
+    font-weight: bold;
+    line-height: 1.25em;
+    text-decoration: none;
+    color: $back-fg;
+
+    .icon {
+      margin-right: .25em;
+    }
+
+    + a {
+      font-size: 1.1em;
+      font-weight: normal;
+      line-height: 1.9em;
+      text-decoration: underline;
+    }
+  }
+
+  section {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    margin-top: 1.55em;
+    margin-bottom: 1.8125em;
+    background: $video-callout-bg;
+    box-shadow: $video-callout-shadow;
+
+    h2 {
+      overflow: hidden;
+      margin-top: .45em;
+      margin-bottom: .4em;
+      padding: 0 1.25em;
+      font-size: 1.1em;
+      line-height: 1.42em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    header {
+        display: flex;
+        width: 100%;
+        height: 2.5em;
+    }
+
+    h3 {
+      margin-top: .65em;
+      font-size: 1em;
+      color: $standout-fg;
+    }
+
+    .info {
+      position: relative;
+      cursor: help;
+
+      .icon:before {
+        content: url('../../../images/info.png');
+        display: block;
+        margin-top: .55em;
+      }
+
+      &:hover {
+        .icon:before {
+          content: url('../../../images/info_hover.png');
+        }
+
+        .popup {
+          display: block;
+        }
+      }
+
+      .popup {
+        display: none;
+        position: absolute;
+        margin-top: -1.5em;
+        margin-left: 2em;
+        padding: 1em;
+        font-size: .9em;
+        color: $help-fg;
+        background: $help-bg;
+        box-shadow: $help-shadow;
+      }
+    }
+
+    .viewer, .annotations, .controls, .options {
+      background: $video-callout-panel-bg;
+    }
+
+    .viewer {
+      video {
+        display: none;
+        width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .status-bar, .close {
+        position: absolute;
+        margin-top: -27px;
+      }
+
+      .status-bar {
+        width: 100%;
+        background-color: rgba(0, 0, 0, .7);
+
+        span {
+          padding-left: calc(.75em + 15px);
+          font-size: .8em;
+          background-position: .5em center;
+          background-repeat: no-repeat;
+        }
+
+        .failed {
+          background-image: url('../../../images/alert-small.png');
+          background-size: auto 15px;
+        }
+
+        .queued {
+          background-image: url('../../../images/hourglass.png');
+        }
+
+        .processing {
+          background-image: url('../../../images/analytics.png');
+        }
+      }
+
+      .close {
+        right: .25em;
+        z-index: 1;
+        font-size: 1.25em;
+        cursor: pointer;
+      }
+    }
+
+    .annotations {
+      padding: 0 1.625em;
+    }
+
+    .controls {
+      padding-top: 7px;
+
+      .rewind {
+        &:before {
+          content: url('../../../images/rewind.png');
+        }
+        &:hover:before {
+          content: url('../../../images/rewind_hover.png');
+        }
+      }
+
+      .previous-frame {
+        &:before {
+          content: url('../../../images/previous-frame.png');
+        }
+        &:hover:before {
+          content: url('../../../images/previous-frame_hover.png');
+        }
+      }
+
+      .play {
+        &:before {
+          content: url('../../../images/play.png');
+        }
+        &:hover:before {
+          content: url('../../../images/play_hover.png');
+        }
+      }
+
+      .pause {
+        &:before {
+          content: url('../../../images/pause.png');
+        }
+        &:hover:before {
+          content: url('../../../images/pause_hover.png');
+        }
+      }
+
+      .next-frame {
+        &:before {
+          content: url('../../../images/next-frame.png');
+        }
+        &:hover:before {
+          content: url('../../../images/next-frame_hover.png');
+        }
+      }
+
+      .fast-forward {
+        &:before {
+          content: url('../../../images/fast-forward.png');
+        }
+        &:hover:before {
+          content: url('../../../images/fast-forward_hover.png');
+        }
+      }
+    }
+
+    .viewer, .controls {
+      width: calc(73% - 9px);
+      margin-left: 2px;
+    }
+
+    .annotations, .options {
+      box-sizing: border-box;
+      width: 27%;
+      margin-right: 2px;
+      margin-left: 5px;
+    }
+
+    .controls, .options {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5px;
+      margin-bottom: 2px;
+
+      .btn {
+        margin-right: 1.75em;
+
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+
+    .options {
+      .btn {
+        font-size: .5em;
+        margin-right: 3.5em;
+      }
+
+      .annotate:before{
+        content: url('../../../images/edit.png');
+        transform: translateX(.25em);
+      }
+
+      .annotate-edit:before {
+        content: url('../../../images/edit_hover.png');
+      }
+
+      .download {
+        margin-top: 5px;
+
+        &:before {
+          content: url('../../../images/download.png');
+        }
+
+        &:not(.disabled):hover:before {
+          content: url('../../../images/download_hover.png');
+        }
+      }
+    }
+  }
+
+  .annotations {
+    overflow: auto;
+
+    .box {
+      display: inline-block;
+      width: .75em;
+      height: .75em;
+      margin-right: .5em;
+    }
+
+    h4 {
+      display: inline-block;
+      margin: 0;
+    }
+
+    > ul {
+      padding-left: 0;
+
+      ul {
+        padding-left: 1.25em;
+      }
+    }
+
+    li {
+      margin: .125em 0;
+      list-style-type: none;
+    }
+  }
+
+  .analyses {
+    position: relative;
+    border-top: 5px solid $video-callout-bg;
+
+    .scrubber {
+      position: absolute;
+      top: 0;
+      width: 4px;
+      height: 100%;
+      margin-left: -2px;
+      background: $standout-fg;
+
+      &:after {
+        content: '';
+        display: block;
+        margin-top: -10px;
+        margin-left: -10px;
+        border-top: 12px solid $standout-fg;
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+      }
+    }
+  }
+}
+
+
+@keyframes stripes {
+  from {
+    background-position: -34px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}

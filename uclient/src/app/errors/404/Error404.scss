@@ -1,0 +1,27 @@
+@import '../../../../styles/variables';
+
+.error-404 {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+
+  .hook {
+    font-size: 6em;
+    transform: translate(.3em, -.1em) rotate(22.5deg);
+
+    span {
+      display: inline-block;
+      position: relative;
+      top: .13em;
+      left: -.378em;
+      transform: scale(-1,-1);
+      font-size: 1.25em;
+    }
+  }
+
+  a {
+    color: $standout-fg;
+  }
+}

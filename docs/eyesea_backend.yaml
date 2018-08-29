@@ -247,6 +247,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /process:
+    post:
+      summary: analyze a video
+      requestBody:
+        description: Pet to add to the store
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/process'
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
 
 components:
   schemas:
@@ -312,6 +335,9 @@ components:
         vid:
           type: integer
           description: the ID of the video being analyzed
+        mid:
+          type: integer
+          description: the ID of the analysis method being used
         results:
           type: array
           description: the results of the analysis
@@ -345,3 +371,12 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/analysis_method'
+
+    process:
+      properties:
+        mid:
+          type: integer
+          description: analysis method ID
+        vid:
+          type: integer
+          description: video ID

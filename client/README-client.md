@@ -1,1 +1,0 @@
-You will need node.js installed to build the client or to run in dev mode. You will also need install a couple of libraries; from the /eyesea_v2/client run “npm install create-react-app react-scripts react-dom jquery”. To run in dev mode goto /eyesea_v2/client and run “npm start”. To build goto /eyesea_v2/client and run “npm run build”. 
