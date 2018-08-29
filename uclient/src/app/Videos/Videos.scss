@@ -125,33 +125,6 @@
             &.processing {
                 background-image: url('../../../images/analytics.png');
             }
-
-            em {
-                display: inline-block;
-                width: .703125em;
-                vertical-align: bottom;
-                overflow: hidden;
-                font-style: normal;
-                animation: dotdotdot 4s steps(2, start) infinite;
-            }
-
-            @keyframes dotdotdot {
-                0% {
-                    width: 0;
-                }
-
-                25% {
-                    width: .234375em;
-                }
-
-                50% {
-                    width: .46875em;
-                }
-
-                75% {
-                    width: .703125em;
-                }
-            }
         }
     }
 
@@ -160,6 +133,39 @@
       height: calc(61px + .28em);
       margin-bottom: -.28em;
     }
+  }
+}
+
+.processing {
+  em {
+    display: inline-block;
+    width: .703125em;
+    vertical-align: bottom;
+    overflow: hidden;
+    font-style: normal;
+    animation: dotdotdot 4s steps(1, start) infinite;
+  }
+}
+
+@keyframes dotdotdot {
+  0% {
+    width: 0;
+  }
+
+  25% {
+    width: 0;
+  }
+
+  50% {
+    width: .234375em;
+  }
+
+  75% {
+    width: .46875em;
+  }
+
+  100% {
+    width: .703125em;
   }
 }
 

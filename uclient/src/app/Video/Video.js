@@ -63,7 +63,7 @@ export class Video extends React.Component {
 		// Unfortunately Firefox shows a loading overlay if we do this too many
 		// times in a row and it doesn't go away until we stop.
 		this.player.currentTime -=
-			((this.player.defaultPlaybackRate * 4) / 1000) * progress;
+			this.player.defaultPlaybackRate * 4 / 1000 * progress;
 		this.timestamp = timestamp;
 		if (!this.stopRewinding) {
 			requestAnimationFrame(this.rewindFrame);
@@ -103,7 +103,8 @@ export class Video extends React.Component {
 		var detections = [],
 			frame = Math.floor(this.player.currentTime * this.props.video.fps),
 			scrubber =
-				(this.player.currentTime / this.player.duration) *
+				this.player.currentTime /
+				this.player.duration *
 				this.canvas.clientWidth;
 
 		if (this.props.video.analyses) {
@@ -151,13 +152,15 @@ export class Video extends React.Component {
 
 		this.boundingBox = target.getBoundingClientRect();
 		this.player.currentTime =
-			(this.player.duration * (event.clientX - this.boundingBox.left)) /
+			this.player.duration *
+			(event.clientX - this.boundingBox.left) /
 			this.boundingBox.width;
 	};
 	scrubChange = event => {
 		if (this.boundingBox) {
 			this.player.currentTime =
-				(this.player.duration * (event.clientX - this.boundingBox.left)) /
+				this.player.duration *
+				(event.clientX - this.boundingBox.left) /
 				this.boundingBox.width;
 		}
 	};
@@ -382,6 +385,9 @@ export class Video extends React.Component {
 	render() {
 		var video = <Busy error={this.props.error} />,
 			analyses,
+			status,
+			queued = 0,
+			failed = 0,
 			processing = 0;
 
 		if (this.props.video && !this.props.error) {
@@ -396,20 +402,30 @@ export class Video extends React.Component {
 							color={this.props.methods.ids[analysis.method].color}
 						/>
 					);
+				} else if (analysis.status === 'FAILED') {
+					failed++;
+				} else if (analysis.status === 'QUEUED') {
+					queued++;
 				} else {
 					processing++;
 				}
 			});
 
-			if (processing) {
-				processing = (
-					<div className="occurrences-bar">
-						{processing} analys
-						{processing === 1 ? 'i' : 'e'}s processing
+			if (failed || queued || processing) {
+				status = (
+					<div className="status-bar">
+						{(failed && <span className="failed">{failed} failed</span>) || ''}
+						{}
+						{(queued && <span className="queued">{queued} queued</span>) || ''}
+						{}
+						{(processing && (
+							<span className="processing">
+								{processing} processing<em>...</em>
+							</span>
+						)) ||
+							''}
 					</div>
 				);
-			} else {
-				processing = undefined;
 			}
 
 			video = (
@@ -471,8 +487,8 @@ export class Video extends React.Component {
 							onMouseMove={this.scrubChange}
 							onMouseUp={this.scrubEnd}
 						>
+							{status}
 							{analyses}
-							{processing}
 							<div
 								className="scrubber"
 								style={{ left: this.state.scrubber + 'px' }}
@@ -600,9 +616,6 @@ const mapStateToProps = state => ({
 	error: getVideoError(state) || getAnalysisMethodsError(state),
 });
 
-export default connect(
-	mapStateToProps,
-	{
-		requestVideo: request,
-	}
-)(Video);
+export default connect(mapStateToProps, {
+	requestVideo: request,
+})(Video);

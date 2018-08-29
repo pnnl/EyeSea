@@ -114,6 +114,33 @@
         max-height: 100%;
         object-fit: contain;
       }
+
+      .status-bar {
+        position: absolute;
+        width: 100%;
+        margin-top: -27px;
+        background-color: rgba(0, 0, 0, .7);
+
+        span {
+          padding-left: calc(.75em + 15px);
+          font-size: .8em;
+          background-position: .5em center;
+          background-repeat: no-repeat;
+        }
+
+        .failed {
+          background-image: url('../../../images/alert-small.png');
+          background-size: auto 15px;
+        }
+
+        .queued {
+          background-image: url('../../../images/hourglass.png');
+        }
+
+        .processing {
+          background-image: url('../../../images/analytics.png');
+        }
+      }
     }
 
     .annotations {
