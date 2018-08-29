@@ -210,12 +210,12 @@
         font-size: .5em;
       }
 
-      .annotate:before {
+      .annotate:before{
         content: url('../../../images/edit.png');
         transform: translateX(.25em);
       }
 
-      .annotate:hover:before {
+      .annotate-edit:before {
         content: url('../../../images/edit_hover.png');
       }
 

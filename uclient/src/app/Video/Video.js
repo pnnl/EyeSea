@@ -22,6 +22,16 @@ export class Video extends React.Component {
 		this.state = {
 			paused: true,
 			detections: [],
+			mode: 0, //0 playback, 1 add, 2 select
+			method: null,
+			selection: [],
+			drawing: {
+				enabled: false,
+				startX: 0,
+				startY: 0,
+				endX: 0,
+				endY: 0,
+			},
 		};
 		this.updateLayout = _.debounce(this.updateLayout, 200);
 	}
@@ -125,38 +135,9 @@ export class Video extends React.Component {
 		}
 	};
 	computeFrame = (time, single) => {
-		var canvasCtx = this.canvas.getContext('2d');
-		var frame = Math.floor(this.player.currentTime * this.props.video.fps);
-
+		this.drawAnalyses(this.state.detections);
 		if (!single) {
 			requestAnimationFrame(this.computeFrame);
-		}
-		canvasCtx.drawImage(
-			this.player,
-			0,
-			0,
-			this.canvas.width,
-			this.canvas.height
-		);
-		if (this.props.video.analyses) {
-			this.props.video.analyses.forEach(analysis => {
-				if (analysis.status === 'FINISHED') {
-					analysis.results[frame].detections.map(item => {
-						canvasCtx.beginPath();
-						canvasCtx.lineWidth = '6';
-						canvasCtx.strokeStyle = this.props.methods.ids[
-							analysis.method
-						].color;
-						canvasCtx.rect(
-							item.x1 <= item.x2 ? item.x1 : item.x2,
-							item.y1 <= item.y2 ? item.y1 : item.y2,
-							Math.abs(item.x1 - item.x2),
-							Math.abs(item.y1 - item.y2)
-						);
-						canvasCtx.stroke();
-					});
-				}
-			});
 		}
 	};
 	scrubStart = event => {
@@ -188,6 +169,204 @@ export class Video extends React.Component {
 		this.releaseMouse(event, target);
 		delete this.boundingBox;
 	};
+	modeAnnotate(event) {
+		this.setState({
+			mode: this.state.mode == 0 ? 1 : 0,
+			method: null,
+		});
+	}
+	modeAddAnnotate(event, method) {
+		this.setState({
+			mode: this.state.mode == 1 ? 0 : 1,
+			method: method,
+		});
+	}
+	modeEditAnnotate(event, method) {
+		this.setState({
+			mode: this.state.mode == 2 ? 0 : 2,
+			method: method,
+		});
+	}
+	beginAnnotate(event) {
+		switch (this.state.mode) {
+			case 1:
+				var canvasDim = this.canvas.getBoundingClientRect();
+				var scaleX = this.canvas.width / canvasDim.width;
+				var scaleY = this.canvas.height / canvasDim.height;
+				this.state.drawing = {
+					enabled: true,
+					startX: (event.pageX - canvasDim.x - window.pageXOffset) * scaleX,
+					startY: (event.pageY - canvasDim.y - window.pageYOffset) * scaleY,
+					endX: 0,
+					endY: 0,
+				};
+			case 2:
+				var canvasDim = this.canvas.getBoundingClientRect();
+				var scaleX = this.canvas.width / canvasDim.width;
+				var scaleY = this.canvas.height / canvasDim.height;
+				var x = (event.pageX - canvasDim.x - window.pageXOffset) * scaleX;
+				var y = (event.pageY - canvasDim.y - window.pageYOffset) * scaleY;
+				var detections = this.state.detections;
+				var method = this.state.method;
+				var selection = this.state.selection;
+				detections.forEach(detection => {
+					if (detection.id == method.id) {
+						for (var i = 0; i < detection.results.detections.length; i++) {
+							var q = detection.results.detections[i];
+							if (q.x1 <= q.x2 && x >= q.x1 && x <= q.x2) {
+								if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
+									if (selection.indexOf(i) != -1) {
+										selection.splice(selection.indexOf(i), 1);
+									} else {
+										selection.push(i);
+									}
+								} else if (q.y2 <= q.y1 && y >= q.y2 && y <= q.y1) {
+									if (selection.indexOf(i) != -1) {
+										selection.splice(selection.indexOf(i), 1);
+									} else {
+										selection.push(i);
+									}
+								}
+							} else if (q.x2 <= q.z1 && x >= q.x2 && x <= q.x1) {
+								if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
+									if (selection.indexOf(i) != -1) {
+										selection.splice(selection.indexOf(i), 1);
+									} else {
+										selection.push(i);
+									}
+								} else if (q.y2 <= q.y1 && y >= q.y2 && y <= q.y1) {
+									if (selection.indexOf(i) != -1) {
+										selection.splice(selection.indexOf(i), 1);
+									} else {
+										selection.push(i);
+									}
+								}
+							}
+						}
+					}
+				});
+				this.setState({ selection: selection });
+				this.drawAnalyses(this.state.detections);
+		}
+	}
+	moveAnnotate(event) {
+		switch (this.state.mode) {
+			case 1:
+				if (this.state.drawing.enabled) {
+					this.drawAnalyses(this.state.detections);
+					var canvasDim = this.canvas.getBoundingClientRect();
+					var canvasCtx = this.canvas.getContext('2d');
+					var scaleX = this.canvas.width / canvasDim.width;
+					var scaleY = this.canvas.height / canvasDim.height;
+					this.state.drawing.endX =
+						(event.pageX - canvasDim.x - window.pageXOffset) * scaleX;
+					this.state.drawing.endY =
+						(event.pageY - canvasDim.y - window.pageYOffset) * scaleY;
+					canvasCtx.lineWidth = '6';
+					canvasCtx.strokeStyle = this.props.methods.ids[1].color;
+					canvasCtx.strokeRect(
+						this.state.drawing.startX,
+						this.state.drawing.startY,
+						this.state.drawing.endX - this.state.drawing.startX,
+						this.state.drawing.endY - this.state.drawing.startY
+					);
+				}
+		}
+	}
+	endAnnotate(event) {
+		switch (this.state.mode) {
+			case 1:
+				if (this.state.drawing.enabled) {
+					var canvasDim = this.canvas.getBoundingClientRect();
+					var scaleX = this.canvas.width / canvasDim.width;
+					var scaleY = this.canvas.height / canvasDim.height;
+					this.state.drawing.enabled = false;
+					this.state.drawing.endX =
+						(event.pageX - canvasDim.x - window.pageXOffset) * scaleX;
+					this.state.drawing.endY =
+						(event.pageY - canvasDim.y - window.pageYOffset) * scaleY;
+					var detections = this.state.detections;
+					var founDet = false;
+					detections.forEach(detection => {
+						if (detection.id == 1) {
+							detection.results.detections.push({
+								x1: this.state.drawing.startX,
+								x2: this.state.drawing.endX,
+								y1: this.state.drawing.startY,
+								y2: this.state.drawing.endY,
+							});
+							founDet = true;
+						}
+					});
+					if (!founDet) {
+						detections.push({
+							id: 1,
+							name: 'manual',
+							color: this.props.methods.ids[1].color,
+							results: {
+								detections: [
+									{
+										x1: this.state.drawing.startX,
+										x2: this.state.drawing.endX,
+										y1: this.state.drawing.startY,
+										y2: this.state.drawing.endY,
+									},
+								],
+								frameindex: Math.floor(
+									this.player.currentTime * this.props.video.fps
+								),
+							},
+						});
+					}
+					this.setState({
+						detections,
+					});
+					this.drawAnalyses(detections);
+				}
+		}
+	}
+	deleteAnnotate(event, method) {
+		console.log(this.state);
+		this.setState({ selection: [] });
+	}
+	drawAnalyses(analyses) {
+		if (this.player != null) {
+			var frame = Math.floor(this.player.currentTime * this.props.video.fps);
+			var canvasCtx = this.canvas.getContext('2d');
+			canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			canvasCtx.drawImage(
+				this.player,
+				0,
+				0,
+				this.canvas.width,
+				this.canvas.height
+			);
+			canvasCtx.beginPath();
+			canvasCtx.lineWidth = '6';
+			if (this.props.video.analyses) {
+				this.props.video.analyses.forEach(analysis => {
+					if (analysis.status === 'FINISHED') {
+						analysis.results[frame].detections.map((item, i) => {
+							canvasCtx.strokeStyle =
+								this.state.method != null &&
+								analysis.id == this.state.method.id &&
+								this.state.selection.indexOf(i) != -1
+									? 'white'
+									: this.props.methods.ids[analysis.method].color;
+							canvasCtx.rect(
+								item.x1 <= item.x2 ? item.x1 : item.x2,
+								item.y1 <= item.y2 ? item.y1 : item.y2,
+								Math.abs(item.x1 - item.x2),
+								Math.abs(item.y1 - item.y2)
+							);
+						});
+					}
+				});
+			}
+			canvasCtx.stroke();
+			canvasCtx.closePath();
+		}
+	}
 	updateLayout = () => {
 		this.canvas.width = this.player.videoWidth;
 		this.canvas.height = this.player.videoHeight;
@@ -280,7 +459,12 @@ export class Video extends React.Component {
 						>
 							Sorry, this browser does not support video playback.
 						</video>
-						<canvas ref={canvas => (this.canvas = canvas)} />
+						<canvas
+							ref={canvas => (this.canvas = canvas)}
+							onMouseDown={event => this.beginAnnotate(event)}
+							onMouseMove={event => this.moveAnnotate(event)}
+							onMouseUp={event => this.endAnnotate(event)}
+						/>
 						<div
 							className="analyses"
 							onMouseDown={this.scrubStart}
@@ -302,6 +486,21 @@ export class Video extends React.Component {
 								<li key={method.id} className="method">
 									<span className="box" style={{ background: method.color }} />
 									<h4>{method.name}</h4>
+									<button
+										onMouseDown={event => this.modeAddAnnotate(event, method)}
+									>
+										Add
+									</button>
+									<button
+										onMouseDown={event => this.modeEditAnnotate(event, method)}
+									>
+										Edit
+									</button>
+									<button
+										onMouseDown={event => this.deleteAnnotate(event, method)}
+									>
+										Delete
+									</button>
 									<ul>
 										{(method.name === 'manual' &&
 											method.results.detections.map((detection, index) => (
@@ -360,7 +559,16 @@ export class Video extends React.Component {
 						</Button>
 					</div>
 					<div className="options">
-						<Button className="annotate">Annotation</Button>
+						<Button
+							className={
+								this.state.mode == 1 && this.state.method == null
+									? 'annotate-edit'
+									: 'annotate'
+							}
+							onMouseDown={event => this.modeAnnotate(event)}
+						>
+							Annotation
+						</Button>
 						<Button className="download" disabled>
 							Download
 						</Button>
