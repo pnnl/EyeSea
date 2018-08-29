@@ -63,7 +63,7 @@ export class Video extends React.Component {
 		// Unfortunately Firefox shows a loading overlay if we do this too many
 		// times in a row and it doesn't go away until we stop.
 		this.player.currentTime -=
-			this.player.defaultPlaybackRate * 4 / 1000 * progress;
+			((this.player.defaultPlaybackRate * 4) / 1000) * progress;
 		this.timestamp = timestamp;
 		if (!this.stopRewinding) {
 			requestAnimationFrame(this.rewindFrame);
@@ -103,8 +103,7 @@ export class Video extends React.Component {
 		var detections = [],
 			frame = Math.floor(this.player.currentTime * this.props.video.fps),
 			scrubber =
-				this.player.currentTime /
-				this.player.duration *
+				(this.player.currentTime / this.player.duration) *
 				this.canvas.clientWidth;
 
 		if (this.props.video.analyses) {
@@ -152,15 +151,13 @@ export class Video extends React.Component {
 
 		this.boundingBox = target.getBoundingClientRect();
 		this.player.currentTime =
-			this.player.duration *
-			(event.clientX - this.boundingBox.left) /
+			(this.player.duration * (event.clientX - this.boundingBox.left)) /
 			this.boundingBox.width;
 	};
 	scrubChange = event => {
 		if (this.boundingBox) {
 			this.player.currentTime =
-				this.player.duration *
-				(event.clientX - this.boundingBox.left) /
+				(this.player.duration * (event.clientX - this.boundingBox.left)) /
 				this.boundingBox.width;
 		}
 	};
@@ -370,6 +367,12 @@ export class Video extends React.Component {
 			canvasCtx.closePath();
 		}
 	}
+	closeStatusBar = event => {
+		event.stopPropagation();
+		this.setState({
+			statusClosed: true,
+		});
+	};
 	updateLayout = () => {
 		this.canvas.width = this.player.videoWidth;
 		this.canvas.height = this.player.videoHeight;
@@ -411,20 +414,30 @@ export class Video extends React.Component {
 				}
 			});
 
-			if (failed || queued || processing) {
+			if ((failed || queued || processing) && !this.state.statusClosed) {
 				status = (
-					<div className="status-bar">
-						{(failed && <span className="failed">{failed} failed</span>) || ''}
-						{}
-						{(queued && <span className="queued">{queued} queued</span>) || ''}
-						{}
-						{(processing && (
-							<span className="processing">
-								{processing} processing<em>...</em>
-							</span>
-						)) ||
-							''}
-					</div>
+					<React.Fragment>
+						<div className="status-bar">
+							{(failed && <span className="failed">{failed} failed</span>) ||
+								''}{' '}
+							{(queued && <span className="queued">{queued} queued</span>) ||
+								''}{' '}
+							{(processing && (
+								<span className="processing">
+									{processing} processing<em>...</em>
+								</span>
+							)) ||
+								''}
+						</div>
+						<span
+							className="close"
+							onClick={this.closeStatusBar}
+							onMouseDown={event => event.stopPropagation()}
+							onMouseUp={event => event.stopPropagation()}
+						>
+							×
+						</span>
+					</React.Fragment>
 				);
 			}
 
@@ -616,6 +629,9 @@ const mapStateToProps = state => ({
 	error: getVideoError(state) || getAnalysisMethodsError(state),
 });
 
-export default connect(mapStateToProps, {
-	requestVideo: request,
-})(Video);
+export default connect(
+	mapStateToProps,
+	{
+		requestVideo: request,
+	}
+)(Video);

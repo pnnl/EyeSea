@@ -115,10 +115,13 @@
         object-fit: contain;
       }
 
-      .status-bar {
+      .status-bar, .close {
         position: absolute;
-        width: 100%;
         margin-top: -27px;
+      }
+
+      .status-bar {
+        width: 100%;
         background-color: rgba(0, 0, 0, .7);
 
         span {
@@ -140,6 +143,13 @@
         .processing {
           background-image: url('../../../images/analytics.png');
         }
+      }
+
+      .close {
+        right: .25em;
+        z-index: 1;
+        font-size: 1.25em;
+        cursor: pointer;
       }
     }
 
