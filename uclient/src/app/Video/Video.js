@@ -20,6 +20,7 @@ export class Video extends React.Component {
 	constructor() {
 		super();
 		this.state = {
+			playing: false,
 			paused: true,
 			detections: [],
 			mode: 0, //0 playback, 1 add, 2 select
@@ -100,43 +101,37 @@ export class Video extends React.Component {
 		}
 	}
 	timeUpdate = () => {
-		var detections = [],
-			frame = Math.floor(this.player.currentTime * this.props.video.fps),
-			scrubber =
-				(this.player.currentTime / this.player.duration) *
-				this.canvas.clientWidth;
-
-		if (this.props.video.analyses) {
-			this.props.video.analyses.forEach(analysis => {
-				if (analysis.status === 'FINISHED') {
-					detections.push({
-						id: analysis.id,
-						name: this.props.methods.ids[analysis.method].description,
-						color: this.props.methods.ids[analysis.method].color,
-						results: analysis.results[frame] || {
-							detections: [],
-						},
-					});
-				}
-			});
-
-			this.setState({
-				detections,
-				scrubber,
-			});
-
-			if (this.player.paused) {
-				this.computeFrame(-1, true);
-			}
-		} else {
-			this.setState({
-				scrubber,
-			});
+		var scrubber =
+			(this.player.currentTime / this.player.duration) *
+			this.canvas.clientWidth;
+		this.setState({ scrubber });
+	};
+	playFrame = () => {
+		if (!this.state.playing) {
+			this.computeFrame();
+			this.setState({ playing: true });
 		}
 	};
 	computeFrame = (time, single) => {
 		this.drawAnalyses(this.state.detections);
 		if (!single) {
+			var detections = [],
+				frame = Math.floor(this.player.currentTime * this.props.video.fps);
+			if (this.props.video.analyses) {
+				this.props.video.analyses.forEach(analysis => {
+					if (analysis.status === 'FINISHED') {
+						detections.push({
+							id: analysis.id,
+							name: this.props.methods.ids[analysis.method].description,
+							color: this.props.methods.ids[analysis.method].color,
+							results: analysis.results[frame] || {
+								detections: [],
+							},
+						});
+					}
+				});
+			}
+			this.setState({ detections });
 			requestAnimationFrame(this.computeFrame);
 		}
 	};
@@ -341,7 +336,6 @@ export class Video extends React.Component {
 		this.setState({ selection: [] });
 	}
 	drawAnalyses(analyses) {
-		console.log(analyses);
 		if (this.player != null) {
 			var frame = Math.floor(this.player.currentTime * this.props.video.fps);
 			var canvasCtx = this.canvas.getContext('2d');
@@ -390,7 +384,7 @@ export class Video extends React.Component {
 	updateLayout = () => {
 		this.canvas.width = this.player.videoWidth;
 		this.canvas.height = this.player.videoHeight;
-		this.computeFrame(-1, true);
+		//this.computeFrame(-1, true);
 	};
 	componentDidMount() {
 		this.props.requestVideo(this.props.match.params.id);
@@ -497,7 +491,7 @@ export class Video extends React.Component {
 									this.updateLayout();
 								}
 							}}
-							onPlaying={this.computeFrame}
+							onPlaying={this.playFrame}
 							crossOrigin="anonymous"
 							playsInline
 						>
