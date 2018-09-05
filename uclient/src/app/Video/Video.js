@@ -174,19 +174,19 @@ export class Video extends React.Component {
 			mode: this.state.mode == 0 ? 1 : 0,
 			method: null,
 		});
-	};
+	}
 	modeAddAnnotate(event, method) {
 		this.setState({
 			mode: this.state.mode == 1 ? 0 : 1,
 			method: method,
 		});
-	};
+	}
 	modeEditAnnotate(event, method) {
 		this.setState({
 			mode: this.state.mode == 2 ? 0 : 2,
 			method: method,
 		});
-	};
+	}
 	beginAnnotate(event) {
 		switch (this.state.mode) {
 			case 1:
@@ -248,7 +248,7 @@ export class Video extends React.Component {
 				this.setState({ selection: selection });
 				this.drawAnalyses(this.state.detections);
 		}
-	};
+	}
 	moveAnnotate(event) {
 		switch (this.state.mode) {
 			case 1:
@@ -272,7 +272,7 @@ export class Video extends React.Component {
 					);
 				}
 		}
-	};
+	}
 	endAnnotate(event) {
 		switch (this.state.mode) {
 			case 1:
@@ -324,63 +324,63 @@ export class Video extends React.Component {
 					this.drawAnalyses(detections);
 				}
 		}
-	};
-    deleteAnnotate(event, method) {
-	if (this.props.video.analyses) {
-	    this.props.video.analyses.forEach(analysis => {
-		if (analysis.status === 'FINISHED') {
-		    analysis.results[frame].detections.map((item, i) => {
-			if (this.state.selection.indexOf(i) != -1) {
-			    //delete ;
-			}
-		    });
-		}
-	    });
 	}
+	deleteAnnotate(event, method) {
+		if (this.props.video.analyses) {
+			this.props.video.analyses.forEach(analysis => {
+				if (analysis.status === 'FINISHED') {
+					analysis.results[frame].detections.map((item, i) => {
+						if (this.state.selection.indexOf(i) != -1) {
+							//delete ;
+						}
+					});
+				}
+			});
+		}
 		console.log(this.state);
 		this.setState({ selection: [] });
-    };
-    drawAnalyses(analyses) {
-	console.log(analyses);
-	if (this.player != null) {
-	    var frame = Math.floor(this.player.currentTime * this.props.video.fps);
-	    var canvasCtx = this.canvas.getContext('2d');
-	    canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	    canvasCtx.drawImage(
-		this.player,
-		0,
-		0,
-		this.canvas.width,
-		this.canvas.height
-	    );
-	    canvasCtx.beginPath();
-	    canvasCtx.lineWidth = '6';
-	    analyses.forEach(analysis => {
-		var mid = 0;
-		this.props.methods.list.forEach(item => {
-		    if (item.description == analysis.name) {
-			mid = item.mid;
-		    }
-		});
-		analysis.results.detections.map((item, i) => {
-		    canvasCtx.strokeStyle =
-			this.state.method != null &&
-			analysis.id == this.state.method.id &&
-			this.state.selection.indexOf(i) != -1
-			? 'white'
-			: this.props.methods.ids[mid].color;
-		    canvasCtx.rect(
-			item.x1 <= item.x2 ? item.x1 : item.x2,
-			item.y1 <= item.y2 ? item.y1 : item.y2,
-			Math.abs(item.x1 - item.x2),
-			Math.abs(item.y1 - item.y2)
-		    );
-		});
-	    });
-	    canvasCtx.stroke();
-	    canvasCtx.closePath();
 	}
-    };
+	drawAnalyses(analyses) {
+		console.log(analyses);
+		if (this.player != null) {
+			var frame = Math.floor(this.player.currentTime * this.props.video.fps);
+			var canvasCtx = this.canvas.getContext('2d');
+			canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			canvasCtx.drawImage(
+				this.player,
+				0,
+				0,
+				this.canvas.width,
+				this.canvas.height
+			);
+			canvasCtx.beginPath();
+			canvasCtx.lineWidth = '6';
+			analyses.forEach(analysis => {
+				var mid = 0;
+				this.props.methods.list.forEach(item => {
+					if (item.description == analysis.name) {
+						mid = item.mid;
+					}
+				});
+				analysis.results.detections.map((item, i) => {
+					canvasCtx.strokeStyle =
+						this.state.method != null &&
+						analysis.id == this.state.method.id &&
+						this.state.selection.indexOf(i) != -1
+							? 'white'
+							: this.props.methods.ids[mid].color;
+					canvasCtx.rect(
+						item.x1 <= item.x2 ? item.x1 : item.x2,
+						item.y1 <= item.y2 ? item.y1 : item.y2,
+						Math.abs(item.x1 - item.x2),
+						Math.abs(item.y1 - item.y2)
+					);
+				});
+			});
+			canvasCtx.stroke();
+			canvasCtx.closePath();
+		}
+	}
 	closeStatusBar = event => {
 		event.stopPropagation();
 		this.setState({
@@ -438,7 +438,8 @@ export class Video extends React.Component {
 								''}{' '}
 							{(processing && (
 								<span className="processing">
-									{processing} processing<em>...</em>
+									{processing} processing
+									<em>...</em>
 								</span>
 							)) ||
 								''}
