@@ -1,6 +1,5 @@
-# Updated EyeSea Client
 
-### To run
+### Install EyeSea
 
 * You'll need to have [git](https://git-scm.com/) and [node](https://nodejs.org/en/) installed in your system.
 * Fork and clone the project:
@@ -19,8 +18,21 @@ npm install -g yarn
 ```
 
 ```
-yarn
+yarn install
+```
+
+```
 yarn add whatwg-fetch
+```
+
+### Start EyeSea server
+
+cd eyesea/server
+
+python eyesea_server.py 
+
+### Start EyeSea client
+
 ```
 
 * Run development server:
@@ -35,10 +47,15 @@ yarn start
 yarn dev
 ```
 
-Open the web browser to `http://localhost:7890/`
 
 ### To build the production package
 
 ```
 yarn build
 ```
+
+### Use EyeSea in browser
+
+Open the web browser to `http://localhost:7890/`
+
+
