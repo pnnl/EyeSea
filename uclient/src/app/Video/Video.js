@@ -317,12 +317,14 @@ export class Video extends React.Component {
 	}
 	deleteAnnotate(event, method) {
 		var detections = this.state.detections;
+		var selection = this.state.selection;
 		detections.forEach(detection => {
 			if (detection.id == method.id) {
-				detection.results.detections.map((item, i) => {
-					if (this.state.selection.indexOf(i) != -1) {
-						detection.results.detections.splice(i, 1);
-					}
+				selection = selection.sort((a, b) => b - a);
+				selection.forEach(i => {
+					console.log(detections);
+					console.log(i);
+					detection.results.detections.splice(i, 1);
 				});
 			}
 		});
