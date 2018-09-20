@@ -222,7 +222,7 @@ export class Video extends React.Component {
 										selection.push(i);
 									}
 								}
-							} else if (q.x2 <= q.z1 && x >= q.x2 && x <= q.x1) {
+							} else if (q.x2 <= q.x1 && x >= q.x2 && x <= q.x1) {
 								if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
 									if (selection.indexOf(i) != -1) {
 										selection.splice(selection.indexOf(i), 1);
@@ -257,18 +257,11 @@ export class Video extends React.Component {
 						(event.pageX - canvasDim.x - window.pageXOffset) * scaleX;
 					this.state.drawing.endY =
 						(event.pageY - canvasDim.y - window.pageYOffset) * scaleY;
-					canvasCtx.lineWidth = '6';
-					canvasCtx.strokeStyle = this.props.methods.ids[1].color;
-					canvasCtx.strokeRect(
-						this.state.drawing.startX,
-						this.state.drawing.startY,
-						this.state.drawing.endX - this.state.drawing.startX,
-						this.state.drawing.endY - this.state.drawing.startY
-					);
 				}
 		}
 	}
 	endAnnotate(event) {
+		console.log(this.state);
 		switch (this.state.mode) {
 			case 1:
 				if (this.state.drawing.enabled) {
@@ -281,9 +274,10 @@ export class Video extends React.Component {
 					this.state.drawing.endY =
 						(event.pageY - canvasDim.y - window.pageYOffset) * scaleY;
 					var detections = this.state.detections;
+					var method = this.state.method;
 					var founDet = false;
 					detections.forEach(detection => {
-						if (detection.id == 1) {
+						if (detection.id == method.id) {
 							detection.results.detections.push({
 								x1: this.state.drawing.startX,
 								x2: this.state.drawing.endX,
@@ -313,6 +307,7 @@ export class Video extends React.Component {
 							},
 						});
 					}
+
 					this.setState({
 						detections,
 					});
@@ -321,19 +316,19 @@ export class Video extends React.Component {
 		}
 	}
 	deleteAnnotate(event, method) {
-		if (this.props.video.analyses) {
-			this.props.video.analyses.forEach(analysis => {
-				if (analysis.status === 'FINISHED') {
-					analysis.results[frame].detections.map((item, i) => {
-						if (this.state.selection.indexOf(i) != -1) {
-							//delete ;
-						}
-					});
-				}
-			});
-		}
-		console.log(this.state);
-		this.setState({ selection: [] });
+		var detections = this.state.detections;
+		var selection = this.state.selection;
+		detections.forEach(detection => {
+			if (detection.id == method.id) {
+				selection = selection.sort((a, b) => b - a);
+				selection.forEach(i => {
+					console.log(detections);
+					console.log(i);
+					detection.results.detections.splice(i, 1);
+				});
+			}
+		});
+		this.setState({ selection: [], detections });
 	}
 	drawAnalyses(analyses) {
 		if (this.player != null) {
@@ -347,8 +342,7 @@ export class Video extends React.Component {
 				this.canvas.width,
 				this.canvas.height
 			);
-			canvasCtx.beginPath();
-			canvasCtx.lineWidth = '6';
+
 			analyses.forEach(analysis => {
 				var mid = 0;
 				this.props.methods.list.forEach(item => {
@@ -357,6 +351,8 @@ export class Video extends React.Component {
 					}
 				});
 				analysis.results.detections.map((item, i) => {
+					canvasCtx.beginPath();
+					canvasCtx.lineWidth = '6';
 					canvasCtx.strokeStyle =
 						this.state.method != null &&
 						analysis.id == this.state.method.id &&
@@ -369,10 +365,24 @@ export class Video extends React.Component {
 						Math.abs(item.x1 - item.x2),
 						Math.abs(item.y1 - item.y2)
 					);
+					canvasCtx.stroke();
+					canvasCtx.closePath();
 				});
 			});
-			canvasCtx.stroke();
-			canvasCtx.closePath();
+			switch (this.state.mode) {
+				case 1:
+					canvasCtx.beginPath();
+					canvasCtx.lineWidth = '6';
+					canvasCtx.strokeStyle = this.props.methods.ids[1].color;
+					canvasCtx.strokeRect(
+						this.state.drawing.startX,
+						this.state.drawing.startY,
+						this.state.drawing.endX - this.state.drawing.startX,
+						this.state.drawing.endY - this.state.drawing.startY
+					);
+					canvasCtx.stroke();
+					canvasCtx.closePath();
+			}
 		}
 	}
 	closeStatusBar = event => {
