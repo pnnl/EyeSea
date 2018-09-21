@@ -2,7 +2,14 @@ README-server.md
 
 ## Install dependencies
 
+Python modules:
+numpy, matplotlib, PIL (actually Pillow)
+
+Other:
+ffmpeg
+
 ```
+> pip install Cython
 > pip install bottle
 > pip install peewee
 ```
