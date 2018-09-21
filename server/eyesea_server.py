@@ -189,7 +189,7 @@ def queue_analysis(index, vid, method, procargs = None):
         slug = '{p}/{f}-{v}-{i}-{m}'.format(p=tmp, f=filename, v=vid['vid'], i=index, m=method['mid'])
         output = slug + '.json'
         args = ['python', script, base_args['videoarg'], input, base_args['outputarg'], output]
-        args.extend(np.array([[k, v] for k, v in procargs['parameters'].items()]).flatten())
+        args.extend(np.array([[k, v] for k, v in procargs.items()]).flatten())
         aid = analysis.select().where(analysis.aid==analysis.insert({'mid': method['mid'], 'vid': vid['vid'], 'status': 'QUEUED', 'parameters': json.dumps(procargs), 'results' : ''}).execute()).dicts().get()
         stderr = open(slug + '.err', 'w+')
         # Python on Windows hates u'' strings apparently; This should go away with a switch to Python 3.x
