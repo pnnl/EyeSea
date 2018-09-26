@@ -164,6 +164,14 @@ export class Video extends React.Component {
 		this.releaseMouse(event, target);
 		delete this.boundingBox;
 	};
+	downloadAnnotations(event) {
+		window.location.href =
+			this.props.servicePath +
+			this.props.match.params.id +
+			'/annotations_' +
+			this.props.match.params.id +
+			'.zip';
+	}
 	modeAnnotate(event) {
 		this.setState({
 			mode: this.state.mode == 0 ? 1 : 0,
@@ -617,7 +625,10 @@ export class Video extends React.Component {
 						>
 							Annotation
 						</Button>
-						<Button className="download" disabled>
+						<Button
+							className="download"
+							onMouseDown={event => this.downloadAnnotations(event)}
+						>
 							Download
 						</Button>
 					</div>
