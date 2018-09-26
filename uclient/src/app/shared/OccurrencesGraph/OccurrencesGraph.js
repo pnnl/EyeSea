@@ -18,6 +18,9 @@ export class OccurrencesGraph extends React.PureComponent {
 	}
 	render() {
 		if (this.props.values) {
+			if (!this.props.values.length) {
+				return null;
+			}
 			let box = this.svg && this.svg.getBoundingClientRect();
 			let maxX = ((box && box.width) || 100) - 25;
 			let maxY = (box && box.height) || 100;
@@ -91,7 +94,7 @@ export class OccurrencesGraph extends React.PureComponent {
 					</defs>
 					{ticks}
 					{labels}
-					{<path d={path.join('') + ' Z'} fill="url(#water)" />}
+					{<path d={path.join('') + ' Z'} fill={this.props.color} />}
 				</svg>
 			);
 		} else {

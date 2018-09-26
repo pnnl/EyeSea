@@ -86,7 +86,8 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 
 			this.props.values.forEach(set => {
 				if (set.results.length) {
-					colors[set.id] = this.props.colors[set.method].color;
+					colors[set.id] =
+						this.props.colors && this.props.colors[set.method].color;
 					frames[set.id] = 'M' + x(0) + ',' + y(0);
 				}
 			});
@@ -125,7 +126,9 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 
 			frames = Object.keys(frames)
 				.reverse()
-				.map(id => <path key={id} d={frames[id]} fill={colors[id]} />);
+				.map(id => (
+					<path key={id} d={frames[id]} style={{ fill: colors[id] }} />
+				));
 
 			return (
 				<svg
