@@ -51,6 +51,7 @@ eye_env['PATH'] = abs_algorithm_path + os.pathsep + eye_env['PATH']
 tasklist = {}
 
 # store path of things not in the algorithm_bin folder
+# TODO: Just store methods in the algorithm dir -- why scan whole path?
 def scanmethods():
     methods = analysis_method.select().dicts()
     for i in eye_env['PATH'].split(os.pathsep):
@@ -63,6 +64,7 @@ def scanmethods():
                 found = False
                 # TODO How do we want to handle two algorithms which might have the same parameter names
                 #      but do different things with them? Is that even a concern?
+                # shari: No, this is not a concern.  
                 for k in methods:
                     if 'name' in fdict:
                         if k['parameters'] == fjson:
@@ -163,8 +165,9 @@ def queue_analysis(index, vid, method, procargs = None):
     # Will throw an error if vid is not-existent, this is on purpose because all future
     # analyses would die with the same error so we cut out early.
     vid = video.select(video).where(video.vid == vid).dicts().get()
-
-    if isinstance(method, (int, long)):
+    # NOTE: in Python 3, long is no longer. int is the new long.
+    #if isinstance(method, (int, long)):
+    if isinstance(method, (int, int)):
         try:
             method = analysis_method.select(analysis_method).where(analysis_method.mid == method).dicts().get()
         except analysis_method.DoesNotExist:

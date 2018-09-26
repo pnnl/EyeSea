@@ -20,6 +20,7 @@ npm install -g yarn
 
 ```
 yarn
+yarn add whatwg-fetch
 ```
 
 * Run development server:
