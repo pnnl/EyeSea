@@ -20,7 +20,6 @@ export class Video extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-			playing: false,
 			paused: true,
 			detections: [],
 			mode: 0, //0 playback, 1 add, 2 select
@@ -107,10 +106,7 @@ export class Video extends React.Component {
 		this.setState({ scrubber });
 	};
 	playFrame = () => {
-		if (!this.state.playing) {
-			this.computeFrame();
-			this.setState({ playing: true });
-		}
+		this.setState({ paused: false }, this.computeFrame);
 	};
 	computeFrame = (time, single) => {
 		this.drawAnalyses(this.state.detections);
@@ -132,7 +128,10 @@ export class Video extends React.Component {
 				});
 			}
 			this.setState({ detections });
-			requestAnimationFrame(this.computeFrame);
+
+			if (!this.state.paused) {
+				requestAnimationFrame(this.computeFrame);
+			}
 		}
 	};
 	scrubStart = event => {
@@ -467,7 +466,7 @@ export class Video extends React.Component {
 					</React.Fragment>
 				);
 			}
-
+			console.log(this.state.paused);
 			video = (
 				<section>
 					<header>
@@ -501,7 +500,7 @@ export class Video extends React.Component {
 								this.props.video.id +
 								'/file'
 							}
-							onPlay={() => this.setState({ paused: false })}
+							onPlay={this.playFrame}
 							onPause={() => this.setState({ paused: true })}
 							onTimeUpdate={this.timeUpdate}
 							onLoadedData={() => {
@@ -509,7 +508,6 @@ export class Video extends React.Component {
 									this.updateLayout();
 								}
 							}}
-							onPlaying={this.playFrame}
 							crossOrigin="anonymous"
 							playsInline
 						>
