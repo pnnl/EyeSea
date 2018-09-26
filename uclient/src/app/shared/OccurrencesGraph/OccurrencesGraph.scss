@@ -1,8 +1,9 @@
 @import '../../../../styles/variables';
 
-.stacked-occurrences-graph {
+.occurrences-graph {
   line {
     stroke: $graph-lines;
+    stroke-width: .3px;
     stroke-dasharray: 3 2;
   }
 

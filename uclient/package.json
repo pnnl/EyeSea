@@ -1,7 +1,7 @@
 {
-	"name": "pnnl-react-boilerplate",
-	"version": "0.0.1",
-	"description": "Boilerplate for React Projects at PNNL",
+	"name": "EyeSea",
+	"version": "0.1.1",
+	"description": "Web UI for the EyeSea project to identify and analyize fish in videos.",
 	"main": "''",
 	"scripts": {
 		"build":
@@ -37,7 +37,8 @@
 		"redux-saga": "^0.15.6",
 		"redux-thunk": "^2.2.0",
 		"reselect": "^3.0.1",
-		"sass-loader": "^6.0.2"
+		"sass-loader": "^6.0.2",
+		"whatwg-fetch": "^3.0.0"
 	},
 	"devDependencies": {
 		"async-exit-hook": "^2.0.1",
@@ -96,7 +97,7 @@
 		"setupFiles": ["<rootDir>/src/shim.js", "<rootDir>/src/setupTests.js"]
 	},
 	"lint-staged": {
-		"gitDir": "../../",
+		"gitDir": "../",
 		"linters": {
 			"*.{js,jsx}": ["partial-lint-prettier"]
 		}
