@@ -55,6 +55,7 @@ def parse_all_args():
         type=int, default=3)
     parser.add_argument("--kh", help="kernel height for morph ops [default = 3]",
         type=int, default=3)
+    parser.add_argument("--verbose", help="show detections",action='store_true')
     return parser.parse_args()
 
 def print_params(mog2):
@@ -91,24 +92,23 @@ def print_params(mog2):
 # main algorithm
 def algorithm():
     alg_name = "bgMOG2" # give it a short descriptive name
-
-    print("Welcome to " + alg_name + "!")
-
     args = parse_all_args()
-    print("videofile = " + args.videofile)
-    print("outputfile = " + args.outputfile)
+    
+    if args.verbose: print("Welcome to " + alg_name + "!")
 
     # check video file exists and is readable
-    print("processing " + args.videofile)
+    if args.verbose: print("processing " + args.videofile)
 
     cap = cv2.VideoCapture(args.videofile)
+    
+    if args.verbose: print("outputfile = " + args.outputfile)
+
 
     # kernel used for morphological ops on fg mask
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(args.kw,args.kh))
     fgbg = cv2.createBackgroundSubtractorMOG2(history=args.history, varThreshold=args.varThreshold, detectShadows=args.detectShadows)
     
-    #fgbg.setDetectShadows(0)
-    print_params(fgbg)
+    if args.verbose: print_params(fgbg)
 
     annotations = ann.Annotations(args.videofile, alg_name)
 
@@ -125,28 +125,28 @@ def algorithm():
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[1] # simplify reference
-        print("{:d} blobs".format(len(cnts)))
+        if args.verbose: print("{:d} blobs".format(len(cnts)))
         #fgc = cv2.cvtColor(fgmask, cv2.COLOR_GRAY2BGR)
         for c in cnts:
             (x, y, w, h) = cv2.boundingRect(c)
-            print("  {:d},{:d},{:d},{:d}".format(x,y,w,h))
+            if args.verbose: print("  {:d},{:d},{:d},{:d}".format(x,y,w,h))
             if w > 3 and h > 3:
                 annotations.frames[frame_idx].detections.append(ann.BBox(x,y,x+w,y+h))
                 cv2.rectangle(frame,(int(x),int(y)),(int(x+w),int(y+h)),(0,0,255),2)
-        cv2.imshow('frame',frame)
-        k = cv2.waitKey(100) & 0xff
-        if k == 27:
-            break
+        if args.verbose: 
+            cv2.imshow('frame',frame)
+            k = cv2.waitKey(100) & 0xff
+            if k == 27:
+                break
         ok, frame = cap.read()
         frame_idx += 1
  
     cap.release()
     cv2.destroyAllWindows()
-    print("processed {:d} frames".format(frame_idx))
-    # make output directory, if it doesn't exist
-
+    if args.verbose: print("processed {:d} frames".format(frame_idx)) 
   
-    print("saving results to " + args.outputfile)
+    if args.verbose: print("saving results to " + args.outputfile)
+    # make output directory, if it doesn't exist
     with open(args.outputfile,'w') as outfile:
             ann.annotations_to_json(annotations, outfile)
 
