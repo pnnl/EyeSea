@@ -108,6 +108,7 @@ export class Summary extends React.PureComponent {
 			{
 				value: 0,
 				label: '00:00:00',
+				adjust: 0,
 			},
 		];
 
@@ -161,12 +162,7 @@ export class Summary extends React.PureComponent {
 				</div>
 			);
 		}
-		window.ticks = this.ticks;
-		window.time = this.time;
-		console.log(
-			this.props.video && d3.ticks(0, this.props.video.duration, 2),
-			this.props.video && this.props.video.duration
-		);
+
 		let graphs = [];
 		if (this.props.video && !this.props.video.analyses.length) {
 			graphs = ['This video has no analyses.'];
