@@ -6,7 +6,7 @@ import _ from 'lodash';
 import Busy from '../Busy';
 import { getServicePath, getAnalysisMethodsById } from '../module';
 import { request as requestVideo, getVideo } from '../Video';
-import StackedOccurrencesGraph from '../shared/StackedOccurrencesGraph';
+import { StackedOccurrencesGraph } from '../shared';
 import {
 	request as requestStatistics,
 	getStatistics,

@@ -6,7 +6,7 @@ import { formatDuration } from '../util/videos';
 import { request, getVideos, getVideosError, getSort, setSort } from './module';
 import { getServicePath, getAnalysisMethodsById } from '../module';
 import Busy from '../Busy';
-import StackedOccurrencesGraph from '../shared/StackedOccurrencesGraph';
+import { StackedOccurrencesGraph } from '../shared';
 import missingThumbnail from '../../../images/missing.thumb.png';
 import './Videos.scss';
 
