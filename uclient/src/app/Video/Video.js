@@ -214,7 +214,7 @@ export class Video extends React.Component {
 							var q = detection.results.detections[i];
 							if (q.x1 <= q.x2 && x >= q.x1 && x <= q.x2) {
 								if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
-									if (selection.indexOf(i) != -1) {
+									if (selection.indexOf(i) !== -1) {
 										selection.splice(selection.indexOf(i), 1);
 									} else {
 										selection.push(i);
