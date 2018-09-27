@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import FileSelectButton from '../Uploader/FileSelectButton';
+import { FileSelectButton } from '../Uploader';
 import { getSupportedVideoFormats } from '../module';
 import './Introduction.scss';
 

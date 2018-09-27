@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import { formatDuration } from '../util/videos';
-import Button from '../util/Button';
+import { Button } from '../shared';
 import Busy from '../Busy';
 import OccurrencesBar from './OccurrencesBar';
 import Analyze from '../Analyze';

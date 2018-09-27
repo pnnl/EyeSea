@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Button from '../../util/Button';
+import { Button } from '../../shared';
 import { getSupportedVideoFormats } from '../../module';
 import { popAnalyze } from '../module';
 

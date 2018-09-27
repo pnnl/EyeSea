@@ -8,7 +8,7 @@ import { Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import * as moment from 'moment';
-import Button from '../util/Button';
+import { Button } from '../shared';
 import {
 	getSupportedVideoFormats,
 	getAnalysisMethods,

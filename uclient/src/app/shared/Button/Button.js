@@ -2,7 +2,7 @@ import React from 'react';
 import {
 	generateAccessibleKeyUpClickHandler,
 	generateAccessibleKeyDownClickHandler,
-} from '../events';
+} from '../../util/events';
 import './Button.scss';
 
 export default class Button extends React.PureComponent {
