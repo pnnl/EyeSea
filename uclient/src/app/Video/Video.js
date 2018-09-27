@@ -163,7 +163,7 @@ export class Video extends React.Component {
 		this.releaseMouse(event, target);
 		delete this.boundingBox;
 	};
-	downloadAnnotations(event) {
+	downloadAnnotations() {
 		window.location.href =
 			this.props.servicePath +
 			this.props.match.params.id +
@@ -171,30 +171,30 @@ export class Video extends React.Component {
 			this.props.match.params.id +
 			'.zip';
 	}
-	modeAnnotate(event) {
+	modeAnnotate() {
 		this.setState({
-			mode: this.state.mode == 0 ? 1 : 0,
+			mode: this.state.mode === 0 ? 1 : 0,
 			method: null,
 		});
 	}
 	modeAddAnnotate(event, method) {
 		this.setState({
-			mode: this.state.mode == 1 ? 0 : 1,
+			mode: this.state.mode === 1 ? 0 : 1,
 			method: method,
 		});
 	}
 	modeEditAnnotate(event, method) {
 		this.setState({
-			mode: this.state.mode == 2 ? 0 : 2,
+			mode: this.state.mode === 2 ? 0 : 2,
 			method: method,
 		});
 	}
 	beginAnnotate(event) {
+		var canvasDim = this.canvas.getBoundingClientRect();
+		var scaleX = this.canvas.width / canvasDim.width;
+		var scaleY = this.canvas.height / canvasDim.height;
 		switch (this.state.mode) {
 			case 1:
-				var canvasDim = this.canvas.getBoundingClientRect();
-				var scaleX = this.canvas.width / canvasDim.width;
-				var scaleY = this.canvas.height / canvasDim.height;
 				this.state.drawing = {
 					enabled: true,
 					startX: (event.pageX - canvasDim.x - window.pageXOffset) * scaleX,
@@ -203,16 +203,13 @@ export class Video extends React.Component {
 					endY: 0,
 				};
 			case 2:
-				var canvasDim = this.canvas.getBoundingClientRect();
-				var scaleX = this.canvas.width / canvasDim.width;
-				var scaleY = this.canvas.height / canvasDim.height;
 				var x = (event.pageX - canvasDim.x - window.pageXOffset) * scaleX;
 				var y = (event.pageY - canvasDim.y - window.pageYOffset) * scaleY;
 				var detections = this.state.detections;
 				var method = this.state.method;
 				var selection = this.state.selection;
 				detections.forEach(detection => {
-					if (detection.id == method.id) {
+					if (detection.id === method.id) {
 						for (var i = 0; i < detection.results.detections.length; i++) {
 							var q = detection.results.detections[i];
 							if (q.x1 <= q.x2 && x >= q.x1 && x <= q.x2) {
@@ -223,7 +220,7 @@ export class Video extends React.Component {
 										selection.push(i);
 									}
 								} else if (q.y2 <= q.y1 && y >= q.y2 && y <= q.y1) {
-									if (selection.indexOf(i) != -1) {
+									if (selection.indexOf(i) !== -1) {
 										selection.splice(selection.indexOf(i), 1);
 									} else {
 										selection.push(i);
@@ -231,13 +228,13 @@ export class Video extends React.Component {
 								}
 							} else if (q.x2 <= q.x1 && x >= q.x2 && x <= q.x1) {
 								if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
-									if (selection.indexOf(i) != -1) {
+									if (selection.indexOf(i) !== -1) {
 										selection.splice(selection.indexOf(i), 1);
 									} else {
 										selection.push(i);
 									}
 								} else if (q.y2 <= q.y1 && y >= q.y2 && y <= q.y1) {
-									if (selection.indexOf(i) != -1) {
+									if (selection.indexOf(i) !== -1) {
 										selection.splice(selection.indexOf(i), 1);
 									} else {
 										selection.push(i);
@@ -326,7 +323,7 @@ export class Video extends React.Component {
 		var detections = this.state.detections;
 		var selection = this.state.selection;
 		detections.forEach(detection => {
-			if (detection.id == method.id) {
+			if (detection.id === method.id) {
 				selection = selection.sort((a, b) => b - a);
 				selection.forEach(i => {
 					console.log(detections);
@@ -338,7 +335,7 @@ export class Video extends React.Component {
 		this.setState({ selection: [], detections });
 	}
 	drawAnalyses(analyses) {
-		if (this.player != null) {
+		if (this.player !== null) {
 			var frame = Math.floor(this.player.currentTime * this.props.video.fps);
 			var canvasCtx = this.canvas.getContext('2d');
 			canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -353,7 +350,7 @@ export class Video extends React.Component {
 			analyses.forEach(analysis => {
 				var mid = 0;
 				this.props.methods.list.forEach(item => {
-					if (item.description == analysis.name) {
+					if (item.description === analysis.name) {
 						mid = item.mid;
 					}
 				});
@@ -361,9 +358,9 @@ export class Video extends React.Component {
 					canvasCtx.beginPath();
 					canvasCtx.lineWidth = '6';
 					canvasCtx.strokeStyle =
-						this.state.method != null &&
-						analysis.id == this.state.method.id &&
-						this.state.selection.indexOf(i) != -1
+						this.state.method !== null &&
+						analysis.id === this.state.method.id &&
+						this.state.selection.indexOf(i) !== -1
 							? 'white'
 							: this.props.methods.ids[mid].color;
 					canvasCtx.rect(
@@ -615,7 +612,7 @@ export class Video extends React.Component {
 					<div className="options">
 						<Button
 							className={
-								this.state.mode == 1 && this.state.method == null
+								this.state.mode === 1 && this.state.method === null
 									? 'annotate-edit'
 									: 'annotate'
 							}
