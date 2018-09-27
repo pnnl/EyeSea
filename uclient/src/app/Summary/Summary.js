@@ -7,7 +7,6 @@ import Busy from '../Busy';
 import { getServicePath, getAnalysisMethodsById } from '../module';
 import { request as requestVideo, getVideo } from '../Video';
 import StackedOccurrencesGraph from '../shared/StackedOccurrencesGraph';
-import OccurrencesGraph from '../shared/OccurrencesGraph';
 import {
 	request as requestStatistics,
 	getStatistics,
@@ -45,17 +44,16 @@ export class Summary extends React.PureComponent {
 				return number + '';
 			}
 
-			var value,
-				oom,
-				log10 = Math.log(number) / Math.log(10);
+			var log10 = Math.log(number) / Math.log(10);
 
 			if (Math.round(log10) - log10 < 0.00000001) {
 				log10 = Math.round(log10);
 			}
 
-			oom = Math.max(0, Math.floor(Math.floor(log10) / 3) * 3);
-
-			value = (number / Math.pow(10, oom)).toFixed(1).replace(/\.0+$|0+$/, '');
+			let oom = Math.max(0, Math.floor(Math.floor(log10) / 3) * 3);
+			let value = (number / Math.pow(10, oom))
+				.toFixed(1)
+				.replace(/\.0+$|0+$/, '');
 
 			if (value.indexOf('.') !== -1 && value.length > 4) {
 				value = Math.round(value) + '';

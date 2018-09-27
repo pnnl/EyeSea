@@ -47,7 +47,7 @@ export default class Button extends React.PureComponent {
 					className={className + ' file'}
 					role="button"
 					tabIndex="0"
-					onDragOver={event => e.preventDefault()}
+					onDragOver={event => event.preventDefault()}
 					onDrop={event => {
 						event.preventDefault();
 						if (this.props.onSelect && !this.props.disabled) {
@@ -75,7 +75,7 @@ export default class Button extends React.PureComponent {
 						type="file"
 						accept={this.props.accept || ''}
 						disabled={this.props.disabled}
-						onChange={event => {
+						onChange={() => {
 							if (this.props.onSelect) {
 								this.props.onSelect(this.fileInput.files);
 							}
