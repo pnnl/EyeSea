@@ -236,7 +236,7 @@ export class Uploader extends React.PureComponent {
 						</ul>
 						<h4 className="description-label">Video Description</h4>
 						<textarea
-							onInput={() => this.props.setDescription(event.target.value)}
+							onInput={event => this.props.setDescription(event.target.value)}
 						>
 							{this.props.description}
 						</textarea>
