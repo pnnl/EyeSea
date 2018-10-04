@@ -164,9 +164,11 @@ export class Summary extends React.PureComponent {
 		}
 
 		let graphs = [];
-		if (this.props.video && !this.props.video.analyses.length) {
-			graphs = ['This video has no analyses.'];
-		} else if (this.state.expanded) {
+		if (
+			this.props.video &&
+			this.props.video.analyses.length &&
+			this.state.expanded
+		) {
 			let bins = this.props.video.analyses.reduce((bins, analysis) => {
 				var method = analysis.method;
 				if (!bins[method]) {
@@ -198,7 +200,7 @@ export class Summary extends React.PureComponent {
 						</React.Fragment>
 					);
 				});
-		} else if (this.props.video) {
+		} else if (this.props.video && this.props.video.analyses.length) {
 			graphs.push(
 				<StackedOccurrencesGraph
 					key="summary-graph"
@@ -230,23 +232,36 @@ export class Summary extends React.PureComponent {
 								'/heatmap'
 							}
 						/>
-						<h3 className="expando" onClick={this.onToggle}>
-							{this.state.expanded ? '▼' : '▶'} Expand to see detections per
-							algorithm
-						</h3>
+						{(graphs.length && (
+							<h3 className="expando" onClick={this.onToggle}>
+								{this.state.expanded ? '▼' : '▶'} Expand to see detections per
+								algorithm
+							</h3>
+						)) ||
+							null}
 						{graphs}
-						<svg className="time-graph" viewBox="0 0 573 28">
-							{this.ticks(
-								duration || (this.props.video && this.props.video.duration) || 1
-							).map(tick => (
-								<React.Fragment key={tick.value}>
-									<line x1={x(tick.value)} y1={0} x2={x(tick.value)} y2={12} />
-									<text x={x(tick.value) - tick.adjust} y={23}>
-										{tick.label}
-									</text>
-								</React.Fragment>
-							))}
-						</svg>
+						{(graphs.length && (
+							<svg className="time-graph" viewBox="0 0 573 28">
+								{this.ticks(
+									duration ||
+										(this.props.video && this.props.video.duration) ||
+										1
+								).map(tick => (
+									<React.Fragment key={tick.value}>
+										<line
+											x1={x(tick.value)}
+											y1={0}
+											x2={x(tick.value)}
+											y2={12}
+										/>
+										<text x={x(tick.value) - tick.adjust} y={23}>
+											{tick.label}
+										</text>
+									</React.Fragment>
+								))}
+							</svg>
+						)) ||
+							null}
 					</div>
 					{statistics}
 				</div>
