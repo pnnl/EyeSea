@@ -47,6 +47,9 @@ export default class Button extends React.PureComponent {
 					className={className + ' file'}
 					role="button"
 					tabIndex="0"
+					onDragEnter={event => {
+						event.target.style.cursor = 'copy';
+					}}
 					onDragOver={event => event.preventDefault()}
 					onDrop={event => {
 						event.preventDefault();
@@ -69,6 +72,7 @@ export default class Button extends React.PureComponent {
 						this.props.onClick &&
 						this.props.onClick(event)
 					}
+					title={this.props.title}
 				>
 					<input
 						ref={input => (this.fileInput = input)}
@@ -102,6 +106,7 @@ export default class Button extends React.PureComponent {
 						this.props.onClick &&
 						this.props.onClick(event)
 					}
+					title={this.props.title}
 				>
 					{content}
 				</span>

@@ -198,6 +198,7 @@ export class Uploader extends React.PureComponent {
 																	onClick={this.revertInstanceParameters(
 																		algorithm
 																	)}
+																	title="Revert to original parameters"
 																	iconOnly
 																>
 																	Revert to original paramters
@@ -228,18 +229,18 @@ export class Uploader extends React.PureComponent {
 											</table>
 										) : (
 											<p className="parameters">
-												This algortihm is not configurable.
+												This algorithm is not configurable.
 											</p>
 										)}
 									</li>
 								))}
 						</ul>
-						<h4 className="description-label">Video Description</h4>
-						<textarea
+						<h4 className="description-label">Video Name</h4>
+						<input
+							type="text"
 							onInput={event => this.props.setDescription(event.target.value)}
-						>
-							{this.props.description}
-						</textarea>
+							value={this.props.description}
+						/>
 						<div className="buttons">
 							<Button
 								className="save"
@@ -250,7 +251,7 @@ export class Uploader extends React.PureComponent {
 									this.props.request
 								}
 							>
-								Select
+								Save
 							</Button>
 							<Button
 								className="cancel"
