@@ -1,14 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import {
-	generateAccessibleKeyUpClickHandler,
-	generateAccessibleKeyDownClickHandler,
-} from '../util/events';
+import { generateAccessibleKeyUpClickHandler } from '../util/events';
 import { Redirect } from 'react-router-dom';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import * as moment from 'moment';
-import Button from '../util/Button';
+import { Button } from '../shared';
 import {
 	getSupportedVideoFormats,
 	getAnalysisMethods,
@@ -37,9 +34,9 @@ import {
 import './Uploader.scss';
 
 export class Uploader extends React.PureComponent {
-	handleEnableAlgorithm = algorithm => event =>
+	handleEnableAlgorithm = algorithm => () =>
 		this.props.enableAlgorithmInstance(algorithm, algorithm.disabled);
-	handleEnableParameters = algorithm => event =>
+	handleEnableParameters = algorithm => () =>
 		this.props.enableCustomAlgorithmInstanceParameters(
 			algorithm,
 			!algorithm.allowParameters
@@ -57,7 +54,7 @@ export class Uploader extends React.PureComponent {
 			true
 		);
 	};
-	revertInstanceParameters = algorithm => event =>
+	revertInstanceParameters = algorithm => () =>
 		this.props.setCustomAlgorithmInstanceParameters(
 			algorithm,
 			this.props.methods.ids[algorithm.mid].parameters
@@ -176,10 +173,10 @@ export class Uploader extends React.PureComponent {
 											roll="button"
 											title="Delete algorithm instance"
 											tabIndex="0"
-											onKeyUp={generateAccessibleKeyUpClickHandler(event =>
+											onKeyUp={generateAccessibleKeyUpClickHandler(() =>
 												this.props.deleteAlgorithmInstance(algorithm)
 											)}
-											onClick={event =>
+											onClick={() =>
 												this.props.deleteAlgorithmInstance(algorithm)
 											}
 										>
@@ -201,6 +198,7 @@ export class Uploader extends React.PureComponent {
 																	onClick={this.revertInstanceParameters(
 																		algorithm
 																	)}
+																	title="Revert to original parameters"
 																	iconOnly
 																>
 																	Revert to original paramters
@@ -210,41 +208,39 @@ export class Uploader extends React.PureComponent {
 													</tr>
 												</thead>
 												<tbody>
-													{Object.keys(algorithm.parameters).map(
-														(parameter, index) => (
-															<tr key={algorithm.id + '-' + parameter}>
-																<td>{parameter}</td>
-																<td className="value">
-																	<input
-																		name={parameter}
-																		onChange={event =>
-																			this.setInstanceParameters(
-																				algorithm,
-																				'a' + algorithm.id
-																			)
-																		}
-																		value={algorithm.parameters[parameter]}
-																	/>
-																</td>
-															</tr>
-														)
-													)}
+													{Object.keys(algorithm.parameters).map(parameter => (
+														<tr key={algorithm.id + '-' + parameter}>
+															<td>{parameter}</td>
+															<td className="value">
+																<input
+																	name={parameter}
+																	onChange={() =>
+																		this.setInstanceParameters(
+																			algorithm,
+																			'a' + algorithm.id
+																		)
+																	}
+																	value={algorithm.parameters[parameter]}
+																/>
+															</td>
+														</tr>
+													))}
 												</tbody>
 											</table>
 										) : (
 											<p className="parameters">
-												This algortihm is not configurable.
+												This algorithm is not configurable.
 											</p>
 										)}
 									</li>
 								))}
 						</ul>
-						<h4 className="description-label">Video Description</h4>
-						<textarea
+						<h4 className="description-label">Video Name</h4>
+						<input
+							type="text"
 							onInput={event => this.props.setDescription(event.target.value)}
-						>
-							{this.props.description}
-						</textarea>
+							value={this.props.description}
+						/>
 						<div className="buttons">
 							<Button
 								className="save"
@@ -255,11 +251,11 @@ export class Uploader extends React.PureComponent {
 									this.props.request
 								}
 							>
-								Select
+								Save
 							</Button>
 							<Button
 								className="cancel"
-								onClick={event => this.props.setFiles(null)}
+								onClick={() => this.props.setFiles(null)}
 								disabled={this.props.request}
 							>
 								Cancel

@@ -95,7 +95,7 @@
 
     .buttons {
       display: flex;
-      justify-content: right;
+      justify-content: flex-end;
 
       .btn {
         font-size: 1.125em;
@@ -239,9 +239,10 @@
         color: $headings-fg;
       }
 
-      textarea {
+      > input[type='text'] {
         box-sizing: border-box;
         width: 100%;
+        padding: .5em;
       }
 
       &.error {

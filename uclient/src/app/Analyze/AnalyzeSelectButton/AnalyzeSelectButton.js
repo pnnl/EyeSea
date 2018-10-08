@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Button from '../../util/Button';
+import { Button } from '../../shared';
 import { getSupportedVideoFormats } from '../../module';
 import { popAnalyze } from '../module';
 
@@ -9,7 +9,7 @@ export class AnalyzeSelectButton extends React.PureComponent {
 		return (
 			<Button
 				className={this.props.className}
-				onClick={event => this.props.popAnalyze(this.props.vid)}
+				onClick={() => this.props.popAnalyze(this.props.vid)}
 				accept={this.props.supportedVideoFormats}
 				wide={this.props.wide}
 				disabled={this.props.disabled}

@@ -2,7 +2,7 @@ import React from 'react';
 import {
 	generateAccessibleKeyUpClickHandler,
 	generateAccessibleKeyDownClickHandler,
-} from '../events';
+} from '../../util/events';
 import './Button.scss';
 
 export default class Button extends React.PureComponent {
@@ -47,7 +47,10 @@ export default class Button extends React.PureComponent {
 					className={className + ' file'}
 					role="button"
 					tabIndex="0"
-					onDragOver={event => e.preventDefault()}
+					onDragEnter={event => {
+						event.target.style.cursor = 'copy';
+					}}
+					onDragOver={event => event.preventDefault()}
 					onDrop={event => {
 						event.preventDefault();
 						if (this.props.onSelect && !this.props.disabled) {
@@ -69,13 +72,14 @@ export default class Button extends React.PureComponent {
 						this.props.onClick &&
 						this.props.onClick(event)
 					}
+					title={this.props.title}
 				>
 					<input
 						ref={input => (this.fileInput = input)}
 						type="file"
 						accept={this.props.accept || ''}
 						disabled={this.props.disabled}
-						onChange={event => {
+						onChange={() => {
 							if (this.props.onSelect) {
 								this.props.onSelect(this.fileInput.files);
 							}
@@ -102,6 +106,7 @@ export default class Button extends React.PureComponent {
 						this.props.onClick &&
 						this.props.onClick(event)
 					}
+					title={this.props.title}
 				>
 					{content}
 				</span>

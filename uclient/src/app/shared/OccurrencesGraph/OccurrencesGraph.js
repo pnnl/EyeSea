@@ -1,36 +1,28 @@
 import React from 'react';
 import * as d3 from 'd3';
-import './BarGraph.scss';
+import './OccurrencesGraph.scss';
 
-export class BarGraph extends React.PureComponent {
+export class OccurrencesGraph extends React.PureComponent {
 	ticks(max) {
-		var wanted = max > 2 ? max : 3;
-		var ticks = d3.ticks(0, max, wanted);
-
-		// d3 treats the tick count as a guideline, and frequently the last tick
-		// is lower than the max necessitating another tick. This causes it to
-		// recompute them so the last tick will always be encompassing of the
-		// max value, even if we have to add another tick to get the total
-		// number of ticks we asked for.
-		// if (ticks[ticks.length - 1] < max + 1) {
-		// ticks = d3.ticks(0, max + 1, wanted);
-		// }
-
-		// The above can cause it to generate one less tick than we want. This
-		// just handles all cases if for some reason we get back way less than
-		// we asked for.
-		// while (ticks.length < wanted) {
-		// ticks.push(ticks[ticks.length - 1] + ticks[1] - ticks[0]);
-		// }
-		return ticks;
+		if (max <= 2) {
+			return d3.ticks(0, max, 3);
+		} else if (max % 3 === 0) {
+			return d3.ticks(0, max, 3);
+		} else if (max % 5 === 0) {
+			return d3.ticks(0, max, 5);
+		}
+		return d3.ticks(0, max, 7);
 	}
 	componentDidMount() {
 		this.forceUpdate(); // first time update after refs
 	}
 	render() {
 		if (this.props.values) {
+			if (!this.props.values.length) {
+				return null;
+			}
 			let box = this.svg && this.svg.getBoundingClientRect();
-			let maxX = ((box && box.width) || 100) - 16;
+			let maxX = ((box && box.width) || 100) - 25;
 			let maxY = (box && box.height) || 100;
 
 			let max = this.props.values.reduce(
@@ -86,10 +78,7 @@ export class BarGraph extends React.PureComponent {
 			}
 
 			return (
-				<svg
-					className="stacked-occurrences-graph"
-					ref={ref => (this.svg = ref)}
-				>
+				<svg className="occurrences-graph" ref={ref => (this.svg = ref)}>
 					<defs>
 						<linearGradient
 							id="water"
@@ -105,7 +94,7 @@ export class BarGraph extends React.PureComponent {
 					</defs>
 					{ticks}
 					{labels}
-					{<path d={path.join('') + ' Z'} fill="url(#water)" />}
+					{<path d={path.join('') + ' Z'} fill={this.props.color} />}
 				</svg>
 			);
 		} else {
@@ -113,4 +102,4 @@ export class BarGraph extends React.PureComponent {
 		}
 	}
 }
-export default BarGraph;
+export default OccurrencesGraph;

@@ -110,7 +110,6 @@ let id = 0;
 
 const reducer = (state = fromJS(initialState), action) => {
 	const { type, payload } = action;
-	console.log(type);
 	switch (type) {
 		case ANALYZE:
 			// FileList is already Immutable (though this may not hold for the future)

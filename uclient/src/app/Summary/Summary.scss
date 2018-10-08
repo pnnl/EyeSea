@@ -49,4 +49,34 @@
       color: $standout-fg;
     }
   }
+
+  h4 {
+    margin: .5em 0 0;
+  }
+
+  .expando {
+    cursor: pointer;
+  }
+
+  .stacked-occurrences-graph, .occurrences-graph, .time-graph {
+    width: 573px;
+    height: 255px;
+  }
+
+  .expanded .stacked-occurrences-graph {
+    height: 100px;
+  }
+
+  .time-graph {
+    height: 28px;
+
+    line {
+      stroke: $graph-lines;
+    }
+
+    text {
+      font-size: 10px;
+      fill: $graph-lines;
+    }
+  }
 }

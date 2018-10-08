@@ -5,3 +5,4 @@ export * from './module';
 export { default as reducer } from './module';
 export * from './sagas';
 export { default as sagas } from './sagas';
+export { default as FileSelectButton } from './FileSelectButton';

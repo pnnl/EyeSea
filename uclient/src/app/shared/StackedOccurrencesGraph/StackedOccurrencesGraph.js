@@ -19,7 +19,7 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 	render() {
 		if (this.props.values) {
 			let box = this.svg && this.svg.getBoundingClientRect();
-			let maxX = ((box && box.width) || 100) - 16;
+			let maxX = ((box && box.width) || 100) - 25;
 			let maxY = (box && box.height) || 100;
 
 			let length = this.props.values.reduce(
@@ -86,7 +86,8 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 
 			this.props.values.forEach(set => {
 				if (set.results.length) {
-					colors[set.id] = this.props.colors[set.method].color;
+					colors[set.id] =
+						this.props.colors && this.props.colors[set.method].color;
 					frames[set.id] = 'M' + x(0) + ',' + y(0);
 				}
 			});
@@ -126,7 +127,7 @@ export class StackedOccurrencesGraph extends React.PureComponent {
 			frames = Object.keys(frames)
 				.reverse()
 				.map(id => (
-					<path key={id} d={frames[id]} fill={colors[id]} />
+					<path key={id} d={frames[id]} style={{ fill: colors[id] }} />
 				));
 
 			return (

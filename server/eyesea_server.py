@@ -8,6 +8,7 @@ import base64
 import time
 import hashlib
 import sys
+import zipfile
 
 import numpy as np
 from numpy import inf
@@ -555,6 +556,27 @@ def process_video():
         results.append(queue_analysis(i, vid, a['mid'], a))
     print(results)
     return fr()(format_video(data, results))
+
+def zipdir(path, ziph):
+    # ziph is zipfile handle
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            ziph.write(os.path.join(root, file))
+
+@get('/video/<vid>/<filename>')
+def compress_annotations(vid, filename):
+    a = analysis.select().where(analysis.vid == vid, analysis.status == 'FINISHED').dicts()
+    os.mkdir(tmp + os.path.sep + vid)
+    for i in a:
+        with open(tmp + os.path.sep + vid + os.path.sep + str(i['aid']) + ".json", "w") as f:
+            f.write(i["results"])
+    zipf = zipfile.ZipFile(tmp + os.path.sep + vid + '.zip', 'w', zipfile.ZIP_DEFLATED)
+    zipdir(tmp + os.path.sep + vid, zipf)
+    zipf.close()
+    for i in os.listdir(tmp + os.path.sep + vid):
+        os.remove(os.path.join(tmp + os.path.sep + vid, i))
+    os.rmdir(tmp + os.path.sep + vid)
+    return static_file(vid + '.zip', root=tmp)
 
 app = application = bottle.default_app()
 

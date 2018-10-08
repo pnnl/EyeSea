@@ -1,7 +1,7 @@
 {
-	"name": "pnnl-react-boilerplate",
-	"version": "0.0.1",
-	"description": "Boilerplate for React Projects at PNNL",
+	"name": "EyeSea",
+	"version": "0.1.1",
+	"description": "Web UI for the EyeSea project to identify and analyize fish in videos.",
 	"main": "''",
 	"scripts": {
 		"build": "webpack --config webpack.production.config.js --progress --profile --colors",
@@ -107,7 +107,7 @@
 		]
 	},
 	"lint-staged": {
-		"gitDir": "../../",
+		"gitDir": "../",
 		"linters": {
 			"*.{js,jsx}": [
 				"partial-lint-prettier"

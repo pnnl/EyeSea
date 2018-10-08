@@ -6,8 +6,7 @@ import { formatDuration } from '../util/videos';
 import { request, getVideos, getVideosError, getSort, setSort } from './module';
 import { getServicePath, getAnalysisMethodsById } from '../module';
 import Busy from '../Busy';
-import StackedOccurrencesGraph from './StackedOccurrencesGraph';
-import BarGraph from './BarGraph';
+import { StackedOccurrencesGraph } from '../shared';
 import missingThumbnail from '../../../images/missing.thumb.png';
 import './Videos.scss';
 
@@ -88,7 +87,8 @@ export class Videos extends React.PureComponent {
 							if (counts['PROCESSING']) {
 								stats.push(
 									<span key="processing" className="processing">
-										{counts['PROCESSING']} processing<em>...</em>
+										{counts['PROCESSING']} processing
+										<em>...</em>
 									</span>
 								);
 							}
@@ -133,10 +133,13 @@ const mapStateToProps = state => ({
 	methods: getAnalysisMethodsById(state),
 });
 
-export default connect(mapStateToProps, {
-	requestVideos: request,
-	setSort,
-})(Videos);
+export default connect(
+	mapStateToProps,
+	{
+		requestVideos: request,
+		setSort,
+	}
+)(Videos);
 
 export class SortIndicator extends React.PureComponent {
 	render() {

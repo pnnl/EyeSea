@@ -89,3 +89,10 @@ h2, h3 {
 .settings:not(.disabled):hover:before {
   content:  url('../images/settings_hover.png');
 }
+
+.box {
+  display: inline-block;
+  width: .75em;
+  height: .75em;
+  margin-right: .5em;
+}
