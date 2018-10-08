@@ -4,11 +4,9 @@
 	"description": "Boilerplate for React Projects at PNNL",
 	"main": "''",
 	"scripts": {
-		"build":
-			"webpack --config webpack.production.config.js --progress --profile --colors",
+		"build": "webpack --config webpack.production.config.js --progress --profile --colors",
 		"start": "webpack-dev-server --progress --profile --colors --no-inline",
-		"watch":
-			"webpack-dev-server --watch --progress --colors --inline --hot --devtool inline-source-map",
+		"watch": "webpack-dev-server --watch --progress --colors --inline --hot --devtool inline-source-map",
 		"lint": "eslint --ext js --ext jsx src || exit 0",
 		"dev": " webpack-dashboard -- webpack-dev-server",
 		"test": "jest",
@@ -16,8 +14,7 @@
 		"test:coverage": "jest --coverage",
 		"precommit": "npm run lint:staged",
 		"lint:staged": "lint-staged",
-		"partial-lint-prettier":
-			"node partial-lint.js prettier --single-quote --trailing-comma es5 --write"
+		"partial-lint-prettier": "node partial-lint.js prettier --single-quote --trailing-comma es5 --write"
 	},
 	"dependencies": {
 		"d3": "^4.13.0",
@@ -37,7 +34,8 @@
 		"redux-saga": "^0.15.6",
 		"redux-thunk": "^2.2.0",
 		"reselect": "^3.0.1",
-		"sass-loader": "^6.0.2"
+		"sass-loader": "^6.0.2",
+		"whatwg-fetch": "^3.0.0"
 	},
 	"devDependencies": {
 		"async-exit-hook": "^2.0.1",
@@ -85,20 +83,35 @@
 		"webpack-dev-server": "^2.4.1"
 	},
 	"jest": {
-		"unmockedModulePathPatterns": ["react", "enzyme", "jest-enzyme"],
+		"unmockedModulePathPatterns": [
+			"react",
+			"enzyme",
+			"jest-enzyme"
+		],
 		"moduleNameMapper": {
-			"\\.(jpe?g|png|gif|eot|otf|webp|svg|ttf|woff2?|mp[34]|webm|wav|m4a|aac|oga)$":
-				"<rootDir>/__mocks__/fileMock.js",
+			"\\.(jpe?g|png|gif|eot|otf|webp|svg|ttf|woff2?|mp[34]|webm|wav|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
 			"\\.(css|less|s[ac]ss|styl)$": "<rootDir>/__mocks__/styleMock.js"
 		},
-		"moduleFileExtensions": ["js", "jsx"],
-		"moduleDirectories": ["src", "src/js", "node_modules"],
-		"setupFiles": ["<rootDir>/src/shim.js", "<rootDir>/src/setupTests.js"]
+		"moduleFileExtensions": [
+			"js",
+			"jsx"
+		],
+		"moduleDirectories": [
+			"src",
+			"src/js",
+			"node_modules"
+		],
+		"setupFiles": [
+			"<rootDir>/src/shim.js",
+			"<rootDir>/src/setupTests.js"
+		]
 	},
 	"lint-staged": {
 		"gitDir": "../../",
 		"linters": {
-			"*.{js,jsx}": ["partial-lint-prettier"]
+			"*.{js,jsx}": [
+				"partial-lint-prettier"
+			]
 		}
 	}
 }
