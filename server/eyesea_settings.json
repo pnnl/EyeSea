@@ -3,7 +3,7 @@
     "temporary_storage" : ".tmp",
     "video_storage" : ".files",
     "algorithm_bin" : "../algorithms",
-    "database" : "eyesea-shari.db",
+    "database" : "eyesea.db",
     "video_format" : "mp4",
     "ffmpeg_vcodec" : "libx264"
 }
