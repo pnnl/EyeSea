@@ -177,7 +177,7 @@ def queue_analysis(index, vid, method, procargs = None):
     try:
         base_args = json.loads(method['parameters'])
         if procargs == None or not len(procargs):
-            procargs = base_args
+            procargs = base_args['parameters']
     except ValueError as err:
         # Will also catch JSONDecodeError if we switch to Python 3 as that's a subclass
         return {'error': 'Error parsing parameters', 'details': str(err)}
