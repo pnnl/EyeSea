@@ -113,7 +113,9 @@ const reducer = (state = fromJS(initialState), action) => {
 	switch (type) {
 		case FILES:
 			// FileList is already Immutable (though this may not hold for the future)
-			return state.set(type, payload).delete(DESCRIPTION);
+			return state
+				.set(type, payload)
+				.set(DESCRIPTION, (payload && payload[0].name) || '');
 		case DESCRIPTION:
 			// string is already immutable
 			return state.set(type, payload);

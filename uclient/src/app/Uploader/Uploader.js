@@ -238,7 +238,7 @@ export class Uploader extends React.PureComponent {
 						<h4 className="description-label">Video Name</h4>
 						<input
 							type="text"
-							onInput={event => this.props.setDescription(event.target.value)}
+							onChange={event => this.props.setDescription(event.target.value)}
 							value={this.props.description}
 						/>
 						<div className="buttons">
