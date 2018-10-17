@@ -72,7 +72,7 @@ export function* uploadVideos(action) {
 			if (event.error || (event.result && event.result.error)) {
 				yield put({
 					type: ERROR,
-					payload: event.error,
+					payload: event.error || event.result.error,
 				});
 			} else {
 				yield put({
