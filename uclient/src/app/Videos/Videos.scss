@@ -37,12 +37,6 @@
     }
   }
 
-    &:after {
-      content: '';
-      display: block;
-      flex-grow: 1;
-    }
-
   .fish-loader {
     top: 2.5em
   }
