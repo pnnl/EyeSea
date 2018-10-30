@@ -398,7 +398,10 @@ export class Video extends React.Component {
 	updateLayout = () => {
 		this.canvas.width = this.player.videoWidth;
 		this.canvas.height = this.player.videoHeight;
-		//this.computeFrame(-1, true);
+
+		if (this.state.paused) {
+			this.computeFrame(-1, true);
+		}
 	};
 	componentDidMount() {
 		this.props.requestVideo(this.props.match.params.id);
@@ -463,7 +466,7 @@ export class Video extends React.Component {
 					</React.Fragment>
 				);
 			}
-			console.log(this.state.paused);
+
 			video = (
 				<section>
 					<header>
@@ -473,10 +476,8 @@ export class Video extends React.Component {
 							<i className="icon info" />
 							<div className="popup">
 								<div>
-									<strong>Name:</strong> {this.props.video.filename}
-								</div>
-								<div>
-									<strong>Description:</strong> {this.props.video.description}
+									<strong>Original File Name:</strong>{' '}
+									{this.props.video.filename}
 								</div>
 								<div>
 									<strong>FPS:</strong> {this.props.video.fps}
