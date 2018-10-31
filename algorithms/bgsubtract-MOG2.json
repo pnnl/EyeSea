@@ -1,13 +1,36 @@
 {
     "name" : "bgsubtract-MOG2",
-    "command" : "bgsubtract-MOG2.py",
-    "videoarg" : "--videofile",
-    "outputarg" : "--outputfile",
-    "parameters" : {
-	"--detectShadows" : 1,
-	"--history" : 500,
-	"--varThreshold" : 16,
-	"--kw" : 3,
-	"--kh" : 3
-    }
+    "script" : "bgsubtract-MOG2.py",
+    "parameters" : [
+         {
+            "arg"  : "--history", 
+            "argname" : "history",
+            "help" : "length of history in frames",
+            "type" : "int",
+            "default" : 500
+            
+        },
+        {
+            "arg" : "--varThreshold",
+            "argname" : "variance threshold",
+            "help" : "Threshold on the variance to decide if background",
+            "type" : "float",
+            "default" : 16
+        },
+        {
+           "arg" : "--kw",
+           "argname" : "kernel width",
+           "help" : "set to expected pixel width of smallest fish",
+           "type" : "int",
+           "default" : 3
+        },  
+        {
+            "arg" : "--kh",
+           "argname" : "kernel height",
+           "help" : "set to expected pixel height of smallest fish",
+           "type" : "int",
+           "default" : 3
+        } 
+             
+    ]
 }

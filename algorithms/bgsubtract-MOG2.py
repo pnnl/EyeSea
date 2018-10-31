@@ -40,23 +40,8 @@ import cv2
 import json
 
 import annotator as ann
+import eyesea_api as api
 
-def parse_all_args():
-    
-    parser = argparse.ArgumentParser()
-    # required arguments for eyesea framework
-    parser.add_argument("--videofile", help="video file to process (required)")
-    parser.add_argument("--outputfile", help="file to save output (required)")
-    parser.add_argument("--detectShadows", help="detect shadows 1 to enable, 0 to disable [default 1]", type=int, default=1)
-    parser.add_argument("--history", help="length of history [default 500]", type=int, default=500)
-    parser.add_argument("--varThreshold", help="threshold on the squared distance between the pixel and the sample to decide whether a pixel is close to that sample. [default 16]", type=int, default=16)
-    # optional algorithm-specific arguments1
-    parser.add_argument("--kw", help="kernel width for morph ops [default = 3]",
-        type=int, default=3)
-    parser.add_argument("--kh", help="kernel height for morph ops [default = 3]",
-        type=int, default=3)
-    parser.add_argument("--verbose", help="show detections",action='store_true')
-    return parser.parse_args()
 
 def print_params(mog2):
     '''
@@ -92,26 +77,23 @@ def print_params(mog2):
 # main algorithm
 def algorithm():
     alg_name = "bgMOG2" # give it a short descriptive name
-    args = parse_all_args()
+    args = api.get_args('bgsubtract-MOG2.json')
     
     if args.verbose: print("Welcome to " + alg_name + "!")
 
     # check video file exists and is readable
-    if args.verbose: print("processing " + args.videofile)
+    if args.verbose: print("processing " + args.vidfile)
 
-    cap = cv2.VideoCapture(args.videofile)
+    cap = cv2.VideoCapture(args.vidfile)
     
-    if args.verbose: print("outputfile = " + args.outputfile)
+    if args.verbose: print("outputfile = " + args.outfile)
 
 
     # kernel used for morphological ops on fg mask
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(args.kw,args.kh))
-    fgbg = cv2.createBackgroundSubtractorMOG2(history=args.history, varThreshold=args.varThreshold, detectShadows=args.detectShadows)
-    
-    if args.verbose: print_params(fgbg)
+    fgbg = cv2.createBackgroundSubtractorMOG2(history=args.history, varThreshold=args.varThreshold, detectShadows=False)
 
-    annotations = ann.Annotations(args.videofile, alg_name)
-
+    annotations = ann.Annotations(args.vidfile, alg_name)
     frame_idx = 0
     ok, frame = cap.read()
     while(ok):
@@ -120,13 +102,13 @@ def algorithm():
         # NOTE: setting the learningRate below introduced false positives
         #fgmask = fgbg.apply(frame, learningRate=0.001)
         fgmask = fgbg.apply(frame)
-        # BAD
+        # BAD -- don't do the following
         #fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_CLOSE, kernel)
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         cnts = cnts[1] # simplify reference
         if args.verbose: print("{:d} blobs".format(len(cnts)))
-        #fgc = cv2.cvtColor(fgmask, cv2.COLOR_GRAY2BGR)
+        
         for c in cnts:
             (x, y, w, h) = cv2.boundingRect(c)
             if args.verbose: print("  {:d},{:d},{:d},{:d}".format(x,y,w,h))
@@ -145,9 +127,9 @@ def algorithm():
     cv2.destroyAllWindows()
     if args.verbose: print("processed {:d} frames".format(frame_idx)) 
   
-    if args.verbose: print("saving results to " + args.outputfile)
+    if args.verbose: print("saving results to " + args.outfile)
     # make output directory, if it doesn't exist
-    with open(args.outputfile,'w') as outfile:
+    with open(args.outfile,'w') as outfile:
             ann.annotations_to_json(annotations, outfile)
 
 if __name__ == "__main__":

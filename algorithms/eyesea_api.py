@@ -15,7 +15,6 @@ def get_args(jfile):
     parser.add_argument("vidfile", help="video file to process")
     parser.add_argument("outfile", help="output file for results")
 
-
     with open(jfile, 'r') as f:
         jsondata = json.load(f)
     # TODO: support type= type from json file
@@ -24,6 +23,8 @@ def get_args(jfile):
         parser.add_argument( jarg["arg"], 
             help=jarg["help"],
             default=jarg["default"])
+
+    parser.add_argument('--verbose', '-v', action='store_true')
 
     return parser.parse_args()
 
@@ -38,4 +39,4 @@ def save_results(results, outfile):
 if __name__ == "__main__":
     print("testing eysea_api")
     # TODO:  add tests
-    args = get_args('algorithm.json')
+    args = get_args('algorithm.json.example')
