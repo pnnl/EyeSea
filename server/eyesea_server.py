@@ -578,6 +578,24 @@ def compress_annotations(vid, filename):
     os.rmdir(tmp + os.path.sep + vid)
     return static_file(vid + '.zip', root=tmp)
 
+@post('/annotations')
+def annotations():
+    data = request.forms.get('data')
+    data = data.replace("frameIndex", "frameindex")
+    aid = 0
+    if len(data) > 0:
+        i = json.loads(data)
+        for j in i['analyses']:
+            try:
+                a = analysis.select().where(analysis.vid == i['id'], analysis.status == 'FINISHED', analysis.mid == j['method']).dicts().get()
+                aid = a['aid']
+                analysis.update(results = json.dumps(j['results'])).where(analysis.aid == aid).execute()
+            except analysis.DoesNotExist:
+                aid = analysis.insert({'mid': j['method'], 'vid': i['id'], 'status': 'FINISHED', 'parameters': '', 'results' : json.dumps(j['results'])}).execute()
+        return fr()({'status' : 'SUCCESS', 'aid' : aid})
+    return fr()({'status' : 'FAILED'})
+
+
 app = application = bottle.default_app()
 
 if __name__ == '__main__':

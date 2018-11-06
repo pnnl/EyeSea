@@ -23,6 +23,8 @@ export const ALGORITHM_ENABLE = 'app/uploader/enableAlgorithm';
 export const ALGORITHM_ALLOW_PARAMETERS = 'app/uploader/parameterizeAlgorithm';
 export const ALGORITHM_PARAMETERS = 'app/uploader/algorithmParameters';
 
+export const ALGORITHMS_SAVED = 'app/uploader/algorithms-saved';
+
 ///-- ACTIONS --///
 export function request(payload) {
 	return {
@@ -104,6 +106,7 @@ export function dismissError() {
 }
 
 const initialState = {
+	[ALGORITHMS_SAVED]: [],
 	[ALGORITHMS]: [],
 };
 let id = 0;
@@ -115,7 +118,8 @@ const reducer = (state = fromJS(initialState), action) => {
 			// FileList is already Immutable (though this may not hold for the future)
 			return state
 				.set(type, payload)
-				.set(DESCRIPTION, (payload && payload[0].name) || '');
+				.set(DESCRIPTION, (payload && payload[0].name) || '')
+				.set(ALGORITHMS, state.get(ALGORITHMS_SAVED));
 		case DESCRIPTION:
 			// string is already immutable
 			return state.set(type, payload);
@@ -171,9 +175,9 @@ const reducer = (state = fromJS(initialState), action) => {
 				)
 			);
 		case ERROR_DISMISS:
-			return state.delete(ERROR);
+			return state.delete(ERROR).delete(REQUEST);
 		case REQUEST:
-			return state.set(type, true);
+			return state.set(type, true).set(ALGORITHMS_SAVED, state.get(ALGORITHMS));
 		case SUCCESS:
 			return state
 				.delete(REQUEST)
