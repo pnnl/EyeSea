@@ -13,7 +13,7 @@ import {
 	getAnalysisMethodsById,
 	getAnalysisMethodsError,
 } from '../module';
-import { request, getVideo, getVideoError } from './module';
+import { request, getVideo, getVideoError, ann, getAnns } from './module';
 import './Video.scss';
 
 export class Video extends React.Component {
@@ -174,7 +174,7 @@ export class Video extends React.Component {
 	modeAnnotate() {
 		this.setState({
 			mode: this.state.mode === 0 ? 1 : 0,
-			method: null,
+			method: this.props.methods.ids[1],
 		});
 	}
 	modeAddAnnotate(event, method) {
@@ -265,7 +265,6 @@ export class Video extends React.Component {
 		}
 	}
 	endAnnotate(event) {
-		console.log(this.state);
 		switch (this.state.mode) {
 			case 1:
 				if (this.state.drawing.enabled) {
@@ -288,9 +287,14 @@ export class Video extends React.Component {
 								y1: this.state.drawing.startY,
 								y2: this.state.drawing.endY,
 							});
+							detection.results.frameIndex = Math.floor(
+								this.player.currentTime * this.props.video.fps
+							);
 							founDet = true;
 						}
 					});
+					console.log(founDet);
+					console.log(detections);
 					if (!founDet) {
 						detections.push({
 							id: 1,
@@ -305,21 +309,25 @@ export class Video extends React.Component {
 										y2: this.state.drawing.endY,
 									},
 								],
-								frameindex: Math.floor(
+								frameIndex: Math.floor(
 									this.player.currentTime * this.props.video.fps
 								),
 							},
 						});
+						this.setState({ method: detections[detections.length - 1] });
 					}
 
 					this.setState({
 						detections,
 					});
 					this.drawAnalyses(detections);
+					this.updateAnalyses();
+					this.props.uploadAnns(this.props.video); //this.props.match.params.id);
 				}
 		}
 	}
 	deleteAnnotate(event, method) {
+		console.log(this.props.video.analyses);
 		var detections = this.state.detections;
 		var selection = this.state.selection;
 		detections.forEach(detection => {
@@ -332,7 +340,50 @@ export class Video extends React.Component {
 				});
 			}
 		});
+
 		this.setState({ selection: [], detections });
+		this.drawAnalyses(this.state.detections);
+		this.updateAnalyses();
+		this.props.uploadAnns(this.props.video);
+	}
+	updateAnalyses() {
+		var detections = this.state.detections;
+		var found = false;
+		var foundframe = false;
+		detections.forEach(detection => {
+			this.props.video.analyses.forEach(analysis => {
+				if (detection.id == analysis.id) {
+					found = true;
+					analysis.results.forEach(result => {
+						if (result.frameIndex == detection.results.frameIndex) {
+							result.detections = detection.results.detections;
+							foundframe = true;
+						}
+					});
+					if (foundframe == false) {
+						analysis.results.push({
+							frameIndex: detection.results.frameIndex,
+							detections: detection.results.detections,
+						});
+					}
+				}
+			});
+			if (found == false) {
+				this.props.video.analyses.push({
+					id: 1,
+					status: 'FINISHED',
+					method: 1,
+					results: [
+						{
+							frameIndex: detection.results.frameIndex,
+							detections: detection.results.detections,
+						},
+					],
+				});
+			}
+			found = false;
+			foundframe = false;
+		});
 	}
 	drawAnalyses(analyses) {
 		if (this.player !== null) {
@@ -348,7 +399,7 @@ export class Video extends React.Component {
 			);
 
 			analyses.forEach(analysis => {
-				var mid = 0;
+				var mid = 1;
 				this.props.methods.list.forEach(item => {
 					if (item.description === analysis.name) {
 						mid = item.mid;
@@ -659,5 +710,6 @@ export default connect(
 	mapStateToProps,
 	{
 		requestVideo: request,
+		uploadAnns: ann,
 	}
 )(Video);
