@@ -350,6 +350,7 @@ export class Video extends React.Component {
 		var detections = this.state.detections;
 		var found = false;
 		var foundframe = false;
+		var videolength = this.props.video.fps * this.props.video.duration;
 		detections.forEach(detection => {
 			this.props.video.analyses.forEach(analysis => {
 				if (detection.id == analysis.id) {
@@ -369,16 +370,22 @@ export class Video extends React.Component {
 				}
 			});
 			if (found == false) {
+				var initresults = [];
+				for (var i = 0; i < videolength; i++) {
+					if (i != detection.results.frameIndex) {
+						initresults.push({ frameIndex: i, detections: [] });
+					} else {
+						initresults.push({
+							frameIndex: detection.results.frameIndex,
+							detections: detection.results.detections,
+						});
+					}
+				}
 				this.props.video.analyses.push({
 					id: 1,
 					status: 'FINISHED',
 					method: 1,
-					results: [
-						{
-							frameIndex: detection.results.frameIndex,
-							detections: detection.results.detections,
-						},
-					],
+					results: initresults,
 				});
 			}
 			found = false;
@@ -663,11 +670,7 @@ export class Video extends React.Component {
 					</div>
 					<div className="options">
 						<Button
-							className={
-								this.state.mode === 1 && this.state.method === null
-									? 'annotate-edit'
-									: 'annotate'
-							}
+							className={this.state.mode === 1 ? 'annotate-edit' : 'annotate'}
 							onMouseDown={event => this.modeAnnotate(event)}
 						>
 							Annotation
