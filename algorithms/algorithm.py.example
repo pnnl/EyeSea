@@ -1,12 +1,37 @@
-# algorithm.py
+'''
+Copyright 2018 Battelle Memorial Institute. All rights reserved.
+'''
+# algorithm.py.example
 
 import eyesea_api as api
+import random
 
+# set the name of the algorithm
+algname = "example"
 # get parameter settings
 args = api.get_args('algorithm.json')
 
 # process video
-results = [203, 42, 234, 56]
+results = api.Annotations(args.vidfile, algname)
+frame_idx = 0
+ok, frame = cap.read()
+# width of frame
+W = frame.shape[1]
+# height of frame
+H = frame.shape[0]
+while(ok):
+    results.frames.append(api.Frame(frame_idx,[],list()))
+
+    # detect fish -- replace the lines below with your clever detection scheme
+    w = random.randint(2,42)
+    h = random.randint(2,42)
+    x = random.randint(0, W-w)
+    y = random.randint(0, H-h)
+
+    results.frames[frame_idx].detections.append(api.BBox(x,y,x+w,y+h))
+
+    ok, frame = cap.read()
+    frame_idx += 1
 
 # save results
 api.save_results(results,args.outfile)

@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 # background subtraction
+'''
+Copyright 2018 Battelle Memorial Institute. All rights reserved.
+'''
+
 """
 https://ieeexplore.ieee.org/abstract/document/1333992/
 https://www.sciencedirect.com/science/article/pii/S0167865505003521
@@ -25,13 +29,9 @@ NOTE: There is also a learningRate parameter for the apply() method.
       "the constant alpha defines an exponentially decaying envelope 
       that is used to limit the influence of the old data."
 
-Default params work ok on orpc_adult_then_smolts, not so good on 
-voith.  Some fish are detected by lots of false positives from 
-vertical line artifacts. On wells, spurious false positives, maybe bubbles or
-reflections in the glass? Bounding boxes for fish seem oversized, multiple fish 
-are in one box. Using a larger morph element (5x5) reduced false positives. Even
-with shadow detection on (which I assume is supposed to recognize shadows and 
-not consider fg), shadow of fish is detected.
+Default params work ok but lots of false positives from video compression 
+artifacts, bubbles. Bounding boxes for fish seem oversized, multiple fish 
+are in one box. Using a larger morph element (5x5) reduced false positives. 
 """
 import argparse
 import os
@@ -39,7 +39,7 @@ import numpy as np
 import cv2
 import json
 
-import annotator as ann
+#import annotator as ann
 import eyesea_api as api
 
 
@@ -93,13 +93,13 @@ def algorithm():
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(args.kw,args.kh))
     fgbg = cv2.createBackgroundSubtractorMOG2(history=args.history, varThreshold=args.varThreshold, detectShadows=False)
 
-    annotations = ann.Annotations(args.vidfile, alg_name)
+    annotations = api.Annotations(args.vidfile, alg_name)
     frame_idx = 0
     ok, frame = cap.read()
     while(ok):
-        annotations.frames.append(ann.Frame(frame_idx,[],list()))
+        annotations.frames.append(api.Frame(frame_idx,[],list()))
         # fgmask is single channel 2D array of type uint8
-        # NOTE: setting the learningRate below introduced false positives
+        # NOTE: setting the learningRate increased false positives
         #fgmask = fgbg.apply(frame, learningRate=0.001)
         fgmask = fgbg.apply(frame)
         # BAD -- don't do the following
@@ -113,7 +113,7 @@ def algorithm():
             (x, y, w, h) = cv2.boundingRect(c)
             if args.verbose: print("  {:d},{:d},{:d},{:d}".format(x,y,w,h))
             if w > 3 and h > 3:
-                annotations.frames[frame_idx].detections.append(ann.BBox(x,y,x+w,y+h))
+                annotations.frames[frame_idx].detections.append(api.BBox(x,y,x+w,y+h))
                 cv2.rectangle(frame,(int(x),int(y)),(int(x+w),int(y+h)),(0,0,255),2)
         if args.verbose: 
             cv2.imshow('frame',frame)
@@ -129,8 +129,7 @@ def algorithm():
   
     if args.verbose: print("saving results to " + args.outfile)
     # make output directory, if it doesn't exist
-    with open(args.outfile,'w') as outfile:
-            ann.annotations_to_json(annotations, outfile)
+    api.save_results(annotations, args.outfile)
 
 if __name__ == "__main__":
     algorithm()
