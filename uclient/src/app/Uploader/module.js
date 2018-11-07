@@ -10,6 +10,7 @@ import _ from 'lodash';
 export const REQUEST = 'app/uploader/request';
 export const SUCCESS = 'app/uploader/success';
 export const ERROR = 'app/uploader/error';
+export const FINISHED = 'app/uploader/finished';
 export const ERROR_DISMISS = 'app/uploader/errorDismiss';
 
 export const FILES = 'app/uploader/files';

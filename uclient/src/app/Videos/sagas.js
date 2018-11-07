@@ -3,6 +3,8 @@ import { get } from '../util/request';
 
 import { REQUEST, SUCCESS, ERROR, getSort } from './module';
 
+import { FINISHED as UPLOAD_FINISHED } from '../Uploader';
+
 export function* requestVideos(action) {
 	try {
 		let sort = yield select(getSort);
@@ -25,5 +27,5 @@ export function* requestVideos(action) {
 }
 
 export default function*() {
-	yield [takeLatest(REQUEST, requestVideos)];
+	yield [takeLatest([REQUEST, UPLOAD_FINISHED], requestVideos)];
 }
