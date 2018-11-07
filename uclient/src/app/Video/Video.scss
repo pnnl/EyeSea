@@ -225,6 +225,37 @@
       width: 27%;
       margin-right: 2px;
       margin-left: 5px;
+
+      .add-mode {
+	  &:before {
+	      content: url('../../../images/ann_hover.png');
+	  }
+      }
+      .dis-add-mode {
+	  &:before {
+	      content: url('../../../images/ann.png');
+	  }
+      }
+      .edit-mode {
+	  &:before {
+	      content: url('../../../images/edit_hover.png');
+	  }
+      }
+      .dis-edit-mode {
+	  &:before {
+	      content: url('../../../images/edit.png');
+	  }
+      }
+      .del-mode {
+	  &:before {
+	      content: url('../../../images/trash_hover.png');
+	  }
+      }
+      .dis-del-mode {
+	  &:before {
+	      content: url('../../../images/trash.png');
+	  }
+      }
     }
 
     .controls, .options {

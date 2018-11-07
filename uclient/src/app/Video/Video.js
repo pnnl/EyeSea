@@ -189,6 +189,12 @@ export class Video extends React.Component {
 			method: method,
 		});
 	}
+	modeDeleteAnnotate(event, method) {
+		this.setState({
+			mode: this.state.mode === 3 ? 0 : 3,
+			method: method,
+		});
+	}
 	beginAnnotate(event) {
 		var canvasDim = this.canvas.getBoundingClientRect();
 		var scaleX = this.canvas.width / canvasDim.width;
@@ -202,52 +208,16 @@ export class Video extends React.Component {
 					endX: 0,
 					endY: 0,
 				};
+				break;
 			case 2:
-				var x = (event.pageX - canvasDim.x - window.pageXOffset) * scaleX;
-				var y = (event.pageY - canvasDim.y - window.pageYOffset) * scaleY;
-				var detections = this.state.detections;
-				var method = this.state.method;
-				var selection = this.state.selection;
-				detections.forEach(detection => {
-					if (detection.id === method.id) {
-						for (var i = 0; i < detection.results.detections.length; i++) {
-							var q = detection.results.detections[i];
-							if (q.x1 <= q.x2 && x >= q.x1 && x <= q.x2) {
-								if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
-									if (selection.indexOf(i) !== -1) {
-										selection.splice(selection.indexOf(i), 1);
-									} else {
-										selection.push(i);
-									}
-								} else if (q.y2 <= q.y1 && y >= q.y2 && y <= q.y1) {
-									if (selection.indexOf(i) !== -1) {
-										selection.splice(selection.indexOf(i), 1);
-									} else {
-										selection.push(i);
-									}
-								}
-							} else if (q.x2 <= q.x1 && x >= q.x2 && x <= q.x1) {
-								if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
-									if (selection.indexOf(i) !== -1) {
-										selection.splice(selection.indexOf(i), 1);
-									} else {
-										selection.push(i);
-									}
-								} else if (q.y2 <= q.y1 && y >= q.y2 && y <= q.y1) {
-									if (selection.indexOf(i) !== -1) {
-										selection.splice(selection.indexOf(i), 1);
-									} else {
-										selection.push(i);
-									}
-								}
-							}
-						}
-					}
-				});
-				this.setState({ selection: selection });
-				this.drawAnalyses(this.state.detections);
+				this.selectAnnotate(event, this.state.method);
+				break;
+			case 3:
+				this.deleteAnnotate(event, this.state.method);
+				break;
 		}
 	}
+
 	moveAnnotate(event) {
 		switch (this.state.mode) {
 			case 1:
@@ -327,24 +297,70 @@ export class Video extends React.Component {
 		}
 	}
 	deleteAnnotate(event, method) {
-		console.log(this.props.video.analyses);
+		this.selectAnnotate(event, method);
 		var detections = this.state.detections;
 		var selection = this.state.selection;
 		detections.forEach(detection => {
 			if (detection.id === method.id) {
 				selection = selection.sort((a, b) => b - a);
-				selection.forEach(i => {
-					console.log(detections);
-					console.log(i);
-					detection.results.detections.splice(i, 1);
-				});
+				while (selection.length > 0) {
+					detection.results.detections.splice(selection.pop(), 1);
+				}
 			}
 		});
-
-		this.setState({ selection: [], detections });
+		this.setState({ selection: selection, detections });
 		this.drawAnalyses(this.state.detections);
 		this.updateAnalyses();
 		this.props.uploadAnns(this.props.video);
+	}
+	selectAnnotate(event, method) {
+		var canvasDim = this.canvas.getBoundingClientRect();
+		var scaleX = this.canvas.width / canvasDim.width;
+		var scaleY = this.canvas.height / canvasDim.height;
+		var x = (event.pageX - canvasDim.x - window.pageXOffset) * scaleX;
+		var y = (event.pageY - canvasDim.y - window.pageYOffset) * scaleY;
+		var detections = this.state.detections;
+		var method = this.state.method;
+		var selection = this.state.selection;
+		detections.forEach(detection => {
+			if (detection.id === method.id) {
+				for (var i = 0; i < detection.results.detections.length; i++) {
+					var q = detection.results.detections[i];
+					if (q.x1 <= q.x2 && x >= q.x1 && x <= q.x2) {
+						if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
+							if (selection.indexOf(i) !== -1) {
+								selection.splice(selection.indexOf(i), 1);
+							} else {
+								selection.push(i);
+							}
+						} else if (q.y2 <= q.y1 && y >= q.y2 && y <= q.y1) {
+							if (selection.indexOf(i) !== -1) {
+								selection.splice(selection.indexOf(i), 1);
+							} else {
+								selection.push(i);
+							}
+						}
+					} else if (q.x2 <= q.x1 && x >= q.x2 && x <= q.x1) {
+						if (q.y1 <= q.y2 && y >= q.y1 && y <= q.y2) {
+							if (selection.indexOf(i) !== -1) {
+								selection.splice(selection.indexOf(i), 1);
+							} else {
+								selection.push(i);
+							}
+						} else if (q.y2 <= q.y1 && y >= q.y2 && y <= q.y1) {
+							if (selection.indexOf(i) !== -1) {
+								selection.splice(selection.indexOf(i), 1);
+							} else {
+								selection.push(i);
+							}
+						}
+					}
+				}
+			}
+		});
+		this.setState({ selection: selection });
+
+		this.drawAnalyses(this.state.detections);
 	}
 	updateAnalyses() {
 		var detections = this.state.detections;
@@ -596,21 +612,30 @@ export class Video extends React.Component {
 								<li key={method.id} className="method">
 									<span className="box" style={{ background: method.color }} />
 									<h4>{method.name}</h4>
-									<button
+									<Button
+										className={
+											this.state.mode === 1 && method.id == this.state.method.id
+												? 'add-mode'
+												: 'dis-add-mode'
+										}
 										onMouseDown={event => this.modeAddAnnotate(event, method)}
+										iconOnly
 									>
 										Add
-									</button>
-									<button
-										onMouseDown={event => this.modeEditAnnotate(event, method)}
-									>
-										Edit
-									</button>
-									<button
-										onMouseDown={event => this.deleteAnnotate(event, method)}
+									</Button>
+									<Button
+										className={
+											this.state.mode === 3 && method.id == this.state.method.id
+												? 'del-mode'
+												: 'dis-del-mode'
+										}
+										onMouseDown={event =>
+											this.modeDeleteAnnotate(event, method)
+										}
+										iconOnly
 									>
 										Delete
-									</button>
+									</Button>
 									<ul>
 										{(method.name === 'manual' &&
 											method.results.detections.map((detection, index) => (
