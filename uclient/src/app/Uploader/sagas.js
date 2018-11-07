@@ -79,7 +79,6 @@ export function* uploadVideos(action) {
 					type: SUCCESS,
 					payload: event.result || event,
 				});
-				console.log(event.result || event);
 			}
 			event = yield take(request);
 		}
