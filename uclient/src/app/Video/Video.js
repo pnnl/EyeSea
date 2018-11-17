@@ -422,12 +422,6 @@ export class Video extends React.Component {
 			);
 
 			analyses.forEach(analysis => {
-				var mid = 1;
-				this.props.methods.list.forEach(item => {
-					if (item.description === analysis.name) {
-						mid = item.mid;
-					}
-				});
 				analysis.results.detections.map((item, i) => {
 					canvasCtx.beginPath();
 					canvasCtx.lineWidth = '6';
@@ -436,7 +430,7 @@ export class Video extends React.Component {
 						analysis.id === this.state.method.id &&
 						this.state.selection.indexOf(i) !== -1
 							? 'white'
-							: this.props.methods.ids[mid].color;
+							: analysis.color;
 					canvasCtx.rect(
 						item.x1 <= item.x2 ? item.x1 : item.x2,
 						item.y1 <= item.y2 ? item.y1 : item.y2,
