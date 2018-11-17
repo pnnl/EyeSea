@@ -24,7 +24,7 @@ from peewee import fn
 
 # 1.5 GB, which could cause issues on machines without enough RAM if it doesn't use a
 # disk-based temporary file.
-bottle.BaseRequest.MEMFILE_MAX = 1610612736;
+bottle.BaseRequest.MEMFILE_MAX = 1610612736
 
 settings = json.loads(open('eyesea_settings.json').read())
 
@@ -275,10 +275,17 @@ def get_statistics():
             }
     return fr()(data)
 
+## FIXME
 @get('/video')
 def get_video():
-    data = video.select(video).dicts()
-    #print(request.query['sortBy'])
+    sortBy = []
+    if 'sortBy' in request.query:
+        try:
+            sortBy = map(lambda sort: getattr(video, sort['prop']) if sort['asc'] else -getattr(video, sort['prop']), json.loads(request.query['sortBy']))
+        except ValueError as error:
+            return {'error': 'Error parsing sortBy parameter', 'details': str(error)}
+
+    data = video.select(video).order_by(*sortBy).dicts()
     data = [format_video(i) for i in data]
     return fr()(data)
 

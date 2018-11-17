@@ -27,36 +27,51 @@ export class Videos extends React.PureComponent {
 		if (this.props.videos && !this.props.videos.length) {
 			return <Redirect to="/new" />;
 		} else {
-			let count = (this.props.videos && this.props.videos.length) || 0;
-			let byDate = this.props.sortBy.property === 'Added Date';
+			let byDate = this.props.sortBy.property === 'creation_date';
+			let byName = this.props.sortBy.property === 'description';
+			let byDuration = this.props.sortBy.property === 'duration';
 			return (
 				<section ref={ref => (this.container = ref)} className="videos">
 					<header>
 						Sort By:
 						<div className={'sortBy' + (byDate ? ' selected' : '')}>
 							<span
-								data-property="Added Date"
+								data-property="creation_date"
 								onMouseDown={event => event.preventDefault()}
 								onClick={this.onSortPropertyChange}
 							>
 								Added Date
 							</span>
 							<SortIndicator
-								property="Added Date"
+								property="creation_date"
 								ascending={this.props.sortBy.ascending}
 								onChange={this.onSortDirectionChange}
 							/>
 						</div>
-						<div className={'sortBy' + (byDate ? '' : ' selected')}>
+						<div className={'sortBy' + (byName ? ' selected' : '')}>
 							<span
-								data-property="Progress"
+								data-property="description"
 								onMouseDown={event => event.preventDefault()}
 								onClick={this.onSortPropertyChange}
 							>
-								Progress
+								Name
 							</span>
 							<SortIndicator
-								property="Progress"
+								property="description"
+								ascending={this.props.sortBy.ascending}
+								onChange={this.onSortDirectionChange}
+							/>
+						</div>
+						<div className={'sortBy' + (byDuration ? ' selected' : '')}>
+							<span
+								data-property="duration"
+								onMouseDown={event => event.preventDefault()}
+								onClick={this.onSortPropertyChange}
+							>
+								Duration
+							</span>
+							<SortIndicator
+								property="duration"
 								ascending={this.props.sortBy.ascending}
 								onChange={this.onSortDirectionChange}
 							/>
@@ -65,11 +80,10 @@ export class Videos extends React.PureComponent {
 					{(this.props.videos &&
 						this.props.videos.map(video => {
 							var stats = [],
-								counts;
-							counts = video.analyses.reduce((counts, analysis) => {
-								counts[analysis.status] = (counts[analysis.status] || 0) + 1;
-								return counts;
-							}, {});
+								counts = video.analyses.reduce((tally, analysis) => {
+									tally[analysis.status] = (tally[analysis.status] || 0) + 1;
+									return tally;
+								}, {});
 							if (counts['FAILED']) {
 								stats.push(
 									<span key="failed" className="failed">
@@ -147,7 +161,7 @@ export class SortIndicator extends React.PureComponent {
 			<span className="sort-indicator">
 				<span
 					className={'btn ' + (this.props.ascending ? 'selected' : '')}
-					onClick={event =>
+					onClick={() =>
 						this.props.onChange({
 							property: this.props.property,
 							ascending: true,
@@ -159,7 +173,7 @@ export class SortIndicator extends React.PureComponent {
 				</span>
 				<span
 					className={'btn ' + (!this.props.ascending ? 'selected' : '')}
-					onClick={event =>
+					onClick={() =>
 						this.props.onChange({
 							property: this.props.property,
 							ascending: false,
