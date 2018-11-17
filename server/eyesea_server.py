@@ -177,22 +177,26 @@ def queue_analysis(index, vid, method, procargs = None):
     try:
         base_args = json.loads(method['parameters'])
         if procargs == None or not len(procargs):
-            procargs = base_args['parameters']
+            procargs = {i["arg"] : int(i["default"]) if i["type"] == "int" else (float(i["default"]) if i["type"] == "float" else str(i["default"])) for i in base_args['parameters']}
     except ValueError as err:
         # Will also catch JSONDecodeError if we switch to Python 3 as that's a subclass
         return {'error': 'Error parsing parameters', 'details': str(err)}
 
     aid = None
+    #quick fix until front-end updated to handle updated json format
+    if "parameters" in procargs.keys():
+        procargs = procargs["parameters"]
+    print(procargs)
     try:
         pathname, filename, root = get_video_path_parts(vid)
         # Purposely using base_args for 'command' here, to avoid the user being able to change it with custom args
-        script = '{p}/{f}'.format(p=method['path'] if method['path'] else abs_algorithm_path, f=base_args['command'])
+        script = '{p}/{f}'.format(p=method['path'] if method['path'] else abs_algorithm_path, f=base_args['script'])
         input = '{p}/{f}'.format(p=root, f=pathname)
         # Prevent stepping on toes if for some reason the user selects the same algorithm twice for a video or one
         # in use by another video whose source hashes to the same as this video.
         slug = '{p}/{f}-{v}-{i}-{m}'.format(p=tmp, f=filename, v=vid['vid'], i=index, m=method['mid'])
         output = slug + '.json'
-        args = ['python', script, base_args['videoarg'], input, base_args['outputarg'], output]
+        args = ['python', script, input, output]
         args.extend(np.array([[k, v] for k, v in procargs.items()]).flatten())
         aid = analysis.select().where(analysis.aid==analysis.insert({'mid': method['mid'], 'vid': vid['vid'], 'status': 'QUEUED', 'parameters': json.dumps(procargs), 'results' : ''}).execute()).dicts().get()
         stderr = open(slug + '.err', 'w+')
@@ -522,7 +526,7 @@ def get_analysis_method():
         'mid': method['mid'],
         'description': method['description'],
         'automated': method['automated'],
-        'parameters': json.loads(method['parameters'])['parameters'] if method['parameters'] else dict(),
+        'parameters': {i["arg"] : int(i["default"]) if i["type"] == "int" else (float(i["default"]) if i["type"] == "float" else str(i["default"])) for i in json.loads(method['parameters'])['parameters']} if method['parameters'] else dict(),
         'creationDate': method['creation_date']
     })(i) for i in data]
     return fr()(data)

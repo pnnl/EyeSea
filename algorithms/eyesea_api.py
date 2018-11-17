@@ -18,14 +18,18 @@ def get_args(jfile):
     parser.add_argument("vidfile", help="video file to process")
     parser.add_argument("outfile", help="output file for results")
 
-    with open(jfile, 'r') as f:
-        jsondata = json.load(f)
+    eye_env = os.environ
+    for i in eye_env['PATH'].split(os.pathsep):
+        if os.path.isfile(i + os.sep + jfile):
+            with open(i + os.sep + jfile, 'r') as f:
+                jsondata = json.load(f)
     # TODO: support type= type from json file
 
     for jarg in jsondata["parameters"]:
         parser.add_argument( jarg["arg"], 
             help=jarg["help"],
-            default=jarg["default"])
+            default=jarg["default"],
+            type=int if jarg["type"] == "int" else (float if jarg["type"] == "float" else str))
 
     parser.add_argument('--verbose', '-v', action='store_true')
 
