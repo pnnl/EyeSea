@@ -18,13 +18,14 @@ export function request() {
 export function setSort(payload) {
 	return {
 		type: SORT,
+		servicePath: true,
 		payload,
 	};
 }
 
 const initialState = {
 	[SORT]: {
-		property: 'Added Date',
+		property: 'creation_date',
 		ascending: false,
 	},
 };

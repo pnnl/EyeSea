@@ -1,15 +1,32 @@
 import { put, takeLatest, call, select } from 'redux-saga/effects';
-import { get } from '../util/request';
+import { get, toQueryString } from '../util/request';
 
-import { REQUEST, SUCCESS, ERROR, getSort } from './module';
+import { REQUEST, SUCCESS, ERROR, getSort, SORT } from './module';
+
+import { FINISHED as UPLOAD_FINISHED } from '../Uploader';
 
 export function* requestVideos(action) {
 	try {
 		let sort = yield select(getSort);
 
-		let payload = yield call(get, action.servicePath + 'video', {
-			sortBy: [sort],
-		});
+		let payload = yield call(
+			get,
+			action.servicePath +
+				'video?' +
+				toQueryString({
+					sortBy: JSON.stringify([
+						{
+							prop: sort.property,
+							asc: sort.ascending,
+						},
+						// break ties
+						{
+							prop: 'vid',
+							asc: true,
+						},
+					]),
+				})
+		);
 
 		yield put({
 			type: SUCCESS,
@@ -25,5 +42,5 @@ export function* requestVideos(action) {
 }
 
 export default function*() {
-	yield [takeLatest(REQUEST, requestVideos)];
+	yield [takeLatest([REQUEST, UPLOAD_FINISHED, SORT], requestVideos)];
 }
