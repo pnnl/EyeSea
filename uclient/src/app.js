@@ -1,3 +1,5 @@
+// Copyright 2018 Battelle Memorial Institute. All rights reserved.
+
 import React from 'react';
 import { connect } from 'react-redux';
 import { Switch, Route, withRouter } from 'react-router-dom';

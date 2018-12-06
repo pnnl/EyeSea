@@ -1,3 +1,5 @@
+//Copyright 2018 Battelle Memorial Institute. All rights reserved.
+
 import { fromJS } from 'immutable';
 import { createSelector } from 'reselect';
 import {

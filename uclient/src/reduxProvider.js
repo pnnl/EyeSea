@@ -1,3 +1,5 @@
+//Copyright 2018 Battelle Memorial Institute. All rights reserved.
+
 import { createStore, applyMiddleware } from 'redux';
 import { combineReducers } from 'redux-immutable';
 import thunk from 'redux-thunk';

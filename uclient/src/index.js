@@ -1,3 +1,5 @@
+//Copyright 2018 Battelle Memorial Institute. All rights reserved.
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';

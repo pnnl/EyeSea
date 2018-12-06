@@ -1,3 +1,5 @@
+// Copyright 2018 Battelle Memorial Institute. All rights reserved.
+
 export * from './Analyze';
 import Analyze from './Analyze';
 export default Analyze;
