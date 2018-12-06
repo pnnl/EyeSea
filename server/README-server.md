@@ -28,6 +28,10 @@ ffmpeg
 
 ## To empty the database:
 
+> git checkout -- eyesea.db
+
+or
+
 ```
 > sqlite3 eyesea.db
 sqlite> .tables

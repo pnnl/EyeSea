@@ -27,13 +27,14 @@ yarn add whatwg-fetch
 
 ### Start EyeSea server
 
+```
 cd eyesea/server
 
 python eyesea_server.py 
+```
 
 ### Start EyeSea client
 
-```
 
 * Run development server:
 

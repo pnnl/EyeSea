@@ -1,4 +1,8 @@
 #!/usr/bin/env python2
+'''
+Copyright 2018 Battelle Memorial Institute. All rights reserved.
+'''
+
 import json
 import bottle
 import os
