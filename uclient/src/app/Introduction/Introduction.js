@@ -8,24 +8,20 @@ export class Introduction extends React.Component {
 	render() {
 		return (
 			<section className="introduction">
-				<h2>Introduction</h2>
+				<h2>Welcome to EyeSea</h2>
 				<p>
-					Cheese triangles fromage frais stinking bishop. Pecorino rubber cheese
-					ricotta cow lancashire edam mozzarella cheesy grin. Chalk and cheese
-					cheese slices cheese slices red leicester cheese and biscuits cheesy
-					feet airedale dolcelatte. Roquefort cheddar port-salut mascarpone
-					halloumi monterey jack paneer halloumi. Cheese on toast cheese and
-					biscuits.
+					To get started, click the "Upload a Video" button below 
+					(or "Add Video(s)" above)  to add a video file to your database.  
+					After you select the video file 
+					to add, you will be asked to select an analysis method.  The method 
+					will be applied to the selected video. 
 				</p>
 				<p>
-					Cheesy grin the big cheese who moved my cheese. Parmesan pecorino
-					rubber cheese st. agur blue cheese cream cheese cheddar ricotta when
-					the cheese comes out everybody's happy. Cheddar red leicester cheese
-					slices port-salut roquefort red leicester feta fromage frais.
-					Jarlsberg halloumi pecorino fromage frais danish fontina mozzarella
-					cheese and wine.
+				    When the analysis is complete,
+					the results will be shown under the video thumbnail.  Click on the 
+					thumbnail to view the results, edit them and add manual annotations.
 				</p>
-				<h2>Actions</h2>
+				<h2>Get Started</h2>
 				<FileSelectButton className="upload">Upload a Video</FileSelectButton>
 			</section>
 		);
