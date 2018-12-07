@@ -1,0 +1,6 @@
+{
+    "name" : "Manual Annotation",
+    "script" : "manual.py",
+    "parameters" : [
+    ]
+}

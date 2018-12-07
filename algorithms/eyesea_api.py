@@ -18,13 +18,18 @@ def get_args(jfile):
     parser.add_argument("vidfile", help="video file to process")
     parser.add_argument("outfile", help="output file for results")
 
-    eye_env = os.environ
-    for i in eye_env['PATH'].split(os.pathsep):
-        if os.path.isfile(i + os.sep + jfile):
-            with open(i + os.sep + jfile, 'r') as f:
-                jsondata = json.load(f)
+    
     # TODO: support type= type from json file
-
+    if os.path.isfile(jfile):
+        with open(jfile, 'r') as f:
+            jsondata = json.load(f)
+    else:
+        eye_env = os.environ
+        for i in eye_env['PATH'].split(os.pathsep):
+            if os.path.isfile(i + os.sep + jfile):
+                with open(i + os.sep + jfile, 'r') as f:
+                    jsondata = json.load(f)
+    
     for jarg in jsondata["parameters"]:
         parser.add_argument( jarg["arg"], 
             help=jarg["help"],

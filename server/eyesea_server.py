@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+ #!/usr/bin/env python2
 '''
 Copyright 2018 Battelle Memorial Institute. All rights reserved.
 '''
@@ -465,8 +465,12 @@ def video_statistics(vid):
 
     for i in a:
         results = json.loads(i['results'])
+        #print(results)
         analyses[i['aid']] = results
-        frame_count = max(frame_count, results[-1]['frameindex'])
+        if results:
+            frame_count = max(frame_count, results[-1]['frameindex'])
+        print()
+        print("frame_count = {:d}".format(frame_count))
 
     for i in range(0, frame_count):
         for j in a:
