@@ -290,6 +290,13 @@ export class Video extends React.Component {
 					this.setState({
 						detections,
 					});
+					this.state.drawing = {
+						enabled: false,
+						startX: 0,
+						startY: 0,
+						endX: 0,
+						endY: 0,
+					};
 					this.drawAnalyses(detections);
 					this.updateAnalyses();
 					this.props.uploadAnns(this.props.video); //this.props.match.params.id);
