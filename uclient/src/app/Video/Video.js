@@ -166,6 +166,7 @@ export class Video extends React.Component {
 	downloadAnnotations() {
 		window.location.href =
 			this.props.servicePath +
+			'video/' +
 			this.props.match.params.id +
 			'/annotations_' +
 			this.props.match.params.id +
