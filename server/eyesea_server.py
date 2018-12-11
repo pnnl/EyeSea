@@ -417,19 +417,21 @@ def video_heatmap(vid):
         d = np.zeros((h, w))
         for i in a:
             for j in json.loads(i['results']):
-                for k in j['detections']:
-                    if k['y1'] <= k['y2']:
-                        for l in range(k['y1'], k['y2'], 1):
-                            if k['x1'] <= k['x2']:
-                                d[l][k['x1']:k['x2']] += 1
-                            else:
-                                d[l][k['x2']:k['x1']] += 1
-                    else:
-                        for l in range(k['y2'], k['y1'], 1):
-                            if k['x1'] <= k['x2']:
-                                d[l][k['x1']:k['x2']] += 1
-                            else:
-                                d[l][k['x2']:k['x1']] += 1
+                for q in j['detections']:
+                    k = {key: int(value) for key, value in q.items()}
+                    if 'y1' in k and 'y2' in k and 'x1' in k and 'x2' in k:
+                        if k['y1'] <= k['y2']:
+                            for l in range(k['y1'], k['y2'], 1):
+                                if k['x1'] <= k['x2']:
+                                    d[l][k['x1']:k['x2']] += 1
+                                else:
+                                    d[l][k['x2']:k['x1']] += 1
+                        else:
+                            for l in range(k['y2'], k['y1'], 1):
+                                if k['x1'] <= k['x2']:
+                                    d[l][k['x1']:k['x2']] += 1
+                                else:
+                                    d[l][k['x2']:k['x1']] += 1
 
         max_det = np.max(d)
         plt.style.use('dark_background')
