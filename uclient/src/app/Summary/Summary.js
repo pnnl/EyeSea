@@ -146,7 +146,7 @@ export class Summary extends React.PureComponent {
 				<div className="statistics">
 					<h3>Total Detections</h3>
 					<p>{this.addCommas(this.props.statistics.totalDetections)}</p>
-					<h3>Total % Time Has Detections</h3>
+					<h3>Percent Time With Detections</h3>
 					<p>
 						{(this.props.statistics.percentTimeWithDetections * 100).toFixed(0)}
 						%

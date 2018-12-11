@@ -2,6 +2,7 @@
 '''
 Copyright 2018 Battelle Memorial Institute. All rights reserved.
 '''
+from __future__ import division # divide array by scalar, don't floor result
 
 import json
 import bottle
@@ -16,6 +17,7 @@ import zipfile
 
 import numpy as np
 from numpy import inf
+
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -429,7 +431,7 @@ def video_heatmap(vid):
                             else:
                                 d[l][k['x2']:k['x1']] += 1
 
-        det = np.max(d)
+        max_det = np.max(d)
         plt.style.use('dark_background')
         #cmap = transparent_cmap(mcolors.LinearSegmentedColormap.from_list('', ['#800026', '#ffffcc']))
         cmap = transparent_cmap(mcolors.LinearSegmentedColormap.from_list('', ['black', '#429321', '#F0ED5E', '#F40E06'], N=8))
@@ -442,8 +444,9 @@ def video_heatmap(vid):
         divider = make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.05)
         cbar = plt.colorbar(cb, cax=cax)
-        cbar.set_ticks([0,0.125*det,0.25*det,0.375*det,0.5*det,0.625*det,0.75*det,0.875*det,det])
-        cbar.set_ticklabels(['0%', '12.5%', '25%', '37.5%', '50%', '62.5%', '75%', '87.5%', '100%'])
+        #cbar.set_ticks([0,0.125*det,0.25*det,0.375*det,0.5*det,0.625*det,0.75*det,0.875*det,det])
+        cbar.set_ticks((np.array([0,0.125,0.25,0.375,0.5,0.625,0.75,0.875,1.00])*max_det).tolist())
+        #cbar.set_ticklabels(['0%', '12.5%', '25%', '37.5%', '50%', '62.5%', '75%', '87.5%', '100%'])
         plt.savefig(cache + os.sep + output, bbox_inches='tight')
     
     resp = static_file(output, root=cache)
@@ -486,6 +489,7 @@ def video_statistics(vid):
                 avg_bounding_box += area
                 max_bounding_box = max(area, max_bounding_box)
 
+    avg_bounding_box = avg_bounding_box / total_detections
     print(avg_bounding_box, total_detections)
     return fr()({
         'totalDetections': total_detections,
