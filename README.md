@@ -65,7 +65,7 @@ yarn dev
 ```
 
 
-# To build the production package
+* To build the production package
 
 ```
 yarn build
