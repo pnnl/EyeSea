@@ -1,0 +1,183 @@
+@import '../../../styles/variables';
+
+.videos {
+  display: flex;
+  flex-wrap: wrap;
+  flex-grow: 1;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 calc(4.375em - 25px) 25px 4.375em;
+
+  header {
+    display: flex;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 1.543em;
+    margin-top: 2.5em;
+    line-height: 1.543em;
+    color: $standout-fg;
+
+    .sortBy {
+      color: $inactive-fg;
+      margin-left: 0.5em;
+
+      span {
+        cursor: pointer;
+      }
+
+      &.selected {
+        color: $selection-fg;
+      }
+
+      &:not(.selected) .btn.selected {
+        color: $inactive-fg;
+      }
+    }
+  }
+
+  .fish-loader {
+    top: 2.5em
+  }
+
+  .video {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 295px;
+    height: 280px;
+    padding: 7.5px;
+    margin-top: 25px;
+    margin-right: 25px;
+    color: $videos-video-fg;
+    text-decoration: none;
+    background: $videos-video-bg;
+    box-shadow: $videos-video-shadow;
+
+    h3 {
+      width: calc(100% - 5em);
+      margin: 0;
+      margin-right: 1em;
+      overflow: hidden;
+      font-size: .875em;
+      font-weight: normal;
+      line-height: 1.643em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: inherit;
+    }
+
+    h3,
+    > span {
+      height: 1.4em;
+    }
+
+    span {
+      width: 4em;
+      font-size: 0.8em;
+      line-height: 1.75em;
+      text-align: right;
+    }
+
+    .thumbnail {
+        position: relative;
+    }
+
+    img {
+      width: 280px;
+      height: 160px;
+      object-fit: contain; // no IE... hmm.
+    }
+
+    .stats {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+
+        span {
+            display: block;
+            width: auto;
+            margin-top: 2px;
+            padding-top: .3em;
+            padding-left: calc(.75em + 15px);
+            text-align: left;
+            background-color: rgba(0, 0, 0, .7);
+            background-position: .5em center;
+            background-repeat: no-repeat;
+
+            &.failed {
+                background-image: url('../../../images/alert-small.png');
+                background-size: auto 15px;
+            }
+
+            &.queued {
+                background-image: url('../../../images/hourglass.png');
+            }
+
+            &.processing {
+                background-image: url('../../../images/analytics.png');
+            }
+        }
+    }
+
+    svg {
+      width: 100%;
+      height: calc(61px + .28em);
+      margin-bottom: -.28em;
+    }
+  }
+}
+
+.processing {
+  em {
+    display: inline-block;
+    width: .703125em;
+    vertical-align: bottom;
+    overflow: hidden;
+    font-style: normal;
+    animation: dotdotdot 4s steps(1, start) infinite;
+  }
+}
+
+@keyframes dotdotdot {
+  0% {
+    width: 0;
+  }
+
+  25% {
+    width: 0;
+  }
+
+  50% {
+    width: .234375em;
+  }
+
+  75% {
+    width: .46875em;
+  }
+
+  100% {
+    width: .703125em;
+  }
+}
+
+.sort-indicator {
+  position: relative;
+  padding-right: 1.25em;
+
+  .btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
+    font-size: inherit;
+    color: $inactive-fg;
+    cursor: pointer;
+
+    &.selected {
+      z-index: 0;
+      color: $selection-fg;
+    }
+  }
+}

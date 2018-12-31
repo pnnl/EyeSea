@@ -1,0 +1,24 @@
+@import '../../../../styles/variables';
+
+.occurrences-bar {
+  --color: $analysis-track-bg;
+
+  position: relative;
+  height: .9375em;
+  margin-bottom: 3px;
+  font-size: .8em;
+  line-height: 1.1em;
+  text-align: center;
+  background: $analysis-track-bg;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  div {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: black;
+  }
+}

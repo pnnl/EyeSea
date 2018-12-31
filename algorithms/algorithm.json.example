@@ -1,0 +1,27 @@
+{
+    "name" : "Algorithm Name for UI",
+    "script" : "algorithm.py",
+    "parameters" : [
+       { 
+           "arg" : "--thresh",
+           "argname" : "threshold",
+           "help" : "pixels < threshold are considered background",
+           "type" : "float",
+           "default" : 0.5
+	     },
+       { 
+           "arg" : "--winlen",
+           "argname" : "window length",
+           "help" : "length of window in seconds for background model",
+           "type" : "int",
+           "default" : 10
+       },
+       { 
+           "arg" : "--motion",
+           "argname" : "use motion",
+           "help" : "use motion features",
+           "type" : "bool",
+           "default" : true
+      }
+    ]
+}

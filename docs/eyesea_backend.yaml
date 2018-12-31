@@ -1,0 +1,382 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: EyeSea Backend
+paths:
+  /statistics:
+    get:
+      summary: provides a summary of database statistics
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statistics'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /video:
+    get:
+      summary: provides a list of videos
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/videos'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      summary: upload a new video
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/video'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /video/{vid}:
+    get:
+      summary: returns a video by ID
+      parameters:
+        - name: vid
+          in: path
+          description: video ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/video'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      summary: update a video
+      parameters:
+        - name: vid
+          in: path
+          description: video ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/video'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /analysis:
+    get:
+      summary: returns a list of analyses
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analyses'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    post:
+      summary: start an analysis
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /analysis/{aid}:
+    get:
+      summary: returns a specific analysis by id
+      parameters:
+        - name: aid
+          in: path
+          description: analysis ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    put:
+      summary: update an analysis
+      parameters:
+        - name: aid
+          in: path
+          description: analysis ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'          
+  /analysis/methods:
+    get:
+      summary: returns a list of available analysis methods
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis_method'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'                
+    post:
+      summary: add an analysis method
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis_method'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /analysis/methods/{mid}:
+    get:
+      summary: returns a specific analysis method
+      parameters:
+        - name: mid
+          in: path
+          description: analysis method ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis_method'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'                
+    put:
+      summary: update an analysis method
+      parameters:
+        - name: mid
+          in: path
+          description: analysis method ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis_method'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /process:
+    post:
+      summary: analyze a video
+      requestBody:
+        description: Pet to add to the store
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/process'
+      responses:
+        200:
+          description: a valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/analysis'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+components:
+  schemas:
+    error:
+      properties:
+        request:
+          type: array
+          description: the calling parameters of the error
+        message:
+          type: string
+          description: the error message
+    
+    statistics:
+      properties:
+        total_videos:
+          type: integer
+          description: the number of videos stored
+        total_analyses:
+          type: integer
+          description: the number of analyses in database
+        total_analyses-completed:
+          type: integer
+          description: the number of completed analyses
+        total_analyses-failed:
+          type: integer
+          description: the number of failed analyses
+        total_analyses-queued:
+          type: integer
+          description: the number of analysis queued for processing
+
+    video:
+      properties:
+        vid:
+          type: integer
+          description: video ID
+        description:
+          type: string
+          description: description of video
+        filename:
+          type: string
+          description: filename of video
+        fps:
+          type: integer
+          description: FPS of video if applicable
+        variable-framerate:
+          type: boolean
+          description: is video encoded using variable framerate
+        uri:
+          type: string
+          description: URI to access video
+
+    analysis:
+      properties:
+        aid:
+          type: integer
+          description: analysis ID
+        status:
+          type: string
+          description: status of analysis
+        parameters:
+          type: array
+          description: the parameters of the analysis
+        vid:
+          type: integer
+          description: the ID of the video being analyzed
+        mid:
+          type: integer
+          description: the ID of the analysis method being used
+        results:
+          type: array
+          description: the results of the analysis
+
+    analysis_method:
+      properties:
+        mid:
+          type: integer
+          description: analysis method ID
+        description:
+          type: string
+          description: description of analysis method
+        parameters:
+          type: array
+          description: a list of parameters required by the analysis method
+        result:
+          type: array
+          description: an example object returned by the analysis method 
+
+    videos:
+      type: array
+      items:
+        $ref: '#/components/schemas/video'
+
+    analyses:
+      type: array
+      items:
+        $ref: '#/components/schemas/analysis'
+
+    analysis_method:
+      type: array
+      items:
+        $ref: '#/components/schemas/analysis_method'
+
+    process:
+      properties:
+        mid:
+          type: integer
+          description: analysis method ID
+        vid:
+          type: integer
+          description: video ID

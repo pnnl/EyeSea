@@ -1,0 +1,98 @@
+@import 'variables';
+@import '~font-awesome/scss/font-awesome';
+
+/* So many bleeping wrapper tags. */
+html,
+body,
+#app,
+#app > div,
+main {
+  height: 100%;
+  margin: 0;
+  font-family: Amiko, sans-serif;
+  color: $site-fg;
+  background: $site-bg;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+
+  & > header {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    height: $header-height;
+    padding: 0 $header-padding;
+    color: $header-fg;
+    background: $header-bg;
+    border-bottom: 1px solid transparent;
+
+    &:before {
+      content: '';
+      position: absolute;
+      left: calc(#{$header-padding} + 242px);
+      right: $header-padding;
+      bottom: -1px;
+      height: 1px;
+      background: $header-border;
+    }
+
+    &:after {
+      content: '';
+      flex-grow: 1;
+      order: 1;
+      display: inline-block; /* for IE */
+    }
+
+    > div {
+      order: 2;
+      margin-top: 57px;
+    }
+
+    .btn {
+        color: $site-fg;
+    }
+
+    .add {
+        margin-right: 4.787em;
+    }
+  }
+
+  & > section {
+    padding-bottom: 25px;
+  }
+}
+
+h1 {
+  position: relative;
+  z-index: 2;
+  width: 274px; /* Fix cross-browser text-indent issues. */
+  margin: 0;
+  margin-top: .65em;
+  font-size: 5em;
+  font-variant: small-caps;
+  line-height: 1em;
+  text-indent: -100%;
+  background: url('../images/logo.png') 0 0 / auto 100% no-repeat;
+}
+
+h2, h3 {
+  color: $headings-fg;
+}
+
+.settings:before {
+  content: url('../images/settings.png');
+}
+
+.settings:not(.disabled):hover:before {
+  content:  url('../images/settings_hover.png');
+}
+
+.box {
+  display: inline-block;
+  width: .75em;
+  height: .75em;
+  margin-right: .5em;
+}
