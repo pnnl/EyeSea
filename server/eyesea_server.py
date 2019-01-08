@@ -51,38 +51,44 @@ else:
 
 vformat = settings['video_format']
 vcodec = settings['ffmpeg_vcodec']
-    
-abs_algorithm_path = os.path.abspath(settings['algorithm_bin'])
+
+# default to algorithms dir, leave algorithm_bin in settings empty in repo to avoid
+# OS-specific path
+if not settings['algorithm_bin']:
+    abs_algorithm_path = os.path.abspath(os.path.join(os.path.abspath(os.curdir),"..", "algorithms"))
+else:
+    abs_algorithm_path = os.path.abspath(settings['algorithm_bin'])
 eye_env = os.environ
 eye_env['PATH'] = abs_algorithm_path + os.pathsep + eye_env['PATH']
 tasklist = {}
 
-# store path of things not in the algorithm_bin folder
-# TODO: Just store methods in the algorithm dir -- why scan whole path?
+# Just store methods in the algorithm dir -- don't scan the whole path
 def scanmethods():
     methods = analysis_method.select().dicts()
-    for i in eye_env['PATH'].split(os.pathsep):
-        for j in os.listdir(i):
-            name, ext = os.path.splitext(j)
-            if ext == '.json':
-                root = os.path.abspath(i)
-                fdict = json.loads(open(root + os.sep + j).read())
-                fjson = json.dumps(fdict) #normalize json
-                found = False
-                # TODO How do we want to handle two algorithms which might have the same parameter names
-                #      but do different things with them? Is that even a concern?
-                # shari: No, this is not a concern.  
-                for k in methods:
-                    if 'name' in fdict:
-                        if k['parameters'] == fjson:
-                            found = True
-                if not found and 'name' in fdict:
-                    # The code for running these knows what this path is, assuming it hasn't changed, and
-                    # will run them from there; this makes it more portable and no worse than before this
-                    # was changed to become path aware
-                    path = '' if abs_algorithm_path == root else root
-                    analysis_method.insert({'description' : fdict['name'], 'parameters' : fjson, 'creation_date' : int(time.time()), 'automated' : 1, 'path': path}).execute()
-                    methods = analysis_method.select().dicts()
+#    for i in eye_env['PATH'].split(os.pathsep):
+    i = abs_algorithm_path
+    for j in os.listdir(i):
+        name, ext = os.path.splitext(j)
+        if ext == '.json':
+            root = os.path.abspath(i)
+            fdict = json.loads(open(root + os.sep + j).read())
+            fjson = json.dumps(fdict) #normalize json
+            found = False
+            # TODO How do we want to handle two algorithms which might have the same parameter names
+            #      but do different things with them? Is that even a concern?
+            # shari: No, this is not a concern.  
+            for k in methods:
+                if 'name' in fdict:
+                    if k['parameters'] == fjson:
+                        found = True
+            if not found and 'name' in fdict:
+                # The code for running these knows what this path is, assuming it hasn't changed, and
+                # will run them from there; this makes it more portable and no worse than before this
+                # was changed to become path aware
+                path = '' if abs_algorithm_path == root else root
+                #print("****** path = " + path)
+                analysis_method.insert({'description' : fdict['name'], 'parameters' : fjson, 'creation_date' : int(time.time()), 'automated' : 1, 'path': path}).execute()
+                methods = analysis_method.select().dicts()
 
 scanmethods()
 
@@ -197,6 +203,7 @@ def queue_analysis(index, vid, method, procargs = None):
         pathname, filename, root = get_video_path_parts(vid)
         # Purposely using base_args for 'command' here, to avoid the user being able to change it with custom args
         script = '{p}/{f}'.format(p=method['path'] if method['path'] else abs_algorithm_path, f=base_args['script'])
+        print('******* script = ' + script)
         input = '{p}/{f}'.format(p=root, f=pathname)
         # Prevent stepping on toes if for some reason the user selects the same algorithm twice for a video or one
         # in use by another video whose source hashes to the same as this video.
