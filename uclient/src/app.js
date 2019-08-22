@@ -3,6 +3,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Switch, Route, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { setServicePath } from './app/module';
 import Uploader from './app/Uploader';
 import { Button } from './app/shared';
@@ -24,7 +25,9 @@ export class App extends React.Component {
 		return (
 			<main>
 				<header>
-					<h1>EyeSea</h1>
+					<Link to="/">
+						<h1>EyeSea</h1>
+					</Link>
 					<div>
 						<Uploader />
 						<Button className="settings" wide disabled>
