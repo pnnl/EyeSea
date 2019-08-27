@@ -432,7 +432,7 @@ export class Video extends React.Component {
 			analyses.forEach(analysis => {
 				analysis.results.detections.map((item, i) => {
 					canvasCtx.beginPath();
-					canvasCtx.lineWidth = '6';
+					canvasCtx.lineWidth = '2';
 					canvasCtx.strokeStyle =
 						this.state.method !== null &&
 						analysis.id === this.state.method.id &&
@@ -452,7 +452,7 @@ export class Video extends React.Component {
 			switch (this.state.mode) {
 				case 1:
 					canvasCtx.beginPath();
-					canvasCtx.lineWidth = '6';
+					canvasCtx.lineWidth = '2';
 					canvasCtx.strokeStyle = this.props.methods.ids[1].color;
 					canvasCtx.strokeRect(
 						this.state.drawing.startX,
