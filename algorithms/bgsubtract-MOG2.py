@@ -38,8 +38,8 @@ import os
 import numpy as np
 import cv2
 import json
+import imutils
 
-#import annotator as ann
 import eyesea_api as api
 
 
@@ -106,10 +106,11 @@ def algorithm():
         #fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_CLOSE, kernel)
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        cnts = cnts[1] # simplify reference
+        # https://stackoverflow.com/questions/54734538/opencv-assertion-failed-215assertion-failed-npoints-0-depth-cv-32
+        contours = cnts[1] if imutils.is_cv3() else cnts[0] # simplify reference
         if args.verbose: print("{:d} blobs".format(len(cnts)))
         
-        for c in cnts:
+        for c in contours:
             (x, y, w, h) = cv2.boundingRect(c)
             if args.verbose: print("  {:d},{:d},{:d},{:d}".format(x,y,w,h))
             if w > 3 and h > 3:
