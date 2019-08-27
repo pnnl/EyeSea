@@ -498,8 +498,6 @@ def video_statistics(vid):
                 avg_bounding_box += area
                 max_bounding_box = max(area, max_bounding_box)
 
-    avg_bounding_box = avg_bounding_box / total_detections if total_detections > 0 else 0
-    print(avg_bounding_box, total_detections)
     return fr()({
         'totalDetections': total_detections,
         'percentTimeWithDetections': (frames_with_detections / frame_count) / len(a) if frame_count else 0,
