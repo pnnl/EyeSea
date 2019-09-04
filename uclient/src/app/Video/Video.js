@@ -42,20 +42,24 @@ export class Video extends React.Component {
 			target = event.target;
 		}
 		// IE10; Do we care?
-		if (target.msSetPointerCapture) {
-			target.msSetPointerCapture(event.pointerId);
-		} else if (target.setPointerCapture) {
-			target.setPointerCapture(event.pointerId);
+		if (event.pointerId) {
+			if (target.msSetPointerCapture) {
+				target.msSetPointerCapture(event.pointerId);
+			} else if (target.setPointerCapture) {
+				target.setPointerCapture(event.pointerId);
+			}
 		}
 	}
 	releaseMouse(event, target) {
 		if (!target) {
 			target = event.target;
 		}
-		if (target.msReleasePointerCapture) {
-			target.msReleasePointerCapture(event.pointerId);
-		} else if (target.releasePointerCapture) {
-			target.releasePointerCapture(event.pointerId);
+		if (event.pointerId) {
+			if (target.msReleasePointerCapture) {
+				target.msReleasePointerCapture(event.pointerId);
+			} else if (target.releasePointerCapture) {
+				target.releasePointerCapture(event.pointerId);
+			}
 		}
 	}
 	rewindFrame = timestamp => {
@@ -568,12 +572,7 @@ export class Video extends React.Component {
 					<div className="viewer">
 						<video
 							ref={player => (this.player = player)}
-							src={
-								this.props.servicePath +
-								'video/' +
-								this.props.video.id +
-								'/file'
-							}
+							src={`${this.props.servicePath}video/${this.props.video.id}/file`}
 							onPlay={this.playFrame}
 							onPause={() => this.setState({ paused: true })}
 							onTimeUpdate={this.timeUpdate}
