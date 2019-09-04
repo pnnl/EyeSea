@@ -62,6 +62,18 @@ export class Video extends React.Component {
 			}
 		}
 	}
+	previousFrame = () => {
+		this.player.currentTime -= 1.0 / 30.0;
+		this.player.play();
+		this.player.pause();
+		this.timeUpdate();
+	};
+	nextFrame = () => {
+		this.player.currentTime += 1.0 / 30.0;
+		this.player.play();
+		this.player.pause();
+		this.timeUpdate();
+	};
 	rewindFrame = timestamp => {
 		let progress = timestamp - this.timestamp;
 		// Unfortunately Firefox shows a loading overlay if we do this too many
@@ -71,6 +83,9 @@ export class Video extends React.Component {
 		this.timestamp = timestamp;
 		if (!this.stopRewinding) {
 			requestAnimationFrame(this.rewindFrame);
+			this.player.play();
+			this.player.pause();
+			this.timeUpdate();
 		}
 	};
 	rewind(event, start) {
@@ -662,7 +677,11 @@ export class Video extends React.Component {
 						>
 							Rewind
 						</Button>
-						<Button className="previous-frame" iconOnly>
+						<Button
+							className="previous-frame"
+							onClick={this.previousFrame}
+							iconOnly
+						>
 							Previous Frame
 						</Button>
 						{this.state.paused ? (
@@ -682,7 +701,7 @@ export class Video extends React.Component {
 								Pause
 							</Button>
 						)}
-						<Button className="next-frame" iconOnly>
+						<Button className="next-frame" onClick={this.nextFrame} iconOnly>
 							Next Frame
 						</Button>
 						<Button
