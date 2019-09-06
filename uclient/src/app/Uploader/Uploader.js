@@ -34,6 +34,15 @@ import {
 import './Uploader.scss';
 
 export class Uploader extends React.PureComponent {
+	state = {
+		redirect: false,
+	};
+
+	onUpload = event => {
+		this.setState({ redirect: true });
+		this.props.upload(event);
+	};
+
 	handleEnableAlgorithm = algorithm => () =>
 		this.props.enableAlgorithmInstance(algorithm, algorithm.disabled);
 	handleEnableParameters = algorithm => () =>
@@ -73,6 +82,7 @@ export class Uploader extends React.PureComponent {
 	componentDidUpdate() {
 		if (this.props.result && !this.props.result.progress) {
 			this.props.reset();
+			this.setState({ redirect: false });
 		}
 	}
 	render() {
@@ -244,7 +254,7 @@ export class Uploader extends React.PureComponent {
 						<div className="buttons">
 							<Button
 								className="save"
-								onClick={this.props.upload}
+								onClick={this.onUpload}
 								disabled={
 									!this.props.algorithms.length ||
 									!this.props.description ||
@@ -261,28 +271,30 @@ export class Uploader extends React.PureComponent {
 								Cancel
 							</Button>
 						</div>
-						{this.props.result &&
-							this.props.result.progress !== 'indefinite' && (
-								<svg width="100%" height="100%">
-									<circle className="background" cx="0" cy="0" r="15.9155" />
-									<circle
-										className="foreground"
-										cx="0"
-										cy="0"
-										r="15.9155"
-										style={{
-											strokeDasharray:
-												this.props.result.progress * 100 + ' 100',
-										}}
-									/>
-								</svg>
-							)}
+						{this.props.result && this.props.result.progress !== 'indefinite' && (
+							<svg width="100%" height="100%">
+								<circle className="background" cx="0" cy="0" r="15.9155" />
+								<circle
+									className="foreground"
+									cx="0"
+									cy="0"
+									r="15.9155"
+									style={{
+										strokeDasharray: this.props.result.progress * 100 + ' 100',
+									}}
+								/>
+							</svg>
+						)}
 					</div>
 					{error}
 				</div>
 			);
 		}
-		if (this.props.result && !this.props.result.progress && !this.props.error) {
+		const isRoot = window.location.href.endsWith('/#/');
+		if (
+			(!isRoot && this.state.redirect) ||
+			(this.props.result && !this.props.result.progress && !this.props.error)
+		) {
 			popup = <Redirect to="/" />;
 		}
 		return (
