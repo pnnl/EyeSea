@@ -42,22 +42,38 @@ export class Video extends React.Component {
 			target = event.target;
 		}
 		// IE10; Do we care?
-		if (target.msSetPointerCapture) {
-			target.msSetPointerCapture(event.pointerId);
-		} else if (target.setPointerCapture) {
-			target.setPointerCapture(event.pointerId);
+		if (event.pointerId) {
+			if (target.msSetPointerCapture) {
+				target.msSetPointerCapture(event.pointerId);
+			} else if (target.setPointerCapture) {
+				target.setPointerCapture(event.pointerId);
+			}
 		}
 	}
 	releaseMouse(event, target) {
 		if (!target) {
 			target = event.target;
 		}
-		if (target.msReleasePointerCapture) {
-			target.msReleasePointerCapture(event.pointerId);
-		} else if (target.releasePointerCapture) {
-			target.releasePointerCapture(event.pointerId);
+		if (event.pointerId) {
+			if (target.msReleasePointerCapture) {
+				target.msReleasePointerCapture(event.pointerId);
+			} else if (target.releasePointerCapture) {
+				target.releasePointerCapture(event.pointerId);
+			}
 		}
 	}
+	previousFrame = () => {
+		this.player.currentTime -= 1.0 / 30.0;
+		this.player.play();
+		this.player.pause();
+		this.timeUpdate();
+	};
+	nextFrame = () => {
+		this.player.currentTime += 1.0 / 30.0;
+		this.player.play();
+		this.player.pause();
+		this.timeUpdate();
+	};
 	rewindFrame = timestamp => {
 		let progress = timestamp - this.timestamp;
 		// Unfortunately Firefox shows a loading overlay if we do this too many
@@ -67,6 +83,9 @@ export class Video extends React.Component {
 		this.timestamp = timestamp;
 		if (!this.stopRewinding) {
 			requestAnimationFrame(this.rewindFrame);
+			this.player.play();
+			this.player.pause();
+			this.timeUpdate();
 		}
 	};
 	rewind(event, start) {
@@ -568,12 +587,7 @@ export class Video extends React.Component {
 					<div className="viewer">
 						<video
 							ref={player => (this.player = player)}
-							src={
-								this.props.servicePath +
-								'video/' +
-								this.props.video.id +
-								'/file'
-							}
+							src={`${this.props.servicePath}video/${this.props.video.id}/file`}
 							onPlay={this.playFrame}
 							onPause={() => this.setState({ paused: true })}
 							onTimeUpdate={this.timeUpdate}
@@ -663,7 +677,11 @@ export class Video extends React.Component {
 						>
 							Rewind
 						</Button>
-						<Button className="previous-frame" iconOnly>
+						<Button
+							className="previous-frame"
+							onClick={this.previousFrame}
+							iconOnly
+						>
 							Previous Frame
 						</Button>
 						{this.state.paused ? (
@@ -683,7 +701,7 @@ export class Video extends React.Component {
 								Pause
 							</Button>
 						)}
-						<Button className="next-frame" iconOnly>
+						<Button className="next-frame" onClick={this.nextFrame} iconOnly>
 							Next Frame
 						</Button>
 						<Button
