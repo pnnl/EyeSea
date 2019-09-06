@@ -17,12 +17,28 @@ export class Videos extends React.PureComponent {
 			ascending: false,
 		});
 	};
+
 	onSortDirectionChange = event => {
 		this.props.setSort(event);
 	};
-	componentDidMount() {
+
+	pollVideos = interval => {
 		this.props.requestVideos();
+		this.timer = setTimeout(
+			() => this.pollVideos(Math.min(10000, interval + 1000)),
+			interval
+		);
+	};
+
+	componentDidMount() {
+		this.pollVideos(1000);
 	}
+
+	componentWillUnmount() {
+		clearTimeout(this.timer);
+		this.timer = null;
+	}
+
 	render() {
 		if (this.props.videos && !this.props.videos.length) {
 			return <Redirect to="/new" />;
