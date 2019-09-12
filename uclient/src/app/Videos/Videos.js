@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Redirect, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import _ from 'lodash';
 import { formatDuration } from '../util/videos';
 import { request, getVideos, getVideosError, getSort, setSort } from './module';
@@ -9,6 +9,7 @@ import Busy from '../Busy';
 import { StackedOccurrencesGraph } from '../shared';
 import missingThumbnail from '../../../images/missing.thumb.png';
 import './Videos.scss';
+import Introduction from '../Introduction';
 
 export class Videos extends React.PureComponent {
 	onSortPropertyChange = event => {
@@ -41,7 +42,7 @@ export class Videos extends React.PureComponent {
 
 	render() {
 		if (this.props.videos && !this.props.videos.length) {
-			return <Redirect to="/new" />;
+			return <Introduction />;
 		} else {
 			let byDate = this.props.sortBy.property === 'creation_date';
 			let byName = this.props.sortBy.property === 'description';

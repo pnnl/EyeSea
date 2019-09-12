@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom';
 import { setServicePath } from './app/module';
 import Uploader from './app/Uploader';
 import { Button } from './app/shared';
-import Introduction from './app/Introduction';
 import Videos from './app/Videos';
 import Video from './app/Video';
 import Summary from './app/Summary';
@@ -37,7 +36,6 @@ export class App extends React.Component {
 				</header>
 				<Switch>
 					<Route exact path="/" component={Videos} />
-					<Route exact path="/new" component={Introduction} />
 					<Route path="/video/:id/summary" component={Summary} />
 					<Route path="/video/:id" component={Video} />
 					<Route component={Error404} />
