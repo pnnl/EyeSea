@@ -374,12 +374,12 @@ def post_video():
 
 @get('/video/<vid>')
 def get_video_vid(vid):
-    data = video.select().where(video.vid == vid).dicts().get();
+    data = video.select().where(video.vid == vid).dicts().get()
     return fr()(format_video(data))
 
 @route('/video/<vid>/file')
 def server_static(vid):
-    v = video.select().where(video.vid == vid).dicts().get();
+    v = video.select().where(video.vid == vid).dicts().get()
     pathname, filename, root = get_video_path_parts(v)
     resp = static_file(pathname, root=root)
     allow_cross_origin(resp)
@@ -546,7 +546,8 @@ def get_analysis_method():
         'description': method['description'],
         'automated': method['automated'],
         'parameters': {i["arg"] : int(i["default"]) if i["type"] == "int" else (float(i["default"]) if i["type"] == "float" else str(i["default"])) for i in json.loads(method['parameters'])['parameters']} if method['parameters'] else dict(),
-        'creationDate': method['creation_date']
+        'creationDate': method['creation_date'],
+        'metadata': {j["arg"] : j for j in json.loads(method['parameters'])['parameters']} if method['parameters'] else dict()
     })(i) for i in data]
     return fr()(data)
 

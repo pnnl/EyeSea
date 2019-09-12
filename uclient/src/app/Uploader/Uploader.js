@@ -220,7 +220,7 @@ export class Uploader extends React.PureComponent {
 												<tbody>
 													{Object.keys(algorithm.parameters).map(parameter => (
 														<tr key={algorithm.id + '-' + parameter}>
-															<td>{parameter}</td>
+															<td>{algorithm.metadata[parameter].argname}</td>
 															<td className="value">
 																<input
 																	name={parameter}
@@ -232,6 +232,9 @@ export class Uploader extends React.PureComponent {
 																	}
 																	value={algorithm.parameters[parameter]}
 																/>
+															</td>
+															<td style={{ background: 'inherit' }}>
+																{algorithm.metadata[parameter].help}
 															</td>
 														</tr>
 													))}
