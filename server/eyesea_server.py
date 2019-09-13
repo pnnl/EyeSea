@@ -14,6 +14,7 @@ import time
 import hashlib
 import sys
 import zipfile
+import math
 
 import numpy as np
 from numpy import inf
@@ -398,6 +399,67 @@ def video_thumbnail(vid):
             img = Image.new('RGB', (640,480), (255, 255, 255))
             img.save(cache + os.sep + image, 'jpeg')
     resp = static_file(image, root=cache)
+    allow_cross_origin(resp)
+    return resp
+
+@route('/video/<vid>/heatmap/json')
+def video_heatmap_json(vid):
+    v = video.select().where(video.vid == vid).dicts().get()
+    a = analysis.select().where(analysis.vid == vid, analysis.status == 'FINISHED').dicts()
+    pathname, filename, root = get_video_path_parts(v)
+    image = filename + '.jpg'
+    output = filename + '_heatmap.json'
+    if not os.path.isfile(cache + os.sep + output):
+        if not os.path.isfile(cache + os.sep + image):
+            video_thumbnail(vid)
+
+        def transparent_cmap(cmap, N=8):
+            mycmap = cmap
+            mycmap._init()
+            mycmap._lut[:,-1] = np.linspace(0.5, 1, N+3)
+            return mycmap
+
+        I = Image.open(cache + os.sep + image).convert('LA')
+        w, h = I.size
+        y, x = np.mgrid[0:h, 0:w]
+        d = np.zeros((h, w))
+        for i in a:
+            for j in json.loads(i['results']):
+                for q in j['detections']:
+                    k = {key: int(value) for key, value in q.items()}
+                    if 'y1' in k and 'y2' in k and 'x1' in k and 'x2' in k:
+                        if k['y1'] <= k['y2']:
+                            for l in range(k['y1'], k['y2'], 1):
+                                if k['x1'] <= k['x2']:
+                                    d[l][k['x1']:k['x2']] += 1
+                                else:
+                                    d[l][k['x2']:k['x1']] += 1
+                        else:
+                            for l in range(k['y2'], k['y1'], 1):
+                                if k['x1'] <= k['x2']:
+                                    d[l][k['x1']:k['x2']] += 1
+                                else:
+                                    d[l][k['x2']:k['x1']] += 1
+
+        max_det = np.max(d)
+        # reduce the matrix to a manageable size
+        s = np.zeros((100, 100))
+        for x in range(len(d)):
+            for y in range(len(d[x])):
+                a = int(math.floor(np.interp(x, [0, h], [0, 100])))
+                b = int(math.floor(np.interp(y, [0, w], [0, 100])))
+                s[a][b] = max(s[a][b], d[x][y])
+        # the visualization needs pairs
+        pairs = []
+        for x in range(len(s)):
+            for y in range(len(s[x])):
+                if s[x][y] > 0:
+                    pairs.append([100 - x, y, s[x][y]])
+        data = {'maxdet': max_det, 'data': pairs}
+        with open(cache + os.sep + output, 'w') as fp:
+            json.dump(data, fp, sort_keys=True, indent=4)
+    
+    resp = static_file(output, root=cache)
     allow_cross_origin(resp)
     return resp
 
