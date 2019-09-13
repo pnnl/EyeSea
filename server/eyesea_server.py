@@ -441,7 +441,13 @@ def video_heatmap_json(vid):
                                     d[l][k['x2']:k['x1']] += 1
 
         max_det = np.max(d)
-        data = {'maxdet': max_det, 'data': d.tolist()}
+        mtx = d.toList()
+        pairs = []
+        for x in len(mtx):
+            for y in len(mtx[x]):
+                if mtx[x][y] > 0:
+                    pairs.append([x, y, mtx[x][y]])
+        data = {'maxdet': max_det, 'data': pairs}
         with open(cache + os.sep + output, 'w') as fp:
             json.dump(data, fp, sort_keys=True, indent=4)
     

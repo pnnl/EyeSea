@@ -13,6 +13,7 @@ import {
 	getStatisticsError,
 } from './module';
 import './Summary.scss';
+import Heatmap from '../Heatmap/Heatmap';
 
 export class Summary extends React.PureComponent {
 	constructor() {
@@ -224,14 +225,15 @@ export class Summary extends React.PureComponent {
 				</Link>
 				<div>
 					<div className={this.state.expanded ? 'expanded' : ''}>
-						<img
+						<Heatmap match={this.props.match} />
+						{/* <img
 							src={
 								this.props.servicePath +
 								'video/' +
 								this.props.match.params.id +
 								'/heatmap'
 							}
-						/>
+						/> */}
 						{(graphs.length && (
 							<h3 className="expando" onClick={this.onToggle}>
 								{this.state.expanded ? '▼' : '▶'} Expand to see detections per

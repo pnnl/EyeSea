@@ -4,6 +4,7 @@ import { sagas as analyze } from '../app/Analyze';
 import { sagas as videos } from '../app/Videos';
 import { sagas as video } from '../app/Video';
 import { sagas as summary } from '../app/Summary';
+import { sagas as heatmap } from '../app/Heatmap';
 
 import { get } from '../app/util/request';
 
@@ -40,5 +41,6 @@ export default function*() {
 		call(videos),
 		call(video),
 		call(summary),
+		call(heatmap),
 	];
 }

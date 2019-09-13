@@ -7,6 +7,7 @@ import { reducer as analyze } from './Analyze';
 import { reducer as videos } from './Videos';
 import { reducer as video } from './Video';
 import { reducer as summary } from './Summary';
+import { reducer as heatmap } from './Heatmap';
 
 export const SERVICE_PATH = 'app/servicePath';
 
@@ -84,6 +85,7 @@ export default combineReducers({
 	videos,
 	video,
 	summary,
+	heatmap,
 });
 
 ///-- SELECTORS --///
