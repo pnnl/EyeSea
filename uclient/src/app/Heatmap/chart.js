@@ -2,6 +2,8 @@ export const options = {
 	data: {},
 	chart: {
 		type: 'heatmap',
+		width: 600,
+		height: '60%',
 	},
 	boost: {
 		useGPUTranslations: true,
@@ -26,15 +28,17 @@ export const options = {
 	},
 	colorAxis: {
 		stops: [
-			[0, '#3060cf'],
-			[0.2, '#fffbbc'],
-			[0.6, '#c4463a'],
-			[0.8, '#c4463a'],
+			[0.0, '#0000ff'],
+			[0.1, '#00ffff'],
+			[0.2, '#00ff00'],
+			[0.4, '#ffff00'],
+			[0.6, '#ffa500'],
+			[0.8, '#ff0000'],
 			[1.0, '#ffffff'],
 		],
 		min: 0,
 		max: 1000,
-		startOnTick: false,
+		startOnTick: true,
 		endOnTick: false,
 		labels: {
 			format: '{value}',
