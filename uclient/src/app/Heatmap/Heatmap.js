@@ -17,8 +17,17 @@ addHeatmapModule(Highcharts);
 
 const buildOptions = heatmap => {
 	const updated = Object.assign({}, options);
-	updated.data = heatmap ? heatmap.data : [];
 	updated.colorAxis.max = heatmap ? heatmap.maxdet : 1000;
+	updated.series = [
+		{
+			data: heatmap ? heatmap.data : [],
+			tooltip: {
+				headerFormat: 'Number Detected<br/>',
+				pointFormat: '<b>{point.value}</b>',
+			},
+			turboThreshold: Number.MAX_VALUE,
+		},
+	];
 	return updated;
 };
 
@@ -37,12 +46,21 @@ export class Heatmap extends React.PureComponent {
 		if (heatmap && this.heatmap.current) {
 			this.heatmap.current.chart.update(
 				{
-					data: heatmap ? heatmap.data : [],
 					colorAxis: {
 						max: heatmap ? heatmap.maxdet : 1000,
 					},
+					series: [
+						{
+							data: heatmap ? heatmap.data : [],
+							tooltip: {
+								headerFormat: 'Number Detected<br/>',
+								pointFormat: '<b>{point.value}</b>',
+							},
+							turboThreshold: Number.MAX_VALUE,
+						},
+					],
 				},
-				true,
+				false,
 				undefined,
 				false
 			);
@@ -57,8 +75,6 @@ export class Heatmap extends React.PureComponent {
 
 	render() {
 		const { options } = this.props;
-		this.updateOptions();
-		console.log(options);
 		return (
 			<div className="heatmap">
 				<HighchartsReact

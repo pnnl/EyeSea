@@ -14,6 +14,7 @@ import time
 import hashlib
 import sys
 import zipfile
+import math
 
 import numpy as np
 from numpy import inf
@@ -441,12 +442,19 @@ def video_heatmap_json(vid):
                                     d[l][k['x2']:k['x1']] += 1
 
         max_det = np.max(d)
-        mtx = d.toList()
+        # reduce the matrix to a manageable size
+        s = np.zeros((100, 100))
+        for x in range(len(d)):
+            for y in range(len(d[x])):
+                a = int(math.floor(np.interp(x, [0, h], [0, 100])))
+                b = int(math.floor(np.interp(y, [0, w], [0, 100])))
+                s[a][b] = max(s[a][b], d[x][y])
+        # the visualization needs pairs
         pairs = []
-        for x in len(mtx):
-            for y in len(mtx[x]):
-                if mtx[x][y] > 0:
-                    pairs.append([x, y, mtx[x][y]])
+        for x in range(len(s)):
+            for y in range(len(s[x])):
+                if s[x][y] > 0:
+                    pairs.append([100 - x, y, s[x][y]])
         data = {'maxdet': max_det, 'data': pairs}
         with open(cache + os.sep + output, 'w') as fp:
             json.dump(data, fp, sort_keys=True, indent=4)

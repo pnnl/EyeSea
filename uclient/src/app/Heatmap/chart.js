@@ -16,14 +16,22 @@ export const options = {
 		title: {
 			text: null,
 		},
+		visible: false,
 	},
 	yAxis: {
 		title: {
 			text: null,
 		},
+		visible: false,
 	},
 	colorAxis: {
-		stops: [[0, '#3060cf'], [0.5, '#fffbbc'], [0.9, '#c4463a'], [1, '#c4463a']],
+		stops: [
+			[0, '#3060cf'],
+			[0.2, '#fffbbc'],
+			[0.6, '#c4463a'],
+			[0.8, '#c4463a'],
+			[1.0, '#ffffff'],
+		],
 		min: 0,
 		max: 1000,
 		startOnTick: false,
@@ -32,16 +40,17 @@ export const options = {
 			format: '{value}',
 		},
 	},
-	series: [
-		{
-			boostThreshold: 100,
-			borderWidth: 0,
-			nullColor: '#EFEFEF',
-			tooltip: {
-				headerFormat: 'Number Detected<br/>',
-				pointFormat: '[{point.x},{point.y}] <b>{point.value}</b>',
-			},
-			turboThreshold: Number.MAX_VALUE,
-		},
-	],
+	series: [],
+	// series: [
+	// 	{
+	// 		boostThreshold: 100,
+	// 		borderWidth: 0,
+	// 		nullColor: '#EFEFEF',
+	// 		tooltip: {
+	// 			headerFormat: 'Number Detected<br/>',
+	// 			pointFormat: '[{point.x},{point.y}] <b>{point.value}</b>',
+	// 		},
+	// 		turboThreshold: Number.MAX_VALUE,
+	// 	},
+	// ],
 };
