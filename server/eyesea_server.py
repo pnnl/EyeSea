@@ -374,7 +374,7 @@ def post_video():
     info = None
     try:
         info = json.loads(check_output_with_error(['ffprobe', dest_path, '-v', 'error', '-print_format', 'json',
-                                                   '-show_entries', 'stream=duration,r_frame_rate,avg_frame_rate']).decode('UTF-8'))
+                                                   '-show_entries', 'stream=duration,r_frame_rate,avg_frame_rate,width,height']).decode('UTF-8'))
     except CalledProcessError as error:
         return fr()({'error': 'Error getting video metadata',
                      'details': error.stderr.decode(sys.getfilesystemencoding())})
@@ -394,8 +394,8 @@ def post_video():
         dbdata['duration'] = float(info['duration'])
         dbdata['uri'] = filename
         dbdata['creation_date'] = int(time.time())
-        dbdata['width'] = 100
-        dbdata['height'] = 100
+        dbdata['width'] = info['width']
+        dbdata['height'] = info['height']
         data = video.select().where(video.vid == video.insert(dbdata).execute()).dicts().get()
 
         try:
@@ -450,20 +450,10 @@ def video_heatmap_json(vid):
     a = analysis.select().where(analysis.vid == vid,
                                 analysis.status == 'FINISHED').dicts()
     pathname, filename, root = get_video_path_parts(v)
-    image = filename + '.jpg'
     output = filename + '_heatmap.json'
     if not os.path.isfile(cache + os.sep + output):
-        if not os.path.isfile(cache + os.sep + image):
-            video_thumbnail(vid)
-
-        def transparent_cmap(cmap, N=8):
-            mycmap = cmap
-            mycmap._init()
-            mycmap._lut[:, -1] = np.linspace(0.5, 1, N+3)
-            return mycmap
-
-        I = Image.open(cache + os.sep + image).convert('LA')
-        w, h = I.size
+        w = v.width
+        h = v.height
         y, x = np.mgrid[0:h, 0:w]
         d = np.zeros((h, w))
         for i in a:
@@ -500,8 +490,10 @@ def video_heatmap_json(vid):
                     pairs.append([100 - x, y, s[x][y]])
         data = {'id': int(vid), 'maxdet': max_det, 'data': pairs}
         with open(cache + os.sep + output, 'w') as fp:
+            print('to cache: ' + cache + os.sep + output)
             json.dump(data, fp, sort_keys=True, indent=4)
 
+    print('from cache: ' + cache + os.sep + output)
     resp = static_file(output, root=cache)
     allow_cross_origin(resp)
     return resp
@@ -565,8 +557,10 @@ def video_heatmap(vid):
         cbar.set_ticks(
             (np.array([0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.00])*max_det).tolist())
         #cbar.set_ticklabels(['0%', '12.5%', '25%', '37.5%', '50%', '62.5%', '75%', '87.5%', '100%'])
+        print('to cache: ' + cache + os.sep + output)
         plt.savefig(cache + os.sep + output, bbox_inches='tight')
 
+    print('from cache: ' + cache + os.sep + output)
     resp = static_file(output, root=cache)
     allow_cross_origin(resp)
     return resp
@@ -592,7 +586,6 @@ def video_statistics(vid):
         analyses[i['aid']] = results
         if results:
             frame_count = max(frame_count, results[-1]['frameindex'])
-        print()
         print("frame_count = {:d}".format(frame_count))
 
     for i in range(0, frame_count):
@@ -763,4 +756,4 @@ def annotations():
 app = application = bottle.default_app()
 
 if __name__ == '__main__':
-    bottle.run(host='0.0.0.0', port=8080, debug=True)
+    bottle.run(host='0.0.0.0', port=8080, debug=True, reloader=True)

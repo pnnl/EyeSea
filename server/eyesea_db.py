@@ -18,6 +18,8 @@ class video(eyesea_model):
     duration = FloatField()
     uri = CharField()
     creation_date = IntegerField()
+    width = IntegerField()
+    height = IntegerField()
 
 class analysis(eyesea_model):
     aid = IntegerField(primary_key=True)
