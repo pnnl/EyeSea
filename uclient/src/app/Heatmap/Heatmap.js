@@ -61,7 +61,7 @@ export class Heatmap extends React.PureComponent {
 					],
 				},
 				false,
-				undefined,
+				null,
 				false
 			);
 			console.log('updated');

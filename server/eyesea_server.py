@@ -422,6 +422,7 @@ def get_video_vid(vid):
 def server_static(vid):
     v = video.select().where(video.vid == vid).dicts().get()
     pathname, filename, root = get_video_path_parts(v)
+    print('from cache: ' + root + os.sep + pathname)
     resp = static_file(pathname, root=root)
     allow_cross_origin(resp)
     return resp
@@ -438,7 +439,10 @@ def video_thumbnail(vid):
                                      '-ss', '00:00:10.000', '-vframes', '1', cache + os.sep + image])
         except subprocess.CalledProcessError as e:
             img = Image.new('RGB', (640, 480), (255, 255, 255))
+            print('to cache: ' + cache + os.sep + image)
             img.save(cache + os.sep + image, 'jpeg')
+
+    print('from cache: ' + cache + os.sep + image)
     resp = static_file(image, root=cache)
     allow_cross_origin(resp)
     return resp
@@ -452,8 +456,8 @@ def video_heatmap_json(vid):
     pathname, filename, root = get_video_path_parts(v)
     output = filename + '_heatmap.json'
     if not os.path.isfile(cache + os.sep + output):
-        w = v.width
-        h = v.height
+        w = v['width']
+        h = v['height']
         y, x = np.mgrid[0:h, 0:w]
         d = np.zeros((h, w))
         for i in a:
@@ -478,16 +482,16 @@ def video_heatmap_json(vid):
         # reduce the matrix to a manageable size
         s = np.zeros((100, 100))
         for y in range(len(d)):
-            for x in range(len(d[x])):
+            for x in range(len(d[y])):
                 a = int(math.floor(np.interp(y, [0, h], [0, 100])))
                 b = int(math.floor(np.interp(x, [0, w], [0, 100])))
                 s[a][b] = max(s[a][b], d[y][x])
         # the visualization needs pairs
         pairs = []
         for y in range(len(s)):
-            for x in range(len(s[x])):
+            for x in range(len(s[y])):
                 if s[y][x] > 0:
-                    pairs.append([100 - x, y, s[x][y]])
+                    pairs.append([x, 100 - y, s[y][x]])
         data = {'id': int(vid), 'maxdet': max_det, 'data': pairs}
         with open(cache + os.sep + output, 'w') as fp:
             print('to cache: ' + cache + os.sep + output)
@@ -756,4 +760,4 @@ def annotations():
 app = application = bottle.default_app()
 
 if __name__ == '__main__':
-    bottle.run(host='0.0.0.0', port=8080, debug=True, reloader=True)
+    bottle.run(host='0.0.0.0', port=8080, debug=True)
