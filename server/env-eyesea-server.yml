@@ -1,0 +1,16 @@
+name: eyesea-server
+channels:
+  - conda-forge
+  - menpo
+dependencies:
+  - python=3.6
+  - numpy
+  - matplotlib
+  - bottle
+  - peewee
+  - pillow
+  - pip
+  - pip:
+    - ffmpeg
+  - opencv=4
+
