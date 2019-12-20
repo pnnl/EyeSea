@@ -1,25 +1,49 @@
 # eysesea_api.py
 # Algorithm API for EyeSea application.
 # 
-'''
-Copyright 2018 Battelle Memorial Institute. All rights reserved.
-'''
-
 import argparse
 import os
+import glob
 import json
 import datetime
-#import annotator as a
+import cv2
 
+# support reading frames from a VideoCapture object or from
+# a directory of image files
+'''
+Option 1
+if Python classes support inheritence and virtual classes,
+then create virtual Input class and two derived classes, Stream and Images.
++supports streams, which could be movie or live camera
+-
+
+Option 2 
+always use images
+if input is a movie, then extract the frames
++
+-need space for image data
+-no support for live camera
+
+Option 3
+always use a Stream
+if input is image dir, then make into movie with copy vcodec
++
+-need space for movie file
+'''
+eyesea_api_input = []
+eyesea_api_output = []
+
+eyesea_api_nextf = 0
+eyesea_api_infiles = []
+eyesea_api_nframes = []
 
 # parse command line arguments based on json file definitions
 def get_args(jfile):
     parser = argparse.ArgumentParser()
-    parser.add_argument("vidfile", help="video file to process")
-    parser.add_argument("outfile", help="output file for results")
+    parser.add_argument("input", help="input to process")
+    parser.add_argument("output", help="output file for results")
 
     
-    # TODO: support type= type from json file
     if os.path.isfile(jfile):
         with open(jfile, 'r') as f:
             jsondata = json.load(f)
@@ -37,8 +61,30 @@ def get_args(jfile):
             type=int if jarg["type"] == "int" else (float if jarg["type"] == "float" else str))
 
     parser.add_argument('--verbose', '-v', action='store_true')
+    args = parser.parse_args()
+    global eyesea_api_input
+    global eyesea_api_infiles
+    global eyesea_api_nframes
+    global eyesea_api_output
+    eyesea_api_input = args.input
+    print('processing image dir: ' + eyesea_api_input)
+    # TODO: look for jpg or png
+    eyesea_api_infiles = glob.glob(os.path.join(eyesea_api_input,'*.jpg'))
+    eyesea_api_nframes = len(eyesea_api_infiles)
+    print('found {:d} frames'.format(eyesea_api_nframes))
+    eyesea_api_output = args.output
+    return args
 
-    return parser.parse_args()
+# return next image as numpy array
+def get_frame():
+    img = []
+    global eyesea_api_nextf 
+    global eyesea_api_infiles
+    global eyesea_api_nframes
+    if eyesea_api_nextf < eyesea_api_nframes:
+        img = cv2.imread(eyesea_api_infiles[eyesea_api_nextf],-1)
+        eyesea_api_nextf += 1
+    return img
 
 class BBox():
     def __init__(self, x1, y1, x2, y2):
@@ -118,7 +164,9 @@ def json_to_annotations(f):
 
 # save_results() translates from common object
 # detection file formats into eyesea json format
-def save_results(results, outfile):
+def save_results(results):
+    global eyesea_api_output
+    outfile = eyesea_api_output
     with open(outfile,'w') as f:
         #json.dump(results,f)
         annotations_to_json(results, f)

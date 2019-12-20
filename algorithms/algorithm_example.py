@@ -9,17 +9,19 @@ import random
 # set the name of the algorithm
 algname = "example"
 # get parameter settings
-args = api.get_args('algorithm.json')
+args = api.get_args('algorithm_example.json')
 
-# process video
-results = api.Annotations(args.vidfile, algname)
+# process data
+results = api.Annotations(args.input, algname)
 frame_idx = 0
-ok, frame = cap.read()
+frame = api.get_frame()
 # width of frame
 W = frame.shape[1]
 # height of frame
 H = frame.shape[0]
-while(ok):
+print('width = {:d}, height = {:d}'.format(W,H))
+while  frame != []  :
+    print(frame_idx)
     results.frames.append(api.Frame(frame_idx,[],list()))
 
     # detect fish -- replace the lines below with your clever detection scheme
@@ -30,8 +32,9 @@ while(ok):
 
     results.frames[frame_idx].detections.append(api.BBox(x,y,x+w,y+h))
 
-    ok, frame = cap.read()
+    frame = api.get_frame()
     frame_idx += 1
 
 # save results
-api.save_results(results,args.outfile)
+print('processed {:d} frames'.format(frame_idx))
+api.save_results(results)

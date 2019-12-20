@@ -38,7 +38,7 @@ import os
 import numpy as np
 import cv2
 import json
-import imutils
+#import imutils
 
 import eyesea_api as api
 
@@ -81,22 +81,14 @@ def algorithm():
     
     if args.verbose: print("Welcome to " + alg_name + "!")
 
-    # check video file exists and is readable
-    if args.verbose: print("processing " + args.vidfile)
-
-    cap = cv2.VideoCapture(args.vidfile)
-    
-    if args.verbose: print("outputfile = " + args.outfile)
-
-
     # kernel used for morphological ops on fg mask
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(args.kw,args.kh))
     fgbg = cv2.createBackgroundSubtractorMOG2(history=args.history, varThreshold=args.varThreshold, detectShadows=False)
 
-    annotations = api.Annotations(args.vidfile, alg_name)
+    annotations = api.Annotations(args.input, alg_name)
     frame_idx = 0
-    ok, frame = cap.read()
-    while(ok):
+    frame = api.get_frame()
+    while(frame != []):
         annotations.frames.append(api.Frame(frame_idx,[],list()))
         # fgmask is single channel 2D array of type uint8
         # NOTE: setting the learningRate increased false positives
@@ -107,8 +99,8 @@ def algorithm():
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         # https://stackoverflow.com/questions/54734538/opencv-assertion-failed-215assertion-failed-npoints-0-depth-cv-32
-        contours = cnts[1] if imutils.is_cv3() else cnts[0] # simplify reference
-        if args.verbose: print("{:d} blobs".format(len(cnts)))
+        contours = cnts[1] #if imutils.is_cv3() else cnts[0] # simplify reference
+        if args.verbose: print("{:d} blobs".format(len(contours)))
         
         for c in contours:
             (x, y, w, h) = cv2.boundingRect(c)
@@ -118,19 +110,17 @@ def algorithm():
                 cv2.rectangle(frame,(int(x),int(y)),(int(x+w),int(y+h)),(0,0,255),2)
         if args.verbose: 
             cv2.imshow('frame',frame)
-            k = cv2.waitKey(100) & 0xff
+            k = cv2.waitKey(1000) & 0xff
             if k == 27:
                 break
-        ok, frame = cap.read()
+        frame = api.get_frame()
         frame_idx += 1
  
-    cap.release()
     cv2.destroyAllWindows()
     if args.verbose: print("processed {:d} frames".format(frame_idx)) 
   
-    if args.verbose: print("saving results to " + args.outfile)
     # make output directory, if it doesn't exist
-    api.save_results(annotations, args.outfile)
+    api.save_results(annotations)
 
 if __name__ == "__main__":
     algorithm()
