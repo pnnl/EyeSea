@@ -87,7 +87,7 @@ def algorithm():
 
     annotations = api.Annotations(args.input, alg_name)
     frame_idx = 0
-    frame = api.get_frame()
+    frame, imfile = api.get_frame()
     while(frame != []):
         annotations.frames.append(api.Frame(frame_idx,[],list()))
         # fgmask is single channel 2D array of type uint8
@@ -100,7 +100,7 @@ def algorithm():
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         # https://stackoverflow.com/questions/54734538/opencv-assertion-failed-215assertion-failed-npoints-0-depth-cv-32
         contours = cnts[1] #if imutils.is_cv3() else cnts[0] # simplify reference
-        if args.verbose: print("{:d} blobs".format(len(contours)))
+        if args.verbose: print(os.path.basename(imfile) + "  {:d} blobs".format(len(contours)))
         
         for c in contours:
             (x, y, w, h) = cv2.boundingRect(c)
@@ -110,10 +110,10 @@ def algorithm():
                 cv2.rectangle(frame,(int(x),int(y)),(int(x+w),int(y+h)),(0,0,255),2)
         if args.verbose: 
             cv2.imshow('frame',frame)
-            k = cv2.waitKey(1000) & 0xff
+            k = cv2.waitKey(500) & 0xff
             if k == 27:
                 break
-        frame = api.get_frame()
+        frame, imfile = api.get_frame()
         frame_idx += 1
  
     cv2.destroyAllWindows()

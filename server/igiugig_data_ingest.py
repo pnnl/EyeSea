@@ -77,7 +77,8 @@ def make_movie(imgpath,fps,outfile):
         # use the copy codec to just use the images as is, but may not be 
         # compatible with players (VLC ok)
         .output(outfile 
-           ,vcodec='copy' 
+            #,vcodec='copy' 
+            ,vcodec='h264'
             )
         .run()
     )
@@ -114,6 +115,8 @@ if __name__ == "__main__":
     nsec = 0
     nbytes = 0
     video_files = []
+    video_fps = []
+    video_dur = []
     # get list of day directories
     daydirs = glob.glob(os.path.join(rootdir,'????_??_??'))
     print("Found {} days".format(len(daydirs)))
@@ -139,15 +142,24 @@ if __name__ == "__main__":
                     make_movie(imgpath,fps[cam-1],outfile)
                     # store movie path for ingest
                     video_files.append(outfile)
+                    video_fps.append(fps[cam-1])
+                    video_dur.append(len(imgs) / fps[cam-1])
                     nsec = nsec + len(imgs) / fps[cam-1]
 
     # ingest movies into EyeSea database
-    import sys
-    sys.path.append(os.path.join('..','server'))
     from eyesea_db import *
 
-    for vf in video_files:
-        print("Ingesting {} into EyeSea database".format(vf))
+    for vf,fr,dur in zip(video_files,video_fps,video_dur):
+        print("Ingesting {} into EyeSea database".format(os.path.basename(vf)))
+        data = video.select().where(
+            video.vid==video.insert(
+                filename = vf
+                , duration = dur
+                , description = os.path.splitext(os.path.basename(vf))[0]
+                , fps = fr
+                , variable_framerate = False
+                , uri = 'file://' + vf
+                ).execute()).dicts().get()
 
     # get elapsed time
     time_elapsed = datetime.now() - start_time

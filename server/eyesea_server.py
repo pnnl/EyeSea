@@ -4,8 +4,8 @@ Copyright 2018 Battelle Memorial Institute. All rights reserved.
 '''
 from __future__ import division # divide array by scalar, don't floor result
 
-import json
 import bottle
+import json
 import os
 import re
 import subprocess
@@ -19,6 +19,9 @@ import math
 import numpy as np
 from numpy import inf
 
+import matplotlib
+# the following line is needed for running on Mac in vituralenv or conda
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -28,6 +31,8 @@ from subprocess import check_output, Popen, PIPE, CalledProcessError
 from bottle import request, response, post, get, put, delete, hook, route, static_file
 from eyesea_db import *
 from peewee import fn
+
+import ffmpeg
 
 # 1.5 GB, which could cause issues on machines without enough RAM if it doesn't use a
 # disk-based temporary file.
@@ -394,7 +399,7 @@ def video_thumbnail(vid):
     if not os.path.isfile(cache + os.sep + image):
         try:
             subprocess.check_output(['ffmpeg', '-y', '-i', '{p}/{f}'.format(p=root, f=pathname),
-                '-ss','00:00:10.000', '-vframes', '1', cache + os.sep + image])
+                '-ss','00:00:01.000', '-vframes', '1', cache + os.sep + image])
         except subprocess.CalledProcessError as e:
             img = Image.new('RGB', (640,480), (255, 255, 255))
             img.save(cache + os.sep + image, 'jpeg')

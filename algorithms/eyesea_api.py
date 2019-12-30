@@ -69,7 +69,7 @@ def get_args(jfile):
     eyesea_api_input = args.input
     print('processing image dir: ' + eyesea_api_input)
     # TODO: look for jpg or png
-    eyesea_api_infiles = glob.glob(os.path.join(eyesea_api_input,'*.jpg'))
+    eyesea_api_infiles = sorted(glob.glob(os.path.join(eyesea_api_input,'*.jpg')))
     eyesea_api_nframes = len(eyesea_api_infiles)
     print('found {:d} frames'.format(eyesea_api_nframes))
     eyesea_api_output = args.output
@@ -78,13 +78,15 @@ def get_args(jfile):
 # return next image as numpy array
 def get_frame():
     img = []
+    imfile = []
     global eyesea_api_nextf 
     global eyesea_api_infiles
     global eyesea_api_nframes
     if eyesea_api_nextf < eyesea_api_nframes:
-        img = cv2.imread(eyesea_api_infiles[eyesea_api_nextf],-1)
+        imfile = eyesea_api_infiles[eyesea_api_nextf]
+        img = cv2.imread(imfile,-1)
         eyesea_api_nextf += 1
-    return img
+    return img, imfile
 
 class BBox():
     def __init__(self, x1, y1, x2, y2):

@@ -14,6 +14,9 @@ If you already have yarn, you can skip this step.
 
 ```
 npm install -g yarn
+npm install --save highcharts
+npm install --save lodash
+npm install -g highcharts highcharts-react-official
 ```
 
 ```
@@ -25,7 +28,7 @@ yarn add whatwg-fetch
 ```
 
 Python modules:
-numpy, matplotlib, PIL (actually Pillow)
+numpy, matplotlib, Pillow
 
 Other:
 ffmpeg, sqlite
