@@ -1,0 +1,6 @@
+name: eyesea-client
+channels:
+  - conda-forge
+dependencies:
+  - nodejs
+ 

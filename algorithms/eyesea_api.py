@@ -67,11 +67,11 @@ def get_args(jfile):
     global eyesea_api_nframes
     global eyesea_api_output
     eyesea_api_input = args.input
-    print('processing image dir: ' + eyesea_api_input)
+    #print('processing image dir: ' + eyesea_api_input)
     # TODO: look for jpg or png
     eyesea_api_infiles = sorted(glob.glob(os.path.join(eyesea_api_input,'*.jpg')))
     eyesea_api_nframes = len(eyesea_api_infiles)
-    print('found {:d} frames'.format(eyesea_api_nframes))
+    #print('found {:d} frames'.format(eyesea_api_nframes))
     eyesea_api_output = args.output
     return args
 

@@ -26,8 +26,8 @@ class video(eyesea_model):
     uri = CharField()
     # date added to database?
     creation_date = IntegerField()
-    #width = IntegerField()
-    #height = IntegerField()
+    width = IntegerField()
+    height = IntegerField()
     # filename of thumnail image in .cache
     #thumbnail = CharField()
 

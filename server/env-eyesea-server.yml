@@ -12,5 +12,6 @@ dependencies:
   - pip
   - pip:
     - ffmpeg
+    - configargparse
   - opencv=4
 

@@ -36,6 +36,10 @@ Gamma: 0.80
 import os
 import glob
 import ffmpeg
+import sys
+import time
+import subprocess
+
 
 # Parse the settings file and return:
 # dt: date time
@@ -89,6 +93,8 @@ if __name__ == "__main__":
     from datetime import datetime
     import configargparse
 
+    from eyesea_db import *
+
     print("")
     print("Starting...")
 
@@ -110,13 +116,54 @@ if __name__ == "__main__":
 
     # root data directory
     rootdir = options.root
-    dbfile = options.dbfile
+    # TODO: the database file is set in eyesea_settings.json which is
+    # loaded by eyesea_db.py during initialization
+    #dbfile = options.dbfile
+
+    # cd to algorithm dir
+   # assume we are running in the eyesea/server dir
+    algorithm_path = os.path.join(os.path.dirname(os.getcwd()),'algorithms')
+
+
+    # get analysis method
+    # TODO: get this from settings
+    algname = 'bgsubtract-MOG2'
+    try:
+        method = analysis_method.select().where(
+            analysis_method.description.contains(algname)
+            ).dicts().get()
+    except DoesNotExist:
+        print("Adding analysis method {} to database".format(algname))
+        algjsonfile = os.path.join(algorithm_path, algname + '.json')
+        fdict = json.loads(open(algjsonfile).read())
+        fjson = json.dumps(fdict)  # normalize json
+        method = analysis_method.select().where(
+            analysis_method.mid==analysis_method.insert(
+                creation_date = int(time.time())
+                , description = fdict['name']
+                , parameters = fjson
+                , automated = True
+                , path = algorithm_path 
+                ).execute()).dicts().get()
+
+    # the method id
+    print(method)
+    mid = method['mid']
+    base_args = json.loads(method['parameters'])
+    script = '{p}/{f}'.format(p=method['path'] if method['path']
+                                  else algorithm_path, f=base_args['script'])
+    working_dir = os.getcwd()
+    os.chdir(algorithm_path)
+
 
     nsec = 0
     nbytes = 0
     video_files = []
     video_fps = []
     video_dur = []
+    analysis_proc = []
+    analysis_results = []
+
     # get list of day directories
     daydirs = glob.glob(os.path.join(rootdir,'????_??_??'))
     print("Found {} days".format(len(daydirs)))
@@ -136,20 +183,28 @@ if __name__ == "__main__":
                 imgs = glob.glob(os.path.join(imgpath,'*.jpg'))
                 print("Camera {:d} has {:d} images".format(cam, len(imgs)))
                 if len(imgs) > 0:
-                    outfile = os.path.join(day, os.path.basename(t) + '_Cam{:d}.mp4'.format(cam))
-                    if os.path.exists(outfile): continue
-                    print("Making movie {}".format(outfile))
-                    make_movie(imgpath,fps[cam-1],outfile)
+                    # process data with algorithm
+                    print("Finding fish... ")
+                    outfile = os.path.join(day, os.path.basename(t) + '_Cam{:d}.json'.format(cam))
+                    args = ['python', script, imgpath, outfile]
+                    p = subprocess.Popen(args)
+                    analysis_proc.append(p)
+                    analysis_results.append(outfile)
+                    vidfile = os.path.join(day, os.path.basename(t) + '_Cam{:d}.mp4'.format(cam))
+                    #if os.path.exists(outfile): continue
+                    #print("Making movie {}".format(outfile))
+                    #make_movie(imgpath,fps[cam-1],outfile)
                     # store movie path for ingest
-                    video_files.append(outfile)
+                    video_files.append(vidfile)
                     video_fps.append(fps[cam-1])
                     video_dur.append(len(imgs) / fps[cam-1])
                     nsec = nsec + len(imgs) / fps[cam-1]
 
-    # ingest movies into EyeSea database
-    from eyesea_db import *
 
-    for vf,fr,dur in zip(video_files,video_fps,video_dur):
+    os.chdir(working_dir)
+
+    # ingest data into EyeSea database
+    for vf,fr,dur,p,res in zip(video_files,video_fps,video_dur,analysis_proc,analysis_results):
         print("Ingesting {} into EyeSea database".format(os.path.basename(vf)))
         data = video.select().where(
             video.vid==video.insert(
@@ -157,9 +212,32 @@ if __name__ == "__main__":
                 , duration = dur
                 , description = os.path.splitext(os.path.basename(vf))[0]
                 , fps = fr
+                , width = 0
+                , height = 0
                 , variable_framerate = False
                 , uri = 'file://' + vf
                 ).execute()).dicts().get()
+        vid = data['vid']
+        # wait for the processing to complete
+        # TODO: may want to set a timeout value
+        p.wait() 
+        results = ''
+        status = 'FAILED'
+        if p.returncode == 0:
+            print('    got results')
+            status = 'FINISHED'
+            with open(res) as f:
+                output = json.loads(f.read())['frames']
+                results = json.dumps(output, separators=(',', ':'))
+        data = analysis.select().where(
+            analysis.aid==analysis.insert(
+                mid = mid
+                , vid = vid
+                , status = status
+                , parameters = ''
+                , results = results
+                ).execute()).dicts().get()
+
 
     # get elapsed time
     time_elapsed = datetime.now() - start_time
