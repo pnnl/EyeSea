@@ -22,14 +22,14 @@
            "argname" : "kernel width",
            "help" : "set to expected pixel width of smallest fish",
            "type" : "int",
-           "default" : 3
+           "default" : 9
         },  
         {
             "arg" : "--kh",
            "argname" : "kernel height",
            "help" : "set to expected pixel height of smallest fish",
            "type" : "int",
-           "default" : 3
+           "default" : 9
         } 
              
     ]
