@@ -62,28 +62,15 @@ def parse_settings(timedir):
 # ffmpeg tuning:
 # https://trac.ffmpeg.org/wiki/Encode/H.264
 def make_movie(imgpath,fps,outfile):
-    # NOTES: the movie quality is pretty bad compared to the raw images.
-    # There are very noticable compression artifacts, blockiness.  
-    # ffmpeg output when trying to apply -crf 0:
-    '''
-    Input #0, image2, from '/Users/d3x389/Downloads/EyeSea/ORPC-2019/2019_08_03/2019_08_03 09_44_03/Camera 4/*.jpg':
-    Duration: 00:00:10.00, start: 0.000000, bitrate: N/A
-    Stream #0:0: Video: mjpeg, gray(bt470bg/unknown/unknown), 2048x1536 [SAR 1:1 DAR 4:3], 10 fps, 10 tbr, 10 tbn, 10 tbc
-    Codec AVOption crf (Select the quality for constant quality mode) specified for output file #0 (/Users/d3x389/Downloads/EyeSea/ORPC-2019/2019_08_03/2019_08_03 09_44_03_Cam4.mp4) has not been used for any stream. The most likely reason is either wrong type (e.g. a video option with no video streams) or that it is a private option of some encoder which was not actually used for any stream.
-    '''
-    # solution?:
-    # https://superuser.com/questions/1429256/producing-lossless-video-from-set-of-png-images-using-ffmpeg
-    # I think converting from 16-bit grayscale to 8-bit grayscale is happening and ruining the smoothness
     (
         ffmpeg
         .input(os.path.join(imgpath,'*.jpg'), pattern_type='glob', framerate=fps)
-        # set crf=0 for lossless but may be incompatible with players
-        # use the copy codec to just use the images as is, but may not be 
-        # compatible with players (VLC ok)
         .output(outfile 
-            #,vcodec='copy' 
-            ,vcodec='h264'
+            ,vcodec='libx264'
+            ,crf=17
+            ,pix_fmt='yuv420p'
             )
+        .overwrite_output()
         .run()
     )
 # make_movie()
@@ -183,6 +170,15 @@ if __name__ == "__main__":
                 imgs = glob.glob(os.path.join(imgpath,'*.jpg'))
                 print("Camera {:d} has {:d} images".format(cam, len(imgs)))
                 if len(imgs) > 0:
+                    vidfile = os.path.join(day, os.path.basename(t) + '_Cam{:d}.mp4'.format(cam))
+                    if os.path.exists(vidfile): continue
+                    print("Making movie {}".format(vidfile))
+                    make_movie(imgpath,fps[cam-1],vidfile)
+                    # store movie path for ingest
+                    video_files.append(vidfile)
+                    video_fps.append(fps[cam-1])
+                    video_dur.append(len(imgs) / fps[cam-1])
+                    nsec = nsec + len(imgs) / fps[cam-1]
                     # process data with algorithm
                     print("Finding fish... ")
                     outfile = os.path.join(day, os.path.basename(t) + '_Cam{:d}.json'.format(cam))
@@ -190,15 +186,6 @@ if __name__ == "__main__":
                     p = subprocess.Popen(args)
                     analysis_proc.append(p)
                     analysis_results.append(outfile)
-                    vidfile = os.path.join(day, os.path.basename(t) + '_Cam{:d}.mp4'.format(cam))
-                    #if os.path.exists(outfile): continue
-                    #print("Making movie {}".format(outfile))
-                    #make_movie(imgpath,fps[cam-1],outfile)
-                    # store movie path for ingest
-                    video_files.append(vidfile)
-                    video_fps.append(fps[cam-1])
-                    video_dur.append(len(imgs) / fps[cam-1])
-                    nsec = nsec + len(imgs) / fps[cam-1]
 
 
     os.chdir(working_dir)

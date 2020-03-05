@@ -182,8 +182,7 @@ def fix_path(uri):
 # - getting the file name with extension
 # - getting the file name without extension
 # - getting the root folder for the file
-
-
+# TODO: use os.path methods
 def get_video_path_parts(vid):
     uri, is_file_scheme = fix_path(vid['uri'])
     slash = uri.rfind(os.sep)
@@ -351,25 +350,34 @@ def get_video():
 
 @post('/video')
 def post_video():
+    # display file selection dialog for user
     upload = request.files.get('upload')
     name, ext = os.path.splitext(upload.filename)
 
+    # create a unique filename for the uploaded file
     hash = hashlib.sha256()
     for bytes in iter(lambda: upload.file.read(65536), b''):
         hash.update(bytes)
     filename = hash.hexdigest() + '.' + vformat
     upload.file.seek(0)
-
-    dest_path = '{p}/{f}'.format(p=videostore, f=filename)
+    
+    # save the file on the server
+    #dest_path = '{p}/{f}'.format(p=videostore, f=filename)
+    dest_path = os.path.join(videostore, filename)
     if not os.path.exists(dest_path):
+        # if the video is already in the correct format, save as is
         if ext[1:] == vformat:
             upload.save(dest_path)
         else:
-            temp_path = '{p}/{f}'.format(p=tmp, f=upload.filename)
+            #temp_path = '{p}/{f}'.format(p=tmp, f=upload.filename)
+            temp_path = os.path.join(tmp, upload.filename)
             upload.save(temp_path)
             try:
+                # TODO: ensure best possible quality of video, not good to 
+                # transcode already compressed video
                 check_output_with_error(['ffmpeg', '-y', '-i', temp_path, '-an', '-vcodec', vcodec,
-                                         '{p}/{f}'.format(p=videostore, f=filename)])
+                                         #'{p}/{f}'.format(p=videostore, f=filename)])
+                                          os.path.join(videostore, filename)])
             except CalledProcessError as error:
                 return fr()({'error': 'Error converting video to format ' + vcodec,
                              'details': error.stderr.decode(sys.getfilesystemencoding())})
@@ -391,13 +399,16 @@ def post_video():
         dbdata = dict()
         dbdata['description'] = request.forms.get('description')
         dbdata['filename'] = upload.raw_filename
-        # [Ab]using SQLite's soft typing here, giving it the integer type we declared only if it works out to be a nice number
+        # [Ab]using SQLite's soft typing here, giving it the integer type we 
+        # declared only if it works out to be a nice number
         # Digitally recorded or pre-converted videos should give us a nice exact FPS like 30 or 60.
         dbdata['fps'] = int(fps) if int(fps) == fps else fps
-        # r_frame_rate is apparently a guess on their part, so this necessarily is too
+        # r_frame_rate is "the lowest framerate with which all timestamps can 
+        # be represented accurately (it is the least common multiple of all framerates in the stream)."
         dbdata['variable_framerate'] = info['r_frame_rate'] != info['avg_frame_rate']
         dbdata['duration'] = float(info['duration'])
-        dbdata['uri'] = filename
+        # use full path; not all files will be in videostore
+        dbdata['uri'] = dest_path
         dbdata['creation_date'] = int(time.time())
         dbdata['width'] = info['width']
         dbdata['height'] = info['height']

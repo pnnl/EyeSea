@@ -10,7 +10,7 @@ class eyesea_model(Model):
         database = db
     
 class video(eyesea_model):
-    # generated automatically?
+    # generated automatically
     vid = IntegerField(primary_key=True)
     # displayed with video
     description = TextField()
