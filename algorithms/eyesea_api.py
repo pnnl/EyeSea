@@ -1,12 +1,16 @@
 # eysesea_api.py
 # Algorithm API for EyeSea application.
 # 
-import argparse
-import os
-import glob
+import argparse # parse command line or config file
+import os       # path name manipulations
+import glob     # filename pattern matching
 import json
 import datetime
-import cv2
+
+import cv2 # openCV for image processing
+
+# XML for working with VOC format annotations
+from lxml import etree as ET
 
 # support reading frames from a VideoCapture object or from
 # a directory of image files
@@ -20,22 +24,37 @@ then create virtual Input class and two derived classes, Stream and Images.
 Option 2 
 always use images
 if input is a movie, then extract the frames
-+
++ images are better quality
++ works with VOC annotation style of one file per image
++ best for training machine learning models
 -need space for image data
--no support for live camera
+-no direct support for live camera
+-have to make into movie for eyesea app (current implementation)
 
 Option 3
 always use a Stream
 if input is image dir, then make into movie with copy vcodec
 +
 -need space for movie file
+-can't play copy vcodec in eyesea app (web requires mp4)
 '''
-eyesea_api_input = []
-eyesea_api_output = []
+# going with Option 2 
 
-eyesea_api_nextf = 0
+# GLOBAL VARS
+# input directory that contains image files
+eyesea_api_indir = []
+# output directory where results will be saved
+eyesea_api_outdir = []
+# list of image files in input directory
 eyesea_api_infiles = []
+# shape of each image file, used in annotation file
+eyesea_api_shapes = []
+# total number of images (frames)
 eyesea_api_nframes = []
+# index of next image file (frame) to process
+eyesea_api_nextf = 0
+# results, see put_results()
+eyesea_api_results = []
 
 # parse command line arguments based on json file definitions
 def get_args(jfile):
@@ -62,39 +81,97 @@ def get_args(jfile):
 
     parser.add_argument('--verbose', '-v', action='store_true')
     args = parser.parse_args()
-    global eyesea_api_input
+    global eyesea_api_indir
     global eyesea_api_infiles
     global eyesea_api_nframes
-    global eyesea_api_output
-    eyesea_api_input = args.input
-    #print('processing image dir: ' + eyesea_api_input)
-    # TODO: look for jpg or png
-    eyesea_api_infiles = sorted(glob.glob(os.path.join(eyesea_api_input,'*.jpg')))
+    global eyesea_api_outdir
+    global eyesea_api_results
+    eyesea_api_indir = args.input
+
+    print('processing input dir: ' + eyesea_api_indir)
+
+    # try jpg first
+    eyesea_api_infiles = sorted(glob.glob(os.path.join(eyesea_api_indir,'*.jpg')))
+    if not eyesea_api_infiles:
+        # try png
+        eyesea_api_infiles = sorted(glob.glob(os.path.join(eyesea_api_indir,'*.png')))
     eyesea_api_nframes = len(eyesea_api_infiles)
-    #print('found {:d} frames'.format(eyesea_api_nframes))
-    eyesea_api_output = args.output
+    
+    print('found {:d} frames'.format(eyesea_api_nframes))
+
+    eyesea_api_results = [None] * eyesea_api_nframes
+
+    # TODO: create output dir if it doesn't exist
+    eyesea_api_outdir = args.output
+
+    print('saving results to ' + eyesea_api_outdir)
+
     return args
 
 # return next image as numpy array
+# if no more images, returns empty array
 def get_frame():
-    img = []
-    imfile = []
     global eyesea_api_nextf 
     global eyesea_api_infiles
     global eyesea_api_nframes
+    global eyesea_api_shapes
+
+    img = []
+    idx = eyesea_api_nextf
+
     if eyesea_api_nextf < eyesea_api_nframes:
         imfile = eyesea_api_infiles[eyesea_api_nextf]
         img = cv2.imread(imfile,-1)
+        # store size for later
+        eyesea_api_shapes.append(img.shape) 
         eyesea_api_nextf += 1
-    return img, imfile
+    return img, idx
 
-class BBox():
+# class for storing bounding box
+class bbox():
     def __init__(self, x1, y1, x2, y2):
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
 
+# Save the annotations in VOC XML format
+# idx is the index of the frame returned by get_frame()
+# detections is a list of bbox objects.
+def put_results(idx, detections):
+    annotation = ET.Element("annotation")
+    ET.SubElement(annotation, "folder").text = os.path.split(eyesea_api_indir)[1]
+    ET.SubElement(annotation, "filename").text = os.path.basename(eyesea_api_infiles[idx])
+    ET.SubElement(annotation, "path").text = os.path.abspath(eyesea_api_infiles[idx])    
+    source = ET.SubElement(annotation, "source")
+    ET.SubElement(source, "database").text = 'Unknown'
+    size = ET.SubElement(annotation, "size")
+    ET.SubElement(size, "width").text = str(eyesea_api_shapes[idx][1])
+    ET.SubElement(size, "height").text = str(eyesea_api_shapes[idx][0])
+    if len(eyesea_api_shapes[idx]) > 2:
+        ET.SubElement(size, "depth").text = str(eyesea_api_shapes[idx][2])
+    else:
+        ET.SubElement(size, "depth").text = "1"
+    ET.SubElement(annotation, "segmented").text =str(0)
+    for i in range(len(detections)):
+        myobject = ET.SubElement(annotation, "object",name="detection"+str(i))
+        ET.SubElement(myobject, "name").text = 'fish'
+        ET.SubElement(myobject, "pose").text = 'unspecified'
+        ET.SubElement(myobject, "truncated").text = str(0)
+        ET.SubElement(myobject, "difficult").text = str(0)
+        bndbox = ET.SubElement(myobject, "bndbox")
+        ET.SubElement(bndbox, "xmin").text = str(min(detections[i].x1, detections[i].x2))
+        ET.SubElement(bndbox, "ymin").text = str(min(detections[i].y1, detections[i].y2))
+        ET.SubElement(bndbox, "xmax").text = str(max(detections[i].x1, detections[i].x2))
+        ET.SubElement(bndbox, "ymax").text = str(max(detections[i].y1, detections[i].y2))
+    tree = ET.ElementTree(annotation)
+    outfile = "detections_{:d}.xml".format(idx)
+    tree.write(outfile,  pretty_print=True)
+    global eyesea_api_results
+    eyesea_api_results[idx] = annotation
+    return None
+
+# LEGACY ANNOTATION SUPPORT
 class Frame():
     def __init__(self, index, img, detections=list() ):
         self.frameindex = index #the frame index of image filename
@@ -107,8 +184,7 @@ class Annotations():
         self.user = user #last user to edit this file
         self.last_edit = last_edit
         self.frames = frames
-        
-            
+                 
 #This writes the annotations to a custom json file.
 # annotations: an annotation object containing all of the bounding data
 # out: a writable object, such as an open file handle
@@ -166,14 +242,13 @@ def json_to_annotations(f):
 
 # save_results() translates from common object
 # detection file formats into eyesea json format
-def save_results(results):
-    global eyesea_api_output
-    outfile = eyesea_api_output
-    with open(outfile,'w') as f:
+def save_results():
+    global eyesea_api_outdir
+    outfile = os.path.join(eyesea_api_outdir, 'results.json')
+    print("save_results() not implemented")
+    #with open(outfile,'w') as f:
         #json.dump(results,f)
-        annotations_to_json(results, f)
-
-# TODO:  add structure/class for eyesea json format
+        #annotations_to_json(results, f)
 
 if __name__ == "__main__":
     print("testing eysea_api")

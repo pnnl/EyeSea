@@ -12,29 +12,28 @@ algname = "example"
 args = api.get_args('algorithm_example.json')
 
 # process data
-results = api.Annotations(args.input, algname)
-frame_idx = 0
-frame = api.get_frame()
+frame, idx = api.get_frame()
 # width of frame
 W = frame.shape[1]
 # height of frame
 H = frame.shape[0]
 print('width = {:d}, height = {:d}'.format(W,H))
+detections = []
 while  frame != []  :
-    print(frame_idx)
-    results.frames.append(api.Frame(frame_idx,[],list()))
+    print('processing frame {:d}'.format(idx))
 
     # detect fish -- replace the lines below with your clever detection scheme
-    w = random.randint(2,42)
-    h = random.randint(2,42)
-    x = random.randint(0, W-w)
-    y = random.randint(0, H-h)
+    numfish = random.randint(0,12)
+    for f in range(numfish):
+        w = random.randint(2,W/2)
+        h = random.randint(2,H/2)
+        x = random.randint(0, W-w)
+        y = random.randint(0, H-h)
+        detections.append(api.bbox(x,y,x+w,y+h))
 
-    results.frames[frame_idx].detections.append(api.BBox(x,y,x+w,y+h))
-
-    frame = api.get_frame()
-    frame_idx += 1
+    api.put_results(idx, detections)
+    frame, idx = api.get_frame()
 
 # save results
-print('processed {:d} frames'.format(frame_idx))
-api.save_results(results)
+print('processed {:d} frames'.format(idx))
+api.save_results()
