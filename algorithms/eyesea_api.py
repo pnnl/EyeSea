@@ -48,13 +48,16 @@ eyesea_api_outdir = []
 # list of image files in input directory
 eyesea_api_infiles = []
 # shape of each image file, used in annotation file
+# assume all images have the same shape
 eyesea_api_shapes = []
 # total number of images (frames)
-eyesea_api_nframes = []
+eyesea_api_nframes = 0
 # index of next image file (frame) to process
 eyesea_api_nextf = 0
 # results, see put_results()
 eyesea_api_results = []
+# algorithm name
+eyesea_api_alg = []
 
 # parse command line arguments based on json file definitions
 def get_args(jfile):
@@ -96,6 +99,7 @@ def get_args(jfile):
         # try png
         eyesea_api_infiles = sorted(glob.glob(os.path.join(eyesea_api_indir,'*.png')))
     eyesea_api_nframes = len(eyesea_api_infiles)
+
     
     print('found {:d} frames'.format(eyesea_api_nframes))
 
@@ -106,7 +110,17 @@ def get_args(jfile):
 
     print('saving results to ' + eyesea_api_outdir)
 
+    global eyesea_api_alg
+    eyesea_api_alg = jsondata["name"]
     return args
+
+def nframes():
+    global eyesea_api_nframes
+    return eyesea_api_nframes
+
+def indir():
+    global eyesea_api_indir
+    return eyesea_api_indir
 
 # return next image as numpy array
 # if no more images, returns empty array
@@ -135,10 +149,15 @@ class bbox():
         self.x2 = x2
         self.y2 = y2
 
+def put_results(idx, detections):
+    global eyesea_api_results
+    eyesea_api_results[idx] = detections
+
 # Save the annotations in VOC XML format
 # idx is the index of the frame returned by get_frame()
 # detections is a list of bbox objects.
-def put_results(idx, detections):
+def put_results_xml(idx, detections):
+    global eyesea_api_infiles
     annotation = ET.Element("annotation")
     ET.SubElement(annotation, "folder").text = os.path.split(eyesea_api_indir)[1]
     ET.SubElement(annotation, "filename").text = os.path.basename(eyesea_api_infiles[idx])
@@ -165,11 +184,10 @@ def put_results(idx, detections):
         ET.SubElement(bndbox, "xmax").text = str(max(detections[i].x1, detections[i].x2))
         ET.SubElement(bndbox, "ymax").text = str(max(detections[i].y1, detections[i].y2))
     tree = ET.ElementTree(annotation)
-    outfile = "detections_{:d}.xml".format(idx)
-    tree.write(outfile,  pretty_print=True)
-    global eyesea_api_results
-    eyesea_api_results[idx] = annotation
-    return None
+    outfile = os.path.splitext(os.path.basename(eyesea_api_infiles[idx]))[0] + '.xml'
+    global eyesea_api_outdir
+    tree.write(os.path.join(eyesea_api_outdir,outfile), pretty_print=True)
+
 
 # LEGACY ANNOTATION SUPPORT
 class Frame():
@@ -185,45 +203,51 @@ class Annotations():
         self.last_edit = last_edit
         self.frames = frames
                  
-#This writes the annotations to a custom json file.
-# annotations: an annotation object containing all of the bounding data
-# out: a writable object, such as an open file handle
-def annotations_to_json(annotations, output):
-    output.write("{") # annotations
-    output.write(" \"source\": \"" + annotations.source + "\",\n")
-    output.write(" \"user\": \"" + annotations.user + "\",\n")
-    output.write(" \"last_edit\": \"" + annotations.last_edit + "\",\n")
-    output.write(" \"frames\": [\n") # frames
-    
-    frames = annotations.frames
-    for i in range(len(frames)):
-        output.write(" {\n") # frame
-        output.write("  \"frameindex\": " + str(frames[i].frameindex) + ",\n")
-        output.write("  \"detections\": [\n") # detections
+#This writes the results to a custom json file used by eyesea_server.
+def save_results():
+    global eyesea_api_results
+    global eyesea_api_outdir
+    global eyesea_api_indir
+    global eyesea_api_alg
+
+    ts = datetime.datetime.now()
+    outfile = os.path.join(eyesea_api_outdir,ts.strftime('%Y%m%d-%H%M%S_') + eyesea_api_alg + '.json')
+
+    with open(outfile,'w') as f:
+        f.write("{") # annotations
+        f.write(" \"source\": \"" + eyesea_api_indir + "\",\n")
+        f.write(" \"user\": \"" + eyesea_api_alg + "\",\n")
+        f.write(" \"last_edit\": \"" + ts.ctime() + "\",\n")
+        f.write(" \"frames\": [\n") # frameseyesea_api_results
         
-        
-        #for detection in frame.detections:
-        detections = frames[i].detections
-        for j in range(len(detections)):
-            output.write("  {\n") # detection
-            output.write("   \"x1\": " + str(detections[j].x1) + ",\n")
-            output.write("   \"y1\": " + str(detections[j].y1) + ",\n")
-            output.write("   \"x2\": " + str(detections[j].x2) + ",\n")
-            output.write("   \"y2\": " + str(detections[j].y2) + "\n")
-            output.write("  }")
-            if (j < len(detections) -1 ):
-                output.write(",\n") # /detection
+        frames = eyesea_api_results
+        for i in range(len(frames)):
+            f.write(" {\n") # frame
+            f.write("  \"frameindex\": " + str(i) + ",\n")
+            f.write("  \"detections\": [\n") # detections
+                    
+            #for detection in frame.detections:
+            detections = frames[i]
+            for j in range(len(detections)):
+                f.write("  {\n") # detection
+                f.write("   \"x1\": " + str(detections[j].x1) + ",\n")
+                f.write("   \"y1\": " + str(detections[j].y1) + ",\n")
+                f.write("   \"x2\": " + str(detections[j].x2) + ",\n")
+                f.write("   \"y2\": " + str(detections[j].y2) + "\n")
+                f.write("  }")
+                if (j < len(detections) -1 ):
+                    f.write(",\n") # /detection
+                else:
+                    f.write("\n")
+            f.write("  ]\n") # /detections
+            f.write(" }")
+            if (i < len(frames)-1):
+                f.write(",\n")
             else:
-                output.write("\n")
-        output.write("  ]\n") # /detections
-        output.write(" }")
-        if (i < len(frames)-1):
-            output.write(",\n")
-        else:
-            output.write("\n") # /frame
-    output.write(" ]\n") # /frames
-    
-    output.write("}\n") # /annotations
+                f.write("\n") # /frame
+        f.write(" ]\n") # /frames
+        
+        f.write("}\n") # /results
         
         
 def json_to_annotations(f):
@@ -242,10 +266,8 @@ def json_to_annotations(f):
 
 # save_results() translates from common object
 # detection file formats into eyesea json format
-def save_results():
-    global eyesea_api_outdir
-    outfile = os.path.join(eyesea_api_outdir, 'results.json')
-    print("save_results() not implemented")
+#def save_results():
+    #outfile = os.path.join(eyesea_api_outdir, 'results.json')
     #with open(outfile,'w') as f:
         #json.dump(results,f)
         #annotations_to_json(results, f)
@@ -253,4 +275,4 @@ def save_results():
 if __name__ == "__main__":
     print("testing eysea_api")
     # TODO:  add tests
-    args = get_args('algorithm.json.example')
+    args = get_args('algorithm_example.json')

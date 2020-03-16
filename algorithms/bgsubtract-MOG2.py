@@ -75,27 +75,28 @@ def print_params(mog2):
 
 
 # main algorithm
-def algorithm():
-    alg_name = "bgMOG2" # give it a short descriptive name
+def bgMOG2():
     args = api.get_args('bgsubtract-MOG2.json')
     
     if args.verbose: print("Welcome to " + alg_name + "!")
 
     # kernel used for morphological ops on fg mask
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(args.kw,args.kh))
-    fgbg = cv2.createBackgroundSubtractorMOG2(history=args.history, varThreshold=args.varThreshold, detectShadows=False)
+    fgbg = cv2.createBackgroundSubtractorMOG2(
+        history=args.history, 
+        varThreshold=args.varThreshold, 
+        detectShadows=False)
 
-    annotations = api.Annotations(args.input, alg_name)
-    frame_idx = 0
-    frame, imfile = api.get_frame()
+    # process data
+    # get a frame 
+    frame, idx = api.get_frame()
+    detections = []
     while(frame != []):
-        annotations.frames.append(api.Frame(frame_idx,[],list()))
         # fgmask is single channel 2D array of type uint8
         # NOTE: setting the learningRate increased false positives
         #fgmask = fgbg.apply(frame, learningRate=0.001)
         fgmask = fgbg.apply(frame)
-        # BAD -- don't do the following
-        #fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_CLOSE, kernel)
+        # apply morphological open 
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         # https://stackoverflow.com/questions/54734538/opencv-assertion-failed-215assertion-failed-npoints-0-depth-cv-32
@@ -106,7 +107,7 @@ def algorithm():
             (x, y, w, h) = cv2.boundingRect(c)
             if args.verbose: print("  {:d},{:d},{:d},{:d}".format(x,y,w,h))
             if w > args.kw and h > args.kh:
-                annotations.frames[frame_idx].detections.append(api.BBox(x,y,x+w,y+h))
+                detections.append(api.bbox(x,y,x+w,y+h))
                 cv2.rectangle(frame,(int(x),int(y)),(int(x+w),int(y+h)),(0,0,255),2)
         if args.verbose: 
             dst = cv2.resize(frame, None, fx = 0.5, fy = 0.5, interpolation = cv2.INTER_AREA)
@@ -114,14 +115,14 @@ def algorithm():
             k = cv2.waitKey(500) & 0xff
             if k == 27:
                 break
-        frame, imfile = api.get_frame()
-        frame_idx += 1
+    api.put_results(idx, detections)
+    frame, idx = api.get_frame()
  
     cv2.destroyAllWindows()
-    if args.verbose: print("processed {:d} frames".format(frame_idx)) 
+    if args.verbose: print("processed {:d} frames".format(idx)) 
   
     # save the results 
-    api.save_results(annotations)
+    api.save_results()
 
 if __name__ == "__main__":
-    algorithm()
+    bgMOG2()

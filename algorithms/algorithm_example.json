@@ -1,5 +1,5 @@
 {
-    "name" : "Algorithm Name for UI",
+    "name" : "example",
     "script" : "algorithm.py",
     "parameters" : [
        { 

@@ -1,5 +1,5 @@
 {
-    "name" : "bgsubtract-MOG2",
+    "name" : "bgMOG2",
     "script" : "bgsubtract-MOG2.py",
     "parameters" : [
          {
@@ -22,14 +22,14 @@
            "argname" : "kernel width",
            "help" : "set to expected pixel width of smallest fish",
            "type" : "int",
-           "default" : 9
+           "default" : 16
         },  
         {
             "arg" : "--kh",
            "argname" : "kernel height",
            "help" : "set to expected pixel height of smallest fish",
            "type" : "int",
-           "default" : 9
+           "default" : 12
         } 
              
     ]

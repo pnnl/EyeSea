@@ -6,21 +6,22 @@ Copyright 2018 Battelle Memorial Institute. All rights reserved.
 import eyesea_api as api
 import random
 
-# set the name of the algorithm
-algname = "example"
 # get parameter settings
 args = api.get_args('algorithm_example.json')
 
 # process data
+# get a frame 
 frame, idx = api.get_frame()
 # width of frame
 W = frame.shape[1]
 # height of frame
 H = frame.shape[0]
 print('width = {:d}, height = {:d}'.format(W,H))
-detections = []
+
+# process the frames
 while  frame != []  :
     print('processing frame {:d}'.format(idx))
+    detections = []
 
     # detect fish -- replace the lines below with your clever detection scheme
     numfish = random.randint(0,12)
