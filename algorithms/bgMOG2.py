@@ -76,7 +76,7 @@ def print_params(mog2):
 
 # main algorithm
 def bgMOG2():
-    args = api.get_args('bgsubtract-MOG2.json')
+    args = api.get_args('bgMOG2.json')
     
     if args.verbose: print("Welcome to " + alg_name + "!")
 
@@ -86,6 +86,12 @@ def bgMOG2():
         history=args.history, 
         varThreshold=args.varThreshold, 
         detectShadows=False)
+    if args.verbose: 
+        print("")
+        print("-----------MOG2 Parameters-----------")
+        print_params(fgbg)
+        print("-------------------------------------")
+        print("")
 
     # process data
     # get a frame 
@@ -96,12 +102,13 @@ def bgMOG2():
         # NOTE: setting the learningRate increased false positives
         #fgmask = fgbg.apply(frame, learningRate=0.001)
         fgmask = fgbg.apply(frame)
-        # apply morphological open 
+        # apply morphological open to remove small isolated groups of fg pixels
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         # https://stackoverflow.com/questions/54734538/opencv-assertion-failed-215assertion-failed-npoints-0-depth-cv-32
         contours = cnts[1] #if imutils.is_cv3() else cnts[0] # simplify reference
-        if args.verbose: print(os.path.basename(imfile) + "  {:d} blobs".format(len(contours)))
+        if args.verbose: 
+            print(os.path.basename(imfile) + "  {:d} blobs".format(len(contours)))
         
         for c in contours:
             (x, y, w, h) = cv2.boundingRect(c)
