@@ -12,15 +12,16 @@ cd eyesea_v2/uclient
 
 * Then install the dependencies:
 
-If you already have yarn, you can skip this step.
+If you already have webpack and yarn, you can skip this step.
 
 ```
+npm install webpack-dev-server -g
 npm install -g yarn
 ```
 
+* Build the modules
 ```
 yarn
-yarn add whatwg-fetch
 ```
 
 * Run development server:
@@ -42,3 +43,4 @@ Open the web browser to `http://localhost:7890/`
 ```
 yarn build
 ```
+

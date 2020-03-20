@@ -2,17 +2,18 @@ name: eyesea-server
 channels:
   - conda-forge
   - menpo
+  - anaconda
 dependencies:
   - python=3.6
-  - numpy
-  - matplotlib
   - bottle
+  - matplotlib
+  - numpy
   - peewee
   - pillow
   - pip
+  - scipy
   - pip:
     - ffmpeg
     - configargparse
     - lxml
   - opencv=4
-
