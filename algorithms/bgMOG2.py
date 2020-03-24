@@ -33,15 +33,14 @@ Default params work ok but lots of false positives from video compression
 artifacts, bubbles. Bounding boxes for fish seem oversized, multiple fish 
 are in one box. Using a larger morph element (5x5) reduced false positives. 
 """
-import argparse
+#import argparse
 import os
 import numpy as np
 import cv2
-import json
-#import imutils
+#import json
+import imutils
 
 import eyesea_api as api
-
 
 def print_params(mog2):
     '''
@@ -78,10 +77,11 @@ def print_params(mog2):
 def bgMOG2():
     args = api.get_args('bgMOG2.json')
     
-    if args.verbose: print("Welcome to " + alg_name + "!")
+    if args.verbose: print("Welcome to bgMOG2!")
 
     # kernel used for morphological ops on fg mask
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(args.kw,args.kh))
+    # NOTE: larger values for kernel size really slow computation
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(9,6))
     fgbg = cv2.createBackgroundSubtractorMOG2(
         history=args.history, 
         varThreshold=args.varThreshold, 
@@ -96,8 +96,21 @@ def bgMOG2():
     # process data
     # get a frame 
     frame, idx = api.get_frame()
+    if len(frame.shape) > 2:
+        depth = frame.shape[2]
+    else:
+        depth = 1
+
+    print(np.max(frame))
+    print(frame.shape)
+    print(frame.dtype)
+
     detections = []
     while(frame != []):
+        # convert to grayscale, if frame is color image
+        if depth > 1: 
+            frame = np.float32(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)) / 255.0
+
         # fgmask is single channel 2D array of type uint8
         # NOTE: setting the learningRate increased false positives
         #fgmask = fgbg.apply(frame, learningRate=0.001)
@@ -106,14 +119,16 @@ def bgMOG2():
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         # https://stackoverflow.com/questions/54734538/opencv-assertion-failed-215assertion-failed-npoints-0-depth-cv-32
-        contours = cnts[1] #if imutils.is_cv3() else cnts[0] # simplify reference
+        contours = cnts[1] if imutils.is_cv3() else cnts[0] # simplify reference
+        print(cnts)
         if args.verbose: 
-            print(os.path.basename(imfile) + "  {:d} blobs".format(len(contours)))
+            print(os.path.basename(api.framefilepath(idx)) + "  {:d} blobs".format(len(contours)))
         
         for c in contours:
+            print(c)
             (x, y, w, h) = cv2.boundingRect(c)
             if args.verbose: print("  {:d},{:d},{:d},{:d}".format(x,y,w,h))
-            if w > args.kw and h > args.kh:
+            if w > args.minw and w < args.maxw and h > args.minh and h < args.maxh:
                 detections.append(api.bbox(x,y,x+w,y+h))
                 cv2.rectangle(frame,(int(x),int(y)),(int(x+w),int(y+h)),(0,0,255),2)
         if args.verbose: 
@@ -122,8 +137,9 @@ def bgMOG2():
             k = cv2.waitKey(500) & 0xff
             if k == 27:
                 break
-    api.put_results(idx, detections)
-    frame, idx = api.get_frame()
+        api.put_results(idx, detections)
+        if args.xml: api.put_results_xml(idx, detections)
+        frame, idx = api.get_frame()
  
     cv2.destroyAllWindows()
     if args.verbose: print("processed {:d} frames".format(idx)) 

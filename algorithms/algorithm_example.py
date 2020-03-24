@@ -33,6 +33,8 @@ while  frame != []  :
         detections.append(api.bbox(x,y,x+w,y+h))
 
     api.put_results(idx, detections)
+    if args.xml: api.put_results_xml(idx, detections)
+    
     frame, idx = api.get_frame()
 
 # save results

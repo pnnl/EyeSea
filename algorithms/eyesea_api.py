@@ -43,8 +43,10 @@ if input is image dir, then make into movie with copy vcodec
 # GLOBAL VARS
 # input directory that contains image files
 eyesea_api_indir = []
-# output directory where results will be saved
+# output directory and file where results will be saved
 eyesea_api_outdir = []
+eyesea_api_outfile = []
+
 # list of image files in input directory
 eyesea_api_infiles = []
 # shape of each image file, used in annotation file
@@ -83,11 +85,13 @@ def get_args(jfile):
             type=int if jarg["type"] == "int" else (float if jarg["type"] == "float" else str))
 
     parser.add_argument('--verbose', '-v', action='store_true')
+    parser.add_argument('--xml', '-x', help="output VOC xml", action='store_true')
     args = parser.parse_args()
     global eyesea_api_indir
     global eyesea_api_infiles
     global eyesea_api_nframes
     global eyesea_api_outdir
+    global eyesea_api_outfile
     global eyesea_api_results
     eyesea_api_indir = args.input
 
@@ -106,8 +110,10 @@ def get_args(jfile):
     eyesea_api_results = [None] * eyesea_api_nframes
 
     # TODO: create output dir if it doesn't exist
-    eyesea_api_outdir = args.output
-
+    eyesea_api_outdir, eyesea_api_outfile = os.path.split(args.output)
+    if not os.path.exists(eyesea_api_outdir):
+        print('output directory {} does not exist'.format(eyesea_api_outdir))
+        exit()
     print('saving results to ' + eyesea_api_outdir)
 
     global eyesea_api_alg
@@ -121,6 +127,10 @@ def nframes():
 def indir():
     global eyesea_api_indir
     return eyesea_api_indir
+
+def framefilepath(idx):
+    global eyesea_api_infiles
+    return eyesea_api_infiles[idx]
 
 # return next image as numpy array
 # if no more images, returns empty array
@@ -188,20 +198,6 @@ def put_results_xml(idx, detections):
     global eyesea_api_outdir
     tree.write(os.path.join(eyesea_api_outdir,outfile), pretty_print=True)
 
-
-# LEGACY ANNOTATION SUPPORT
-class Frame():
-    def __init__(self, index, img, detections=list() ):
-        self.frameindex = index #the frame index of image filename
-        self.detections = detections #a list of bounding boxes
-        self.img = img #a numpy array containing the pixel data
-        
-class Annotations():
-    def __init__(self, videosource, user, frames=list(), last_edit=str(datetime.datetime.now())):
-        self.source = videosource #the video this frame comes from
-        self.user = user #last user to edit this file
-        self.last_edit = last_edit
-        self.frames = frames
                  
 #This writes the results to a custom json file used by eyesea_server.
 def save_results():
@@ -250,6 +246,20 @@ def save_results():
         f.write("}\n") # /results
         
         
+# LEGACY ANNOTATION SUPPORT
+class Frame():
+    def __init__(self, index, img, detections=list() ):
+        self.frameindex = index #the frame index of image filename
+        self.detections = detections #a list of bounding boxes
+        self.img = img #a numpy array containing the pixel data
+        
+class Annotations():
+    def __init__(self, videosource, user, frames=list(), last_edit=str(datetime.datetime.now())):
+        self.source = videosource #the video this frame comes from
+        self.user = user #last user to edit this file
+        self.last_edit = last_edit
+        self.frames = frames
+
 def json_to_annotations(f):
     jsondata = json.load(f)
     
@@ -257,20 +267,13 @@ def json_to_annotations(f):
     for jsonframe in jsondata["frames"]:
         detections = list()
         for jsondetection in jsonframe["detections"]:
-            detections.append( BBox(jsondetection["x1"], jsondetection["y1"], jsondetection["x2"], jsondetection["y2"]) )
+            detections.append( bbox(jsondetection["x1"], jsondetection["y1"], jsondetection["x2"], jsondetection["y2"]) )
         frames.append(Frame(jsonframe["frameindex"], None, detections ) )
     
     annotations = Annotations(jsondata["source"], jsondata["user"], frames, jsondata["last_edit"])
     
     return annotations
 
-# save_results() translates from common object
-# detection file formats into eyesea json format
-#def save_results():
-    #outfile = os.path.join(eyesea_api_outdir, 'results.json')
-    #with open(outfile,'w') as f:
-        #json.dump(results,f)
-        #annotations_to_json(results, f)
 
 if __name__ == "__main__":
     print("testing eysea_api")

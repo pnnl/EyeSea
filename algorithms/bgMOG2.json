@@ -1,6 +1,6 @@
 {
     "name" : "bgMOG2",
-    "script" : "bgsubtract-MOG2.py",
+    "script" : "bgMOG2.py",
     "parameters" : [
          {
             "arg"  : "--history", 
@@ -18,18 +18,32 @@
             "default" : 16
         },
         {
-           "arg" : "--kw",
-           "argname" : "kernel width",
+           "arg" : "--minw",
+           "argname" : "min width",
            "help" : "set to expected pixel width of smallest fish",
            "type" : "int",
-           "default" : 16
+           "default" : 9
         },  
         {
-            "arg" : "--kh",
-           "argname" : "kernel height",
+            "arg" : "--minh",
+           "argname" : "min height",
            "help" : "set to expected pixel height of smallest fish",
            "type" : "int",
-           "default" : 12
+           "default" : 6
+        },
+        {
+           "arg" : "--maxw",
+           "argname" : "max width",
+           "help" : "set to expected pixel width of largest fish",
+           "type" : "int",
+           "default" : 300
+        },  
+        {
+            "arg" : "--maxh",
+           "argname" : "max height",
+           "help" : "set to expected pixel height of largest fish",
+           "type" : "int",
+           "default" : 200
         } 
              
     ]
