@@ -13,7 +13,6 @@ import {
 	getStatisticsError,
 } from './module';
 import './Summary.scss';
-import Heatmap from '../Heatmap/Heatmap';
 
 export class Summary extends React.PureComponent {
 	constructor() {
@@ -152,13 +151,13 @@ export class Summary extends React.PureComponent {
 						{(this.props.statistics.percentTimeWithDetections * 100).toFixed(0)}
 						%
 					</p>
-					<h3>Min/Avg/Max size of objects (pixels)</h3>
+					<h3>Min/Avg/Max length of objects (pixels)</h3>
 					<p>
-						{this.simplify(this.props.statistics.minBoundingBoxArea)}/
+						{this.simplify(this.props.statistics.minBoundingBoxLength)}/
 						{this.simplify(
-							Math.floor(this.props.statistics.avgBoundingBoxArea)
+							Math.floor(this.props.statistics.avgBoundingBoxLength)
 						)}
-						/{this.simplify(this.props.statistics.maxBoundingBoxArea)}
+						/{this.simplify(this.props.statistics.maxBoundingBoxLength)}
 					</p>
 				</div>
 			);
@@ -225,15 +224,14 @@ export class Summary extends React.PureComponent {
 				</Link>
 				<div>
 					<div className={this.state.expanded ? 'expanded' : ''}>
-						<Heatmap match={this.props.match} />
-						{/* <img
+						 <img
 							src={
 								this.props.servicePath +
 								'video/' +
 								this.props.match.params.id +
 								'/heatmap'
 							}
-						/> */}
+						/> 
 						{(graphs.length && (
 							<h3 className="expando" onClick={this.onToggle}>
 								{this.state.expanded ? '▼' : '▶'} Expand to see detections per

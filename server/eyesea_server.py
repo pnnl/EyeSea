@@ -461,7 +461,10 @@ def video_thumbnail(vid):
     allow_cross_origin(resp)
     return resp
 
-
+# this function was created to support client rendering
+# of heatmap but the heatmap was not overlayed on an 
+# image.  Overly on an image is what makes the heatmap
+# useful.  
 @route('/video/<vid>/heatmap/json')
 def video_heatmap_json(vid):
     v = video.select().where(video.vid == vid).dicts().get()
@@ -517,6 +520,7 @@ def video_heatmap_json(vid):
     return resp
 
 
+# original heatmap overlayed on thumbnail image
 @route('/video/<vid>/heatmap')
 def video_heatmap(vid):
     v = video.select().where(video.vid == vid).dicts().get()
@@ -594,9 +598,9 @@ def video_statistics(vid):
     frames_with_detections = 0.0
     frame_count = 0
     max_detections = (0, 0)
-    min_bounding_box = inf
-    avg_bounding_box = 0
-    max_bounding_box = -inf
+    min_length = inf
+    avg_length = 0
+    max_length = -inf
 
     for i in a:
         results = json.loads(i['results'])
@@ -615,18 +619,18 @@ def video_statistics(vid):
             if count > max_detections[1]:
                 max_detections = (i, count)
             for k in analyses[j['aid']][i]['detections']:
-                area = abs(k['x2'] - k['x1']) * abs(k['y2'] - k['y1'])
-                min_bounding_box = min(min_bounding_box, area)
-                avg_bounding_box += area
-                max_bounding_box = max(area, max_bounding_box)
+                length = max(abs(k['x2'] - k['x1']), abs(k['y2'] - k['y1']))
+                min_length = min(min_length, length)
+                avg_length += length
+                max_length = max(length, max_length)
 
     return fr()({
         'id': int(vid),
         'totalDetections': total_detections,
         'percentTimeWithDetections': (frames_with_detections / frame_count) / len(a) if frame_count else 0,
-        'minBoundingBoxArea': min_bounding_box if not np.isposinf(min_bounding_box) else 0,
-        'avgBoundingBoxArea': avg_bounding_box / total_detections if total_detections else 0,
-        'maxBoundingBoxArea': max_bounding_box if max_bounding_box >= 0 else 0,
+        'minBoundingBoxLength': min_length if not np.isposinf(min_length) else 0,
+        'avgBoundingBoxLength': avg_length / total_detections if total_detections else 0,
+        'maxBoundingBoxLength': max_length if max_length >= 0 else 0,
         'frameIndexWithHighestDetections': max_detections[0]
     })
 
