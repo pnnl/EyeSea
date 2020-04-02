@@ -37,7 +37,7 @@ import os
 import glob
 import ffmpeg
 import sys
-import time
+import timeif args.xml: api.put_results_xml(idx, detections)
 import subprocess
 
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     # start the clock
     start_time = datetime.now()
 
-    # Get runtime args
+    # Get runtime argsif args.xml: api.put_results_xml(idx, detections)
     p = configargparse.ArgParser(default_config_files=['./.igiugig', '~/.igiugig'])
     p.add('-c', '--my-config', required=False, is_config_file=True, help='config file path')
     # options that start with '--' can be set in the config file
@@ -107,6 +107,8 @@ if __name__ == "__main__":
     # loaded by eyesea_db.py during initialization
     #dbfile = options.dbfile
 
+    force = options.f
+
     # cd to algorithm dir
    # assume we are running in the eyesea/server dir
     algorithm_path = os.path.join(os.path.dirname(os.getcwd()),'algorithms')
@@ -114,7 +116,7 @@ if __name__ == "__main__":
 
     # get analysis method
     # TODO: get this from settings
-    algname = 'bgsubtract-MOG2'
+    algname = 'bgMOG2'
     try:
         method = analysis_method.select().where(
             analysis_method.description.contains(algname)
@@ -132,7 +134,6 @@ if __name__ == "__main__":
                 , automated = True
                 , path = algorithm_path 
                 ).execute()).dicts().get()
-
     # the method id
     print(method)
     mid = method['mid']
@@ -171,19 +172,20 @@ if __name__ == "__main__":
                 print("Camera {:d} has {:d} images".format(cam, len(imgs)))
                 if len(imgs) > 0:
                     vidfile = os.path.join(day, os.path.basename(t) + '_Cam{:d}.mp4'.format(cam))
-                    if os.path.exists(vidfile): continue
-                    print("Making movie {}".format(vidfile))
-                    make_movie(imgpath,fps[cam-1],vidfile)
+                    if os.path.exists(vidfile) and not force: continue
+                    if not os.path.exists(vidfile):
+                        print("Making movie {}".format(vidfile))
+                        make_movie(imgpath,fps[cam-1],vidfile)
                     # store movie path for ingest
                     video_files.append(vidfile)
-                    video_fps.append(fps[cam-1])
+                    video_fps.append(fps[cam-1])if args.xml: api.put_results_xml(idx, detections)
                     video_dur.append(len(imgs) / fps[cam-1])
                     nsec = nsec + len(imgs) / fps[cam-1]
                     # process data with algorithm
                     print("Finding fish... ")
                     outfile = os.path.join(day, os.path.basename(t) + '_Cam{:d}.json'.format(cam))
-                    args = ['python', script, imgpath, outfile]
-                    p = subprocess.Popen(args)
+                    args = ['python', script, '--xml', imgpath, outfile]
+                    p = subprocess.Popen(args, bufsize=-1)
                     analysis_proc.append(p)
                     analysis_results.append(outfile)
 

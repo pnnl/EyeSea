@@ -253,8 +253,6 @@ def queue_analysis(index, vid, method, procargs=None):
                 analysis.aid == aid['aid']).execute()
 
 # Should be similar to what subprocess.checkout_output does, except it handles stderr
-
-
 def check_output_with_error(*pargs, **args):
     if 'stdout' in args or 'stderr' in args:
         raise ValueError(
@@ -726,6 +724,37 @@ def process_video():
     print(results)
     return fr()(format_video(data, results))
 
+@get('/video/<vid>/<filename>')
+def write_csv(vid, filename):
+    import csv
+    import datetime
+
+    v = video.select(video).where(video.vid == vid).dicts().get()
+    fname = os.path.splitext(os.path.basename(v['filename']))[0] + '.csv'
+
+    a = analysis.select().where(analysis.vid == vid,
+                                analysis.status == 'FINISHED').dicts()
+
+    colnames = ['time', 'x', 'y', 'w', 'h', 'method']
+    with open(os.path.join(tmp, fname),'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(colnames)
+        
+        for i in a:
+            m = analysis_method.select().where(analysis_method.mid == i['mid']).dicts().get()
+            ms = m['description']
+            for j in json.loads(i['results']):
+                if len(j['detections']) == 0: continue
+                ts = str(datetime.timedelta(seconds=j['frameindex']/v['fps']))
+                for q in j['detections']:
+                    x = int(min(q['x1'], q['x2']))
+                    y = int(min(q['y1'], q['y2']))
+                    w = int(abs(q['x1'] - q['x2']))
+                    h = int(abs(q['y1'] - q['y2']))
+                    row = [ts, x, y, w, h, ms]
+                    writer.writerow(row)
+
+    return static_file(fname, root=tmp)
 
 def zipdir(path, ziph):
     # ziph is zipfile handle
@@ -734,22 +763,26 @@ def zipdir(path, ziph):
             ziph.write(os.path.join(root, file))
 
 
-@get('/video/<vid>/<filename>')
+#@get('/video/<vid>/<filename>')
 def compress_annotations(vid, filename):
     a = analysis.select().where(analysis.vid == vid,
                                 analysis.status == 'FINISHED').dicts()
     os.mkdir(tmp + os.path.sep + vid)
+    # collect all the annotations
     for i in a:
         with open(tmp + os.path.sep + vid + os.path.sep + str(i['aid']) + ".json", "w") as f:
             f.write(i["results"])
-    zipf = zipfile.ZipFile(tmp + os.path.sep + vid +
-                           '.zip', 'w', zipfile.ZIP_DEFLATED)
-    zipdir(tmp + os.path.sep + vid, zipf)
+    fname = vid + '.zip'
+    zipf = zipfile.ZipFile(tmp + os.path.sep + fname, 'w', zipfile.ZIP_DEFLATED)
+    for root, dirs, files in os.walk(tmp + os.path.sep + vid):
+        for file in files:
+            zipf.write(os.path.join(root, file))
     zipf.close()
+    print(tmp + os.path.sep + vid + '.zip')
     for i in os.listdir(tmp + os.path.sep + vid):
         os.remove(os.path.join(tmp + os.path.sep + vid, i))
     os.rmdir(tmp + os.path.sep + vid)
-    return static_file(vid + '.zip', root=tmp)
+    return static_file(fname, root=tmp)
 
 
 @post('/annotations')

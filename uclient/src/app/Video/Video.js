@@ -182,14 +182,17 @@ export class Video extends React.Component {
 		this.releaseMouse(event, target);
 		delete this.boundingBox;
 	};
+	// changing the file name here changes the
+	// name of the downloaded zip file which is 
+	// downloaded to the default downloads dir
 	downloadAnnotations() {
 		window.location.href =
 			this.props.servicePath +
 			'video/' +
-			this.props.match.params.id +
-			'/annotations_' +
-			this.props.match.params.id +
-			'.zip';
+			this.props.match.params.id + '/' + 
+			this.props.video.description +
+			'.csv';
+
 	}
 	modeAnnotate() {
 		this.setState({
