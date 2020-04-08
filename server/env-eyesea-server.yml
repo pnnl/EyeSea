@@ -16,4 +16,4 @@ dependencies:
     - ffmpeg
     - configargparse
     - lxml
-  - opencv=4
+  - opencv=3

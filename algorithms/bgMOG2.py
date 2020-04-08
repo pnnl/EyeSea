@@ -37,8 +37,6 @@ are in one box. Using a larger morph element (5x5) reduced false positives.
 import os
 import numpy as np
 import cv2
-#import json
-import imutils
 
 import eyesea_api as api
 
@@ -101,10 +99,6 @@ def bgMOG2():
     else:
         depth = 1
 
-    print(np.max(frame))
-    print(frame.shape)
-    print(frame.dtype)
-
     detections = []
     while(frame != []):
         # convert to grayscale, if frame is color image
@@ -119,13 +113,13 @@ def bgMOG2():
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         # https://stackoverflow.com/questions/54734538/opencv-assertion-failed-215assertion-failed-npoints-0-depth-cv-32
-        contours = cnts[1] if imutils.is_cv3() else cnts[0] # simplify reference
-        print(cnts)
+        contours = cnts[1] # simplify reference
+        #print(cnts)
         if args.verbose: 
             print(os.path.basename(api.framefilepath(idx)) + "  {:d} blobs".format(len(contours)))
         
         for c in contours:
-            print(c)
+            #print(c)
             (x, y, w, h) = cv2.boundingRect(c)
             if args.verbose: print("  {:d},{:d},{:d},{:d}".format(x,y,w,h))
             if w > args.minw and w < args.maxw and h > args.minh and h < args.maxh:

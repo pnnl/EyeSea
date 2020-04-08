@@ -43,9 +43,10 @@ if input is image dir, then make into movie with copy vcodec
 # GLOBAL VARS
 # input directory that contains image files
 eyesea_api_indir = []
-# output directory and file where results will be saved
-eyesea_api_outdir = []
-eyesea_api_outfile = []
+# output directory where results will be saved
+# used in put_results_xml(), expects dir
+# used in save_results(), expects file 
+eyesea_api_output = []
 
 # list of image files in input directory
 eyesea_api_infiles = []
@@ -65,7 +66,7 @@ eyesea_api_alg = []
 def get_args(jfile):
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="input to process")
-    parser.add_argument("output", help="output file for results")
+    parser.add_argument("output", help="output path for results")
 
     
     if os.path.isfile(jfile):
@@ -90,8 +91,7 @@ def get_args(jfile):
     global eyesea_api_indir
     global eyesea_api_infiles
     global eyesea_api_nframes
-    global eyesea_api_outdir
-    global eyesea_api_outfile
+    global eyesea_api_output
     global eyesea_api_results
     eyesea_api_indir = args.input
 
@@ -109,12 +109,17 @@ def get_args(jfile):
 
     eyesea_api_results = [None] * eyesea_api_nframes
 
-    # TODO: create output dir if it doesn't exist
-    eyesea_api_outdir, eyesea_api_outfile = os.path.split(args.output)
-    if not os.path.exists(eyesea_api_outdir):
-        print('output directory {} does not exist'.format(eyesea_api_outdir))
-        exit()
-    print('saving results to ' + eyesea_api_outdir)
+    eyesea_api_output = args.output
+    # check if dir or file
+    # if no extension, assume its a dir
+    if not os.path.splitext(eyesea_api_output)[1]:
+        outdir = eyesea_api_output
+    else:
+        outdir = os.path.dirname(eyesea_api_output)
+    if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
+    print('saving results to ' + eyesea_api_output)
 
     global eyesea_api_alg
     eyesea_api_alg = jsondata["name"]
@@ -195,19 +200,22 @@ def put_results_xml(idx, detections):
         ET.SubElement(bndbox, "ymax").text = str(max(detections[i].y1, detections[i].y2))
     tree = ET.ElementTree(annotation)
     outfile = os.path.splitext(os.path.basename(eyesea_api_infiles[idx]))[0] + '.xml'
-    global eyesea_api_outdir
-    tree.write(os.path.join(eyesea_api_outdir,outfile), pretty_print=True)
+    global eyesea_api_output
+    tree.write(os.path.join(eyesea_api_output,outfile), pretty_print=True)
 
                  
 #This writes the results to a custom json file used by eyesea_server.
 def save_results():
     global eyesea_api_results
-    global eyesea_api_outdir
+    global eyesea_api_output
     global eyesea_api_indir
     global eyesea_api_alg
 
     ts = datetime.datetime.now()
-    outfile = os.path.join(eyesea_api_outdir,ts.strftime('%Y%m%d-%H%M%S_') + eyesea_api_alg + '.json')
+    if not os.path.splitext(eyesea_api_output)[1]:
+        outfile = os.path.join(eyesea_api_output,ts.strftime('%Y%m%d-%H%M%S_') + eyesea_api_alg + '.json')
+    else:
+        outfile = eyesea_api_output
 
     with open(outfile,'w') as f:
         f.write("{") # annotations

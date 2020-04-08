@@ -10,7 +10,7 @@ class eyesea_model(Model):
         database = db
     
 class video(eyesea_model):
-    # generated automatically
+    # ID generated automatically
     vid = IntegerField(primary_key=True)
     # displayed with video
     description = TextField()
@@ -21,8 +21,7 @@ class video(eyesea_model):
     variable_framerate = SmallIntegerField()
     # duration in seconds
     duration = FloatField()
-    # path to raw data, used to retrieve
-    # let's make this full path
+    # full path to uploaded video file
     uri = CharField()
     # date added to database?
     creation_date = IntegerField()

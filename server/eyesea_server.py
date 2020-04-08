@@ -59,23 +59,14 @@ else:
 vformat = settings['video_format']
 vcodec = settings['ffmpeg_vcodec']
 
-# default to algorithms dir, leave algorithm_bin in settings empty in repo to avoid
 # OS-specific path
-if not settings['algorithm_bin']:
-    abs_algorithm_path = os.path.abspath(os.path.join(
-        os.path.abspath(os.curdir), "..", "algorithms"))
-else:
-    abs_algorithm_path = os.path.abspath(settings['algorithm_bin'])
-eye_env = os.environ
-eye_env['PATH'] = abs_algorithm_path + os.pathsep + eye_env['PATH']
+abs_algorithm_path = os.path.abspath(os.path.join(os.path.dirname(os.getcwd()),'algorithms'))
+ #   os.path.abspath(os.path.join(os.path.abspath(os.curdir), "..", "algorithms"))
 tasklist = {}
 
-# Just store methods in the algorithm dir -- don't scan the whole path
-
-
+# scan the algorithms dir to find available algorithms
 def scanmethods():
     methods = analysis_method.select().dicts()
-#    for i in eye_env['PATH'].split(os.pathsep):
     i = abs_algorithm_path
     for j in os.listdir(i):
         name, ext = os.path.splitext(j)
@@ -84,9 +75,6 @@ def scanmethods():
             fdict = json.loads(open(root + os.sep + j).read())
             fjson = json.dumps(fdict)  # normalize json
             found = False
-            # TODO How do we want to handle two algorithms which might have the same parameter names
-            #      but do different things with them? Is that even a concern?
-            # shari: No, this is not a concern.
             for k in methods:
                 if 'name' in fdict:
                     if k['parameters'] == fjson:
@@ -195,11 +183,9 @@ def get_video_path_parts(vid):
 
 
 def queue_analysis(index, vid, method, procargs=None):
-    # Will throw an error if vid is not-existent, this is on purpose because all future
-    # analyses would die with the same error so we cut out early.
+    # Will throw an error if vid is not-existent, this is on purpose because 
+    # all future analyses would die with the same error so we cut out early.
     vid = video.select(video).where(video.vid == vid).dicts().get()
-    # NOTE: in Python 3, long is no longer. int is the new long.
-    # if isinstance(method, (int, long)):
     if isinstance(method, (int, int)):
         try:
             method = analysis_method.select(analysis_method).where(
@@ -278,6 +264,34 @@ def check_output_with_error(*pargs, **args):
         raise error
     return stdout
 
+def make_movie(imgpath,fps,outfile):
+    (
+        ffmpeg
+        .input(os.path.join(imgpath,'*.jpg'), pattern_type='glob', framerate=fps)
+        .output(outfile 
+            ,vcodec=vcodec
+            ,crf=17
+            ,pix_fmt='yuv420p'
+            )
+        .overwrite_output()
+        .run()
+    )
+# make_movie()
+
+def convert_movie(filepath, outfile):
+    (
+        ffmpeg
+        .input(filepath)
+        .output(outfile 
+            ,vcodec=vcodec
+            ,crf=17
+            ,pix_fmt='yuv420p'
+            )
+        .overwrite_output()
+        .run()
+    )
+# make_movie()
+
 
 @route('/', method='OPTIONS')
 @route('/<path:path>', method='OPTIONS')
@@ -352,7 +366,7 @@ def post_video():
     upload = request.files.get('upload')
     name, ext = os.path.splitext(upload.filename)
 
-    # create a unique filename for the uploaded file
+    # create a unique filename for the uploaded file    
     hash = hashlib.sha256()
     for bytes in iter(lambda: upload.file.read(65536), b''):
         hash.update(bytes)
@@ -360,27 +374,16 @@ def post_video():
     upload.file.seek(0)
     
     # save the file on the server
-    #dest_path = '{p}/{f}'.format(p=videostore, f=filename)
     dest_path = os.path.join(videostore, filename)
     if not os.path.exists(dest_path):
         # if the video is already in the correct format, save as is
         if ext[1:] == vformat:
             upload.save(dest_path)
         else:
-            #temp_path = '{p}/{f}'.format(p=tmp, f=upload.filename)
             temp_path = os.path.join(tmp, upload.filename)
             upload.save(temp_path)
-            try:
-                # TODO: ensure best possible quality of video, not good to 
-                # transcode already compressed video
-                check_output_with_error(['ffmpeg', '-y', '-i', temp_path, '-an', '-vcodec', vcodec,
-                                         #'{p}/{f}'.format(p=videostore, f=filename)])
-                                          os.path.join(videostore, filename)])
-            except CalledProcessError as error:
-                return fr()({'error': 'Error converting video to format ' + vcodec,
-                             'details': error.stderr.decode(sys.getfilesystemencoding())})
-            finally:
-                os.remove(temp_path)
+            convert_movie(temp_path, dest_path)
+            os.remove(temp_path)
 
     info = None
     try:
@@ -399,7 +402,6 @@ def post_video():
         dbdata['filename'] = upload.raw_filename
         # [Ab]using SQLite's soft typing here, giving it the integer type we 
         # declared only if it works out to be a nice number
-        # Digitally recorded or pre-converted videos should give us a nice exact FPS like 30 or 60.
         dbdata['fps'] = int(fps) if int(fps) == fps else fps
         # r_frame_rate is "the lowest framerate with which all timestamps can 
         # be represented accurately (it is the least common multiple of all framerates in the stream)."

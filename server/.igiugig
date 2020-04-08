@@ -1,3 +1,0 @@
-# settings for igiugig_data_ingest.py
-root = /Users/d3x389/Downloads/EyeSea/ORPC-2019     # on shari's computer
-dbfile = ../server/eyesea-igiugig.db
