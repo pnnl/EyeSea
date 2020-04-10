@@ -7,7 +7,7 @@
             "argname" : "history",
             "help" : "length of history in frames",
             "type" : "int",
-            "default" : 500
+            "default" : 300
             
         },
         {

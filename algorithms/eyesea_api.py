@@ -12,14 +12,15 @@ import cv2 # openCV for image processing
 # XML for working with VOC format annotations
 from lxml import etree as ET
 
-# support reading frames from a VideoCapture object or from
-# a directory of image files
 '''
+Would like to support reading frames from a VideoCapture object or from
+a directory of image files.
+
 Option 1
 if Python classes support inheritence and virtual classes,
 then create virtual Input class and two derived classes, Stream and Images.
 +supports streams, which could be movie or live camera
--
+-adds complexity to code
 
 Option 2 
 always use images
@@ -110,16 +111,18 @@ def get_args(jfile):
     eyesea_api_results = [None] * eyesea_api_nframes
 
     eyesea_api_output = args.output
+
+    print('saving results to ' + eyesea_api_output)
+
     # check if dir or file
     # if no extension, assume its a dir
     if not os.path.splitext(eyesea_api_output)[1]:
         outdir = eyesea_api_output
     else:
         outdir = os.path.dirname(eyesea_api_output)
-    if not os.path.exists(outdir):
+    if outdir and not os.path.exists(outdir):
             os.makedirs(outdir)
 
-    print('saving results to ' + eyesea_api_output)
 
     global eyesea_api_alg
     eyesea_api_alg = jsondata["name"]
@@ -135,7 +138,7 @@ def indir():
 
 def framefilepath(idx):
     global eyesea_api_infiles
-    return eyesea_api_infiles[idx]
+    return eyesea_api_infiles[idx]    
 
 # return next image as numpy array
 # if no more images, returns empty array
@@ -155,6 +158,12 @@ def get_frame():
         eyesea_api_shapes.append(img.shape) 
         eyesea_api_nextf += 1
     return img, idx
+
+# reset the frame index back to 0
+def rewind():
+    global eyesea_api_nextf 
+    eyesea_api_nextf = 0
+
 
 # class for storing bounding box
 class bbox():

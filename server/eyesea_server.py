@@ -70,6 +70,7 @@ def scanmethods():
     i = abs_algorithm_path
     for j in os.listdir(i):
         name, ext = os.path.splitext(j)
+        if "example" in name: continue
         if ext == '.json':
             root = os.path.abspath(i)
             fdict = json.loads(open(root + os.sep + j).read())
@@ -290,7 +291,7 @@ def convert_movie(filepath, outfile):
         .overwrite_output()
         .run()
     )
-# make_movie()
+# convert_movie()
 
 
 @route('/', method='OPTIONS')
@@ -433,7 +434,10 @@ def get_video_vid(vid):
     data = video.select().where(video.vid == vid).dicts().get()
     return fr()(format_video(data))
 
-
+# TODO: This seems to generate a warning:
+#  ResourceWarning: unclosed file 
+# this might be helpful: 
+# https://stackoverflow.com/questions/11866792/how-to-prevent-errno-32-broken-pipe?noredirect=1&lq=1
 @route('/video/<vid>/file')
 def server_static(vid):
     v = video.select().where(video.vid == vid).dicts().get()
@@ -465,7 +469,7 @@ def video_thumbnail(vid):
 
 # this function was created to support client rendering
 # of heatmap but the heatmap was not overlayed on an 
-# image.  Overly on an image is what makes the heatmap
+# image.  Overlay on an image is what makes the heatmap
 # useful.  
 @route('/video/<vid>/heatmap/json')
 def video_heatmap_json(vid):
@@ -612,15 +616,14 @@ def video_statistics(vid):
             frame_count = max(frame_count, results[-1]['frameindex'])
         print("frame_count = {:d}".format(frame_count))
 
-    for i in range(0, frame_count):
-        for j in a:
-            count = len(analyses[j['aid']][i]['detections'])
+        for j in range(0, frame_count):
+            count = len(results[j]['detections'])
             if count:
                 frames_with_detections += 1
             total_detections += count
             if count > max_detections[1]:
-                max_detections = (i, count)
-            for k in analyses[j['aid']][i]['detections']:
+                max_detections = (j, count)
+            for k in results[j]['detections']:
                 length = max(abs(k['x2'] - k['x1']), abs(k['y2'] - k['y1']))
                 min_length = min(min_length, length)
                 avg_length += length

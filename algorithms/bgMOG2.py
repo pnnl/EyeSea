@@ -91,24 +91,80 @@ def bgMOG2():
         print("-------------------------------------")
         print("")
 
-    # process data
     # get a frame 
     frame, idx = api.get_frame()
+
+    if args.verbose: 
+        print('first frame')
+        print(frame.shape)
+        print(frame.dtype)
+        print(np.min(frame))
+        print(np.max(frame))
+
     if len(frame.shape) > 2:
         depth = frame.shape[2]
     else:
         depth = 1
 
-    detections = []
+    width = frame.shape[0]
+    height = frame.shape[1]
+
+    # initialize the bg model
+    '''
+    learningRate
+    The value between 0 and 1 that indicates how fast the background model is 
+    learnt. Negative parameter value makes the algorithm to use some automatically 
+    chosen learning rate. 0 means that the background model is not updated at all, 
+    1 means that the background model is completely reinitialized from the last frame.
+    '''
+
+    if args.verbose: print('initializting background...')
+    n = min(args.history, api.nframes())
+    hist = np.zeros((width*height,n),dtype=np.float32)
+
+    for i in range(n):
+        if args.verbose: print(i)
+        # convert to grayscale, if frame is color image
+        if depth > 1: 
+            frame = np.float32(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)) / 255.0
+        hist[:,i] = frame.flatten()
+        frame, idx = api.get_frame()
+
+    bg_init = np.mean(hist,axis=1,dtype=np.float32).reshape(width,height)
+
+    if args.verbose: 
+        print('mean image')
+        print(bg_init.shape)
+        print(bg_init.dtype)
+        print(np.min(bg_init))
+        print(np.max(bg_init))
+
+    fgmask = fgbg.apply(bg_init, learningRate=1)
+    bg = fgbg.getBackgroundImage()
+
+    if args.verbose: 
+        print('background image')
+        print(bg.shape)
+        print(bg.dtype)
+        print(np.min(bg))
+        print(np.max(bg))
+   
+    if args.verbose: 
+        dst = cv2.resize(np.uint8(bg), None, fx = 0.5, fy = 0.5, interpolation = cv2.INTER_AREA)
+        cv2.imshow('frame',dst)
+        k = cv2.waitKey(0) & 0xff
+
+    api.rewind()
+    frame, idx = api.get_frame()
+
     while(frame != []):
         # convert to grayscale, if frame is color image
         if depth > 1: 
             frame = np.float32(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)) / 255.0
 
         # fgmask is single channel 2D array of type uint8
-        # NOTE: setting the learningRate increased false positives
-        #fgmask = fgbg.apply(frame, learningRate=0.001)
-        fgmask = fgbg.apply(frame)
+        # TODO: adjust learning rate based on number of frames
+        fgmask = fgbg.apply(frame, learningRate=0.001)
         # apply morphological open to remove small isolated groups of fg pixels
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
@@ -118,6 +174,7 @@ def bgMOG2():
         if args.verbose: 
             print(os.path.basename(api.framefilepath(idx)) + "  {:d} blobs".format(len(contours)))
         
+        detections = []
         for c in contours:
             #print(c)
             (x, y, w, h) = cv2.boundingRect(c)
@@ -131,6 +188,8 @@ def bgMOG2():
             k = cv2.waitKey(500) & 0xff
             if k == 27:
                 break
+        if args.verbose: 
+            print("           {:d} detections".format(len(detections)))
         api.put_results(idx, detections)
         if args.xml: api.put_results_xml(idx, detections)
         frame, idx = api.get_frame()
