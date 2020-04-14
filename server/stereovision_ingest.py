@@ -188,7 +188,8 @@ if __name__ == "__main__":
                     print("Finding fish... ")
                     outfile = os.path.join(tmp, os.path.basename(t) + '_Cam{:d}.json'.format(cam))
                     args = ['python', script, imgpath, outfile]
-                    p = subprocess.Popen(args, bufsize=-1)
+                    #p = subprocess.Popen(args, bufsize=-1)
+                    p = subprocess.run(args)
                     analysis_proc.append(p)
                     analysis_results.append(outfile)
 
@@ -211,7 +212,7 @@ if __name__ == "__main__":
         vid = data['vid']
         # wait for the processing to complete
         # TODO: may want to set a timeout value
-        p.wait() 
+        #p.wait() 
         results = ''
         status = 'FAILED'
         if p.returncode == 0:

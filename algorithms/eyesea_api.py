@@ -96,7 +96,7 @@ def get_args(jfile):
     global eyesea_api_results
     eyesea_api_indir = args.input
 
-    print('processing input dir: ' + eyesea_api_indir)
+    if args.verbose: print('processing input dir: ' + eyesea_api_indir)
 
     # try jpg first
     eyesea_api_infiles = sorted(glob.glob(os.path.join(eyesea_api_indir,'*.jpg')))
@@ -106,13 +106,13 @@ def get_args(jfile):
     eyesea_api_nframes = len(eyesea_api_infiles)
 
     
-    print('found {:d} frames'.format(eyesea_api_nframes))
+    if args.verbose: print('found {:d} frames'.format(eyesea_api_nframes))
 
     eyesea_api_results = [None] * eyesea_api_nframes
 
     eyesea_api_output = args.output
 
-    print('saving results to ' + eyesea_api_output)
+    if args.verbose: print('saving results to ' + eyesea_api_output)
 
     # check if dir or file
     # if no extension, assume its a dir

@@ -131,6 +131,7 @@ def bgMOG2():
         frame, idx = api.get_frame()
 
     bg_init = np.mean(hist,axis=1,dtype=np.float32).reshape(width,height)
+    #bg_std = np.std(hist,axis=1,dtype=np.float64)
 
     if args.verbose: 
         print('mean image')
