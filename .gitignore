@@ -1,5 +1,8 @@
 *.pyc
 *.DS_Store
 *.out
+*.mp4
+*.npz
+out*.json
 
 

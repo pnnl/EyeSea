@@ -50,7 +50,7 @@ def parse_camera_settings(timedir):
     # TODO: Actually parse the files
     files = ["Camera Pair 1 Settings.txt", "Camera Pair 2 Settings.txt"]
     dt = [0, 0, 0, 0]
-    fps = [0, 0, 10.0, 10.0]
+    fps = [10.0, 10.0, 10.0, 10.0]
     exp = [1, 1, 1, 1]
     gain = [1, 1, 1, 1]
     return dt, fps, exp, gain
