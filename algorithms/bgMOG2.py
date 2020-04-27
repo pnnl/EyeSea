@@ -119,7 +119,7 @@ def bgMOG2():
     '''
 
     if args.verbose: print('initializting background...')
-    n = min(args.history, api.nframes())
+    n = min(100, api.nframes())
     hist = np.zeros((width*height,n),dtype=np.float32)
 
     for i in range(n):
