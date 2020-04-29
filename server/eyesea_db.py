@@ -45,3 +45,7 @@ class analysis_method(eyesea_model):
     parameters = TextField()
     path = TextField()
     creation_date = IntegerField()
+
+def create_tables():
+    with db:
+        db.create_tables([video, analysis, analysis_method])

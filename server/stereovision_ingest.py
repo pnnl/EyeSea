@@ -39,6 +39,7 @@ import ffmpeg
 import sys
 import time
 import subprocess
+import shutil
 
 
 # Parse the settings file and return:
@@ -113,6 +114,10 @@ if __name__ == "__main__":
     if not os.path.isdir(tmp):
         os.mkdir(tmp)
 
+    cache = os.path.abspath(settings['cache'])
+    if not os.path.isdir(cache):
+        os.mkdir(cache)
+
     # TODO: get from settings
     # assume we are running in the eyesea/server dir
     algdir = os.path.join(os.path.dirname(os.getcwd()),'algorithms')
@@ -179,6 +184,9 @@ if __name__ == "__main__":
                     if not os.path.exists(vidfile):
                         print("Making movie {}".format(vidfile))
                         make_movie(imgpath,fps[cam-1],vidfile)
+                    thumbfile = os.path.join(cache, os.path.splitext(os.path.basename(vidfile))[0] + '.jpg')
+                    shutil.copyfile(imgs[2], thumbfile)
+
                     # store movie path for ingest
                     video_files.append(vidfile)
                     video_fps.append(fps[cam-1])
@@ -188,7 +196,6 @@ if __name__ == "__main__":
                     print("Finding fish... ")
                     outfile = os.path.join(tmp, os.path.basename(t) + '_Cam{:d}.json'.format(cam))
                     args = ['python', script, imgpath, outfile]
-                    #p = subprocess.Popen(args, bufsize=-1)
                     p = subprocess.run(args)
                     analysis_proc.append(p)
                     analysis_results.append(outfile)
