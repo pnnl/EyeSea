@@ -4,5 +4,8 @@
 *.mp4
 *.npz
 out*.json
+*-shari.*
+*.sh
+
 
 
