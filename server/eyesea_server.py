@@ -39,19 +39,24 @@ import ffmpeg
 # disk-based temporary file.
 bottle.BaseRequest.MEMFILE_MAX = 1610612736
 
+# http://docs.peewee-orm.com/en/2.10.2/peewee/database.html#deferring-initialization
 settings = json.loads(open('eyesea_settings.json').read())
+
+dbdir = settings['database_storage']
+db.init(os.path.join(dbdir, settings['database']))
+
 
 cache = settings['cache']
 if not os.path.isdir(cache):
-    os.mkdir(cache)
+    os.makedirs(cache)
 
 videostore = settings['video_storage']
 if not os.path.isdir(videostore):
-    os.mkdir(videostore)
+    os.makedirs(videostore)
 
 tmp = settings['temporary_storage']
 if not os.path.isdir(tmp):
-    os.mkdir(tmp)
+    os.makedirs(tmp)
 else:
     for i in os.listdir(tmp):
         os.remove(os.path.join(tmp, i))
@@ -61,7 +66,6 @@ vcodec = settings['ffmpeg_vcodec']
 
 # OS-specific path
 abs_algorithm_path = os.path.abspath(os.path.join(os.path.dirname(os.getcwd()),'algorithms'))
- #   os.path.abspath(os.path.join(os.path.abspath(os.curdir), "..", "algorithms"))
 tasklist = {}
 
 # scan the algorithms dir to find available algorithms
@@ -348,6 +352,7 @@ def get_statistics():
 # FIXME
 @get('/video')
 def get_video():
+    print("**** get_video() ****")
     sortBy = []
     if 'sortBy' in request.query:
         try:
@@ -359,6 +364,13 @@ def get_video():
     data = video.select(video).order_by(*sortBy).dicts()
     data = [format_video(i) for i in data]
     return fr()(data)
+
+def post_database():
+    # display file selection dialog for user
+    database = request.files.get('dataset')
+    name, ext = os.path.splitext(database.filename)
+    return fr()({'error': 'Video metadata returned no streams.'})
+   
 
 
 @post('/video')
@@ -396,6 +408,7 @@ def post_video():
 
     if info and 'streams' in info and len(info['streams']) > 0:
         info = info['streams'][0]
+        # TODO: this is weird, fps should be a single float
         fps = info['avg_frame_rate'].split('/')
         fps = float(fps[0]) / float(fps[1])
         dbdata = dict()
@@ -442,7 +455,7 @@ def get_video_vid(vid):
 def server_static(vid):
     v = video.select().where(video.vid == vid).dicts().get()
     pathname, filename, root = get_video_path_parts(v)
-    print('from cache: ' + root + os.sep + pathname)
+    print('**** server_static: ' + root + os.sep + pathname)
     resp = static_file(pathname, root=root)
     allow_cross_origin(resp)
     return resp
@@ -679,6 +692,7 @@ def put_analysis_aid(aid):
 
 @get('/analysis/method')
 def get_analysis_method():
+    print("**** get_analysis_method() ****")
     data = analysis_method.select().dicts()
     data = [(lambda method: {
         'mid': method['mid'],
