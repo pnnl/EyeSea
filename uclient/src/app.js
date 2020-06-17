@@ -6,6 +6,7 @@ import { Switch, Route, withRouter } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { setServicePath } from './app/module';
 import Uploader from './app/Uploader';
+import Dataset from './app/Dataset';
 import { Button } from './app/shared';
 import Videos from './app/Videos';
 import Video from './app/Video';
@@ -28,6 +29,7 @@ export class App extends React.Component {
 						<h1>EyeSea</h1>
 					</Link>
 					<div>
+                        <Dataset />
 						<Uploader />
 						<Button className="settings" wide disabled>
 							Settings

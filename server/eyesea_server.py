@@ -358,6 +358,8 @@ def get_datasets():
     print('********** get_datasets() ***************')
     data = []
     files = os.listdir(abs_db_path)
+    # assume files are named with dates, show most recent first
+    files.sort(reverse=True)
     for j in range(len(files)):
         name, ext = os.path.splitext(files[j])
         if ext == '.db':
@@ -369,15 +371,18 @@ def get_datasets():
 
 
 @post('/dataset')
-def set_dataset(dataset_name):
+def set_dataset():
+    print('######### set_dataset() ############')
+    fname = request.forms.get('selected')
     db.close()
-    db.init(os.path.join(abs_db_path, dataset_name + '.db'))
+    db.init(os.path.join(abs_db_path, fname + '.db'))
 
 
 # FIXME
 @get('/video')
 def get_video():
     print("**** get_video() ****")
+   # print(request.query) # <bottle.FormsDict object at 0x11b504668>
     sortBy = []
     if 'sortBy' in request.query:
         try:

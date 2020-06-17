@@ -1,9 +1,9 @@
 {
     "cache" : ".cache",
     "temporary_storage" : ".tmp",
-    "video_storage" : "/Users/d3x389/Downloads/eyesea/videos",
-    "database_storage" : "/Users/d3x389/Dropbox/Developer/eyesea/server/databases",
-    "database" : "stereovision-2019_08_03.db",
+    "video_storage" : "videos",
+    "database_storage" : "databases",
+    "database" : "eyesea.db",
     "video_format" : "mp4",
     "ffmpeg_vcodec" : "libx264"
 }

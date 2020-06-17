@@ -121,7 +121,7 @@ export class Uploader extends React.PureComponent {
 								: '')
 						}
 					>
-						<h3>Select one or more algorithms for automation</h3>
+						<h3>Select one or more algorithms for annotation</h3>
 						<Select
 							onBlurResetsInput={false}
 							onSelectResetsInput={false}

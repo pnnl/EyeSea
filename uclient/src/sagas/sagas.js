@@ -1,5 +1,6 @@
 import { put, takeLatest, call, select } from 'redux-saga/effects';
 import { sagas as uploader } from '../app/Uploader';
+import { sagas as dataset } from '../app/Dataset';
 import { sagas as analyze } from '../app/Analyze';
 import { sagas as videos } from '../app/Videos';
 import { sagas as video } from '../app/Video';
@@ -37,6 +38,7 @@ export default function*() {
 	yield [
 		takeLatest(SERVICE_PATH, requestAnalysisMethods),
 		call(uploader),
+		call(dataset),
 		call(analyze),
 		call(videos),
 		call(video),

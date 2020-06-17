@@ -41,6 +41,7 @@ export class Videos extends React.PureComponent {
 	}
 
 	render() {
+		//console.log('videos', this.props.videos)
 		if (this.props.videos && !this.props.videos.length) {
 			return <Introduction />;
 		} else {
