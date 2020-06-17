@@ -1,6 +1,14 @@
 # Welcome to EyeSea!
 # Install EyeSea
+
 ## Get the source
+* Clone the project:
+
+```
+git clone https://github.com/pnnl/EyeSea.git
+
+
+## Set up environment
 
 * You'll need to have [git](https://git-scm.com/) and [node](https://nodejs.org/en/) installed in your system.
 * Clone the project:
@@ -80,5 +88,5 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNTQ2NjMyNDgwXX0=
+eyJoaXN0b3J5IjpbLTE1OTUzMzE1NjNdfQ==
 -->
