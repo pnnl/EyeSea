@@ -42,8 +42,9 @@ bottle.BaseRequest.MEMFILE_MAX = 1610612736
 # http://docs.peewee-orm.com/en/2.10.2/peewee/database.html#deferring-initialization
 settings = json.loads(open('eyesea_settings.json').read())
 
-dbdir = settings['database_storage']
-db.init(os.path.join(dbdir, settings['database']))
+# path for storing database files
+abs_db_path = os.path.abspath(settings['database_storage'])
+db.init(os.path.join(abs_db_path, settings['database']))
 
 
 cache = settings['cache']
@@ -349,6 +350,30 @@ def get_statistics():
             }
     return fr()(data)
 
+# try this instead for selecting dataset
+# https://docs.faculty.ai/user-guide/apis/flask_apis/flask_file_upload_download.html   
+
+@get('/datasets')
+def get_datasets():
+    print('********** get_datasets() ***************')
+    data = []
+    files = os.listdir(abs_db_path)
+    for j in range(len(files)):
+        name, ext = os.path.splitext(files[j])
+        if ext == '.db':
+            data.append({'label' : name, 'value' : j})
+    print(json.dumps(data))
+    #data = {'datasets' : dataset_names}
+    #return json.dumps(data)
+    return json.dumps(data)
+
+
+@post('/dataset')
+def set_dataset(dataset_name):
+    db.close()
+    db.init(os.path.join(abs_db_path, dataset_name + '.db'))
+
+
 # FIXME
 @get('/video')
 def get_video():
@@ -365,12 +390,6 @@ def get_video():
     data = [format_video(i) for i in data]
     return fr()(data)
 
-def post_database():
-    # display file selection dialog for user
-    database = request.files.get('dataset')
-    name, ext = os.path.splitext(database.filename)
-    return fr()({'error': 'Video metadata returned no streams.'})
-   
 
 
 @post('/video')
