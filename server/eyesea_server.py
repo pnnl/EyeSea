@@ -22,7 +22,7 @@ from numpy import inf
 
 import matplotlib
 # the following line is needed for running on Mac in vituralenv or conda
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
