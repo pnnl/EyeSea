@@ -43,19 +43,19 @@ bottle.BaseRequest.MEMFILE_MAX = 1610612736
 settings = json.loads(open('eyesea_settings.json').read())
 
 # path for storing database files
-abs_db_path = os.path.abspath(settings['database_storage'])
+abs_db_path = os.path.abspath(os.path.expandvars(settings['database_storage']))
 db.init(os.path.join(abs_db_path, settings['database']))
 
 
-cache = settings['cache']
+cache = os.path.expandvars(settings['cache'])
 if not os.path.isdir(cache):
     os.makedirs(cache)
 
-videostore = settings['video_storage']
+videostore = os.path.expandvars(settings['video_storage'])
 if not os.path.isdir(videostore):
     os.makedirs(videostore)
 
-tmp = settings['temporary_storage']
+tmp = os.path.expandvars(settings['temporary_storage'])
 if not os.path.isdir(tmp):
     os.makedirs(tmp)
 else:
@@ -65,7 +65,7 @@ else:
 vformat = settings['video_format']
 vcodec = settings['ffmpeg_vcodec']
 
-# OS-specific path
+# TODO: get this from settings file
 abs_algorithm_path = os.path.abspath(os.path.join(os.path.dirname(os.getcwd()),'algorithms'))
 tasklist = {}
 
@@ -376,6 +376,8 @@ def set_dataset():
     fname = request.forms.get('selected')
     db.close()
     db.init(os.path.join(abs_db_path, fname + '.db'))
+    # TODO: go to video list page, refresh
+    # maybe this is done in client
 
 
 # FIXME

@@ -6,7 +6,7 @@ import {
 	SUCCESS,
 	ERROR,
     getSelected,
-    DATASET
+    SELECT
 } from './module';
 
 // worker function
@@ -29,6 +29,15 @@ export function* requestDatasets(action) {
 			payload: error,
 		});
 	}
+    //while(true) {
+        //let selection = yield select(getSelected);
+        //console.log('requestDatasets', selection)
+        //let form = new FormData();
+        //form.append('selection', selection);
+        //request.open('POST', action.servicePath + 'dataset');
+        //request.send(form);
+
+    //}
 }
 
 // watcher function

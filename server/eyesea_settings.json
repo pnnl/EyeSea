@@ -1,10 +1,9 @@
 {
-    "cache" : ".cache",
-    "temporary_storage" : ".tmp",
-    "video_storage" : "videos",
-    "database_storage" : "databases",
-    "database" : "eyesea.db",
-    "video_format" : "mp4",
-    "ffmpeg_vcodec" : "libx264"
+  "cache": "$HOME/eyesea/server/.cache",
+  "temporary_storage": "$HOME/eyesea/server/.tmp",
+  "video_storage": "$HOME/eyesea/videos",
+  "database_storage": "$HOME/eyesea/databases",
+  "database": "eyesea.db",
+  "video_format": "mp4",
+  "ffmpeg_vcodec": "libx264"
 }
-

@@ -24,7 +24,7 @@ const Countries = [
 
 export class Dataset extends React.PureComponent {
 	state = {
-		datasets: Countries,
+		datasets: "",
 		selectedDataset: "",
 	};
 
@@ -36,8 +36,9 @@ export class Dataset extends React.PureComponent {
 
     handleChange = selectedDataset => {
         this.setState({selectedDataset});
-        console.log(`selected:`, selectedDataset.label)
-        this.props.setDataset(selectedDataset.label)
+        console.log('selected:', this.state.selectedDataset.label)
+        //this.props.setDataset(selectedDataset.label)
+
     };
 
 	componentDidMount() {

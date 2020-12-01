@@ -11,7 +11,7 @@ export const REQUEST = 'app/dataset/request';
 export const SUCCESS = 'app/dataset/success';
 export const ERROR = 'app/dataset/error';
 
-export const DATASET = 'app/dataset/set';
+export const SELECT = 'app/dataset/set';
 
 
 ///-- ACTIONS --///
@@ -23,9 +23,9 @@ export function request(payload) {
 	};
 }
 
-export function setDataset(payload) {
+export function selectDataset(payload) {
     return {
-        type: DATASET,
+        type: SELECT,
         servicePath: true,
         payload,
     };
@@ -35,7 +35,6 @@ const reducer = (state = fromJS({}), action) => {
 	const { type, payload } = action;
 	switch (type) {
 		case SUCCESS:
-        case DATASET:
 			return state.set(type, fromJS(payload));
 		case ERROR:
 			return state.set(type, fromError(payload));
@@ -52,5 +51,5 @@ var getKeyImmutable = key => state => state.getIn(['app', 'dataset', key]);
 export const getDatasets = createToJSSelector(getKeyImmutable(SUCCESS));
 export const getError = createToJSSelector(getKeyImmutable(ERROR));
 
-export const getSelected = createToJSSelector(getKeyImmutable(DATASET));
+export const getSelected = createToJSSelector(getKeyImmutable(SELECT));
 
