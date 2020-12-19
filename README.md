@@ -7,7 +7,7 @@ https://github.com/pnnl/EyeSea.git
 
 
 ## Set up environment
-Install 
+Install [conda](https://docs.conda.io/en/latest/miniconda.html) for managing environments.
 You'll need to have  [node](https://nodejs.org/en/) installed in your system.
 
 Then install the dependencies:
@@ -69,6 +69,6 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNTA0OTE2NTUwLDEwODM3MzY1NDksLTY5Mz
-MzMzkzMV19
+eyJoaXN0b3J5IjpbLTQ5MzM1NTE3MiwxMDgzNzM2NTQ5LC02OT
+MzMzM5MzFdfQ==
 -->
