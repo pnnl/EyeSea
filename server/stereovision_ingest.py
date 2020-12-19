@@ -150,9 +150,10 @@ if __name__ == "__main__":
     if not os.path.isdir(cache):
         os.makedirs(cache)
 
-    # TODO: get from settings
-    # assume we are running in the eyesea/server dir
-    algdir = os.path.join(os.path.dirname(os.getcwd()),'algorithms')
+    algdir = os.path.abspath(settings['algorithms'])
+    if not os.path.isdir(algdir):
+        print('invalid algorithm dir: ' + algdir)
+        return
     print('Algorithm dir is ' + algdir)
 
     # get analysis method to use

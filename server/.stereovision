@@ -1,2 +1,2 @@
 # settings for stereovision_ingest.py
-datadir = /path/to/sterevision/data  
+datadir = /mnt/EyeSea/Kvichak_Camera_Images  

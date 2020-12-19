@@ -1,8 +1,9 @@
 {
-  "cache": "$HOME/eyesea/server/.cache",
+  "cache": "$HOME/eyesea/thumbnails",
   "temporary_storage": "$HOME/eyesea/server/.tmp",
   "video_storage": "$HOME/eyesea/videos",
   "database_storage": "$HOME/eyesea/databases",
+  "algorithms": "$HOME/EyeSea/algorithms",
   "database": "eyesea.db",
   "video_format": "mp4",
   "ffmpeg_vcodec": "libx264"
