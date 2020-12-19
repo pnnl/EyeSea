@@ -9,6 +9,7 @@ https://github.com/pnnl/EyeSea.git
 ## Set up environment
 Install [conda](https://docs.conda.io/en/latest/miniconda.html) for managing environments.
 Then install install dependencies:
+client
 ```
 cd $EYESEA_ROOT/uclient
 conda env create -f env-eyesea-client.yml
@@ -74,6 +75,6 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTM5NDUzMjIxMSwxMDgzNzM2NTQ5LC02OT
+eyJoaXN0b3J5IjpbMTkxMTE5MzUxNCwxMDgzNzM2NTQ5LC02OT
 MzMzM5MzFdfQ==
 -->
