@@ -12,9 +12,6 @@ You'll need to have  [node](https://nodejs.org/en/) installed in your system.
 
 Then install the dependencies:
 npm install -g yarn
-npm install --save highcharts
-npm install --save lodash
-npm install -g highcharts highcharts-react-official
 ```
 
 ```
@@ -76,5 +73,6 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTA4MzczNjU0OSwtNjkzMzMzOTMxXX0=
+eyJoaXN0b3J5IjpbLTEyODg1Mjg1NDEsMTA4MzczNjU0OSwtNj
+kzMzMzOTMxXX0=
 -->
