@@ -34,7 +34,7 @@ do
             cat eyesea_settings.json | jq --arg NEWDB "$newdb" '.database |= $NEWDB' > temp.json
             cp temp.json eyesea_settings.json
             # kill server
-            kill $(ps aux | grep '[p]ython eyesea_server.py' | awk '{print $2}')
+            kill -9 $(ps aux | grep '[p]ython eyesea_server.py' | awk '{print $2}')
             # start server
             conda activate eyesea-server
             nohup python eyesea_server.py >/dev/null 2>$HOME/eyesea.log &
