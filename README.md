@@ -7,7 +7,7 @@ https://github.com/pnnl/EyeSea.git
 
 
 ## Set up environment
-
+Install 
 You'll need to have  [node](https://nodejs.org/en/) installed in your system.
 
 Then install the dependencies:
@@ -69,6 +69,6 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNjIxNDk3NywxMDgzNzM2NTQ5LC02OTMzMz
-M5MzFdfQ==
+eyJoaXN0b3J5IjpbNTA0OTE2NTUwLDEwODM3MzY1NDksLTY5Mz
+MzMzkzMV19
 -->
