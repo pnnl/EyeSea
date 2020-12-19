@@ -38,36 +38,9 @@ Start the server and client:
 ```
 $EYESEA_ROOT/eyesea.sh 
 ```
-
-### Start EyeSea client
-
-```
-cd EyeSea/uclient
-```
-
-* Run development server:
-
-```
-yarn start
-```
-
-* Or you can run development server with [webpack-dashboard](https://github.com/FormidableLabs/webpack-dashboard):
-
-```
-yarn dev
-```
-
-
-* To build the production package
-
-```
-yarn build
-```
-
-### Use EyeSea 
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTEyMjI3MDM4MDAsMTA4MzczNjU0OSwtNj
-kzMzMzOTMxXX0=
+eyJoaXN0b3J5IjpbNjcxNzYzNzUzLDEwODM3MzY1NDksLTY5Mz
+MzMzkzMV19
 -->
