@@ -37,7 +37,7 @@ do
             kill $(ps aux | grep '[p]ython eyesea_server.py' | awk '{print $2}')
             # start server
             conda activate eyesea-server
-            nohup python eyesea_server.py >/dev/null 2>&1 &
+            nohup python eyesea_server.py >/dev/null 2>$HOME/eyesea.log &
     esac
 done
 

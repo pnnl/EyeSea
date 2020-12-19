@@ -134,23 +134,23 @@ if __name__ == "__main__":
 
     settings = json.loads(open('eyesea_settings.json').read())
     # TODO: get this from args and update settings with new database
-    dbdir = os.path.abspath(settings['database_storage'])
+    dbdir = os.path.abspath(os.path.expandvars(settings['database_storage']))
     if not os.path.isdir(dbdir):
         os.makedirs(dbdir)
 
-    vdir = os.path.abspath(settings['video_storage'])
+    vdir = os.path.abspath(os.path.expandvars(settings['video_storage']))
     if not os.path.isdir(vdir):
         os.makedirs(vdir)
 
-    tmp = os.path.abspath(settings['temporary_storage'])
+    tmp = os.path.abspath(os.path.expandvars(settings['temporary_storage']))
     if not os.path.isdir(tmp):
         os.makedirs(tmp)
 
-    cache = os.path.abspath(settings['cache'])
+    cache = os.path.abspath(os.path.expandvars(settings['cache']))
     if not os.path.isdir(cache):
         os.makedirs(cache)
 
-    algdir = os.path.abspath(settings['algorithms'])
+    algdir = os.path.abspath(os.path.expandvars(settings['algorithms']))
     if not os.path.isdir(algdir):
         print('invalid algorithm dir: ' + algdir)
         return
