@@ -11,11 +11,11 @@ Install [conda](https://docs.conda.io/en/latest/miniconda.html) for managing env
 Then install install dependencies:
 ```
 cd $EYESEA_ROOT/uclient
-conda 
+conda env create -f env-eyesea-client.yml
 ```
-You'll need to have  [node](https://nodejs.org/en/) installed in your system.
+This will install  [node](https://nodejs.org/en/)  in your system.
 
-Then install the dependencies:
+Then use npm to install the dependencies:
 ```
 npm install -g yarn
 ```
@@ -74,6 +74,6 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTExNDk4NDc3MzYsMTA4MzczNjU0OSwtNj
-kzMzMzOTMxXX0=
+eyJoaXN0b3J5IjpbLTM5NDUzMjIxMSwxMDgzNzM2NTQ5LC02OT
+MzMzM5MzFdfQ==
 -->
