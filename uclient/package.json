@@ -1,8 +1,9 @@
 {
 	"name": "EyeSea",
 	"version": "0.1.1",
-	"description": "Web UI for the EyeSea project to identify and analyize fish in videos.",
+	"description": "Web UI for the EyeSea software to analyze underwater videos.",
 	"main": "''",
+    "license": "FreeBSD",
 	"scripts": {
 		"build": "webpack --config webpack.production.config.js --progress --profile --colors",
 		"start": "webpack-dev-server --progress --profile --colors --no-inline",
