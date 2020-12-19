@@ -9,12 +9,8 @@ https://github.com/pnnl/EyeSea.git
 ## Set up environment
 
 You'll need to have  [node](https://nodejs.org/en/) installed in your system.
+
 Then install the dependencies:
-
-If you already have yarn, you can skip this step.
-
-
-```
 npm install -g yarn
 npm install --save highcharts
 npm install --save lodash
@@ -80,5 +76,5 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTY5MzMzMzkzMV19
+eyJoaXN0b3J5IjpbMTA4MzczNjU0OSwtNjkzMzMzOTMxXX0=
 -->
