@@ -40,3 +40,9 @@ $EYESEA_ROOT/eyesea.sh
 ```
 Open your web browser to `http://localhost:7890/`
 
+
+<!--stackedit_data:
+eyJoaXN0b3J5IjpbNjcxNzYzNzUzLDEwODM3MzY1NDksLTY5Mz
+MzMzkzMV19
+-->
+
