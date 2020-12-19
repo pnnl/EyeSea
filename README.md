@@ -9,7 +9,7 @@ https://github.com/pnnl/EyeSea.git
 ## Set up environment
 Install [conda](https://docs.conda.io/en/latest/miniconda.html) for managing environments.
 Then install install dependencies:
-client
+### client
 ```
 cd $EYESEA_ROOT/uclient
 conda env create -f env-eyesea-client.yml
@@ -24,17 +24,12 @@ npm install -g yarn
 yarn install
 ```
 
-Python modules:
-numpy, matplotlib, Pillow
-
-Other:
-ffmpeg, sqlite
+### server
 
 ```
-> pip install Cython
-> pip install bottle
-> pip install peewee
-```
+cd $EYESEA_ROOT/server
+conda env create -f env-eyesea-server.yml
+``````
 
 
 ### Start EyeSea server
@@ -75,6 +70,6 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTkxMTE5MzUxNCwxMDgzNzM2NTQ5LC02OT
-MzMzM5MzFdfQ==
+eyJoaXN0b3J5IjpbMzAwNjM4MTcyLDEwODM3MzY1NDksLTY5Mz
+MzMzkzMV19
 -->
