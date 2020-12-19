@@ -32,12 +32,11 @@ conda env create -f env-eyesea-server.yml
 ``````
 
 
-## Start EyeSea server
+# Run EyeSea 
 
+Start the server and client:
 ```
-cd EyeSea/server
-
-python eyesea_server.py 
+$EYESEA_ROOT/eyesea.sh 
 ```
 
 ### Start EyeSea client
@@ -69,6 +68,6 @@ yarn build
 Open your web browser to `http://localhost:7890/`
 
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE5MjE0MTY3MDgsMTA4MzczNjU0OSwtNj
+eyJoaXN0b3J5IjpbLTEyMjI3MDM4MDAsMTA4MzczNjU0OSwtNj
 kzMzMzOTMxXX0=
 -->
