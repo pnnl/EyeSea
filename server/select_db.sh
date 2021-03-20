@@ -1,12 +1,12 @@
 #!/bin/bash
-# requires jq
+# requires jq for parsing jason files
 # https://stedolan.github.io/jq/download/
 
 EYESEA_ROOT=$HOME/EyeSea
 CONDA_BASE=$(conda info --base)
 source $CONDA_BASE/etc/profile.d/conda.sh
 
-# TODO: This doesn't work. jq returns the path with quotes around it and find doesn't like it
+# TODO: The following line doesn't work. jq returns the path with quotes around it and find doesn't like it
 #EYESEA_DB_PATH=`cat $EYESEA_ROOT/server/eyesea_settings.json | jq '.database_storage' | envsubst`
 EYESEA_DB_PATH=$HOME/databases
 

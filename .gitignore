@@ -5,6 +5,7 @@
 *.npz
 out*.json
 *-shari.*
+*.log
 
 
 
