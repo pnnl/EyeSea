@@ -2,8 +2,10 @@
 import json # settings file
 from peewee import * # database connection
 
-settings = json.loads(open('eyesea_settings.json').read())
-db = SqliteDatabase(settings['database'])
+#settings = json.loads(open('eyesea_settings.json').read())
+#db = SqliteDatabase(settings['database'])
+# importing module sets db
+db = SqliteDatabase(None)
 
 class eyesea_model(Model):
     class Meta:
@@ -45,3 +47,7 @@ class analysis_method(eyesea_model):
     parameters = TextField()
     path = TextField()
     creation_date = IntegerField()
+
+def create_tables():
+    with db:
+        db.create_tables([video, analysis, analysis_method])

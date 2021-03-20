@@ -23,6 +23,7 @@ ffmpeg
 ## Start the server
 
 ```
+> conda activate eyesea-server
 > python eyesea_server.py
 ```
 

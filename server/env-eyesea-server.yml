@@ -12,8 +12,8 @@ dependencies:
   - pillow
   - pip
   - scipy
+  - opencv=3
   - pip:
-    - ffmpeg
+    - ffmpeg-python
     - configargparse
     - lxml
-  - opencv=3

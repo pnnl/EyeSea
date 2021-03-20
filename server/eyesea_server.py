@@ -22,7 +22,7 @@ from numpy import inf
 
 import matplotlib
 # the following line is needed for running on Mac in vituralenv or conda
-matplotlib.use('TkAgg')
+#matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -39,19 +39,25 @@ import ffmpeg
 # disk-based temporary file.
 bottle.BaseRequest.MEMFILE_MAX = 1610612736
 
+# http://docs.peewee-orm.com/en/2.10.2/peewee/database.html#deferring-initialization
 settings = json.loads(open('eyesea_settings.json').read())
 
-cache = settings['cache']
+# path for storing database files
+abs_db_path = os.path.abspath(os.path.expandvars(settings['database_storage']))
+db.init(os.path.join(abs_db_path, settings['database']))
+
+
+cache = os.path.expandvars(settings['cache'])
 if not os.path.isdir(cache):
-    os.mkdir(cache)
+    os.makedirs(cache)
 
-videostore = settings['video_storage']
+videostore = os.path.expandvars(settings['video_storage'])
 if not os.path.isdir(videostore):
-    os.mkdir(videostore)
+    os.makedirs(videostore)
 
-tmp = settings['temporary_storage']
+tmp = os.path.expandvars(settings['temporary_storage'])
 if not os.path.isdir(tmp):
-    os.mkdir(tmp)
+    os.makedirs(tmp)
 else:
     for i in os.listdir(tmp):
         os.remove(os.path.join(tmp, i))
@@ -59,9 +65,8 @@ else:
 vformat = settings['video_format']
 vcodec = settings['ffmpeg_vcodec']
 
-# OS-specific path
+# TODO: get this from settings file
 abs_algorithm_path = os.path.abspath(os.path.join(os.path.dirname(os.getcwd()),'algorithms'))
- #   os.path.abspath(os.path.join(os.path.abspath(os.curdir), "..", "algorithms"))
 tasklist = {}
 
 # scan the algorithms dir to find available algorithms
@@ -345,9 +350,41 @@ def get_statistics():
             }
     return fr()(data)
 
+# try this instead for selecting dataset
+# https://docs.faculty.ai/user-guide/apis/flask_apis/flask_file_upload_download.html   
+
+@get('/datasets')
+def get_datasets():
+    print('********** get_datasets() ***************')
+    data = []
+    files = os.listdir(abs_db_path)
+    # assume files are named with dates, show most recent first
+    files.sort(reverse=True)
+    for j in range(len(files)):
+        name, ext = os.path.splitext(files[j])
+        if ext == '.db':
+            data.append({'label' : name, 'value' : j})
+    print(json.dumps(data))
+    #data = {'datasets' : dataset_names}
+    #return json.dumps(data)
+    return json.dumps(data)
+
+
+@post('/dataset')
+def set_dataset():
+    print('######### set_dataset() ############')
+    fname = request.forms.get('selected')
+    db.close()
+    db.init(os.path.join(abs_db_path, fname + '.db'))
+    # TODO: go to video list page, refresh
+    # maybe this is done in client
+
+
 # FIXME
 @get('/video')
 def get_video():
+    print("**** get_video() ****")
+   # print(request.query) # <bottle.FormsDict object at 0x11b504668>
     sortBy = []
     if 'sortBy' in request.query:
         try:
@@ -359,6 +396,7 @@ def get_video():
     data = video.select(video).order_by(*sortBy).dicts()
     data = [format_video(i) for i in data]
     return fr()(data)
+
 
 
 @post('/video')
@@ -396,6 +434,7 @@ def post_video():
 
     if info and 'streams' in info and len(info['streams']) > 0:
         info = info['streams'][0]
+        # TODO: this is weird, fps should be a single float
         fps = info['avg_frame_rate'].split('/')
         fps = float(fps[0]) / float(fps[1])
         dbdata = dict()
@@ -442,7 +481,7 @@ def get_video_vid(vid):
 def server_static(vid):
     v = video.select().where(video.vid == vid).dicts().get()
     pathname, filename, root = get_video_path_parts(v)
-    print('from cache: ' + root + os.sep + pathname)
+    print('**** server_static: ' + root + os.sep + pathname)
     resp = static_file(pathname, root=root)
     allow_cross_origin(resp)
     return resp
@@ -679,6 +718,7 @@ def put_analysis_aid(aid):
 
 @get('/analysis/method')
 def get_analysis_method():
+    print("**** get_analysis_method() ****")
     data = analysis_method.select().dicts()
     data = [(lambda method: {
         'mid': method['mid'],

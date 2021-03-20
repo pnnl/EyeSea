@@ -119,7 +119,7 @@ def bgMOG2():
     '''
 
     if args.verbose: print('initializting background...')
-    n = min(args.history, api.nframes())
+    n = min(100, api.nframes())
     hist = np.zeros((width*height,n),dtype=np.float32)
 
     for i in range(n):
@@ -170,8 +170,8 @@ def bgMOG2():
         fgmask = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
         cnts = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
         # https://stackoverflow.com/questions/54734538/opencv-assertion-failed-215assertion-failed-npoints-0-depth-cv-32
-        contours = cnts[1] # simplify reference
-        #print(cnts)
+        # note: openCV 3 findContours returns 3 items and openCV 4 returns 2
+        contours = cnts[0] if len(cnts) == 2 else cnts[1]
         if args.verbose: 
             print(os.path.basename(api.framefilepath(idx)) + "  {:d} blobs".format(len(contours)))
         
