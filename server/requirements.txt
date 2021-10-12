@@ -1,5 +1,5 @@
 bottle==0.12.13
 matplotlib==2.2.3
-opencv-python==3.4.3.18
+opencv-python==4.2.0.32
 peewee==3.7.0
 Pillow==5.3.0
