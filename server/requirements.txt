@@ -1,4 +1,4 @@
-bottle==0.12.13
+bottle==0.12.20
 matplotlib==2.2.3
 opencv-python==3.4.3.18
 peewee==3.7.0
