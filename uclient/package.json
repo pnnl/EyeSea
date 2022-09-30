@@ -18,7 +18,7 @@
 		"partial-lint-prettier": "node partial-lint.js prettier --single-quote --trailing-comma es5 --write"
 	},
 	"dependencies": {
-		"d3": "^4.13.0",
+		"d3": "^7.6.1",
 		"highcharts": "^7.2.1",
 		"highcharts-react-official": "^2.2.2",
 		"immutable": "^3.8.1",
