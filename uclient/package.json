@@ -82,7 +82,7 @@
 		"url-loader": "^0.6.2",
 		"webpack": "^3.3.0",
 		"webpack-cleanup-plugin": "^0.5.1",
-		"webpack-dashboard": "^1.0.0-5",
+		"webpack-dashboard": "^3.3.7",
 		"webpack-dev-server": "^2.4.1"
 	},
 	"jest": {
